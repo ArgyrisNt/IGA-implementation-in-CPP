@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\include\IGA_1D.h"
+#include "C:\Users\argir\IGA-implementation-in-CPP\include\IGA_1D.h"
 
 class Diffusion_1D : public IGA_1D
 {

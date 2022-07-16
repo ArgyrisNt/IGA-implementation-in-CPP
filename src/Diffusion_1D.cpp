@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\include\Diffusion_1D.h"
+#include "C:\Users\argir\IGA-implementation-in-CPP\include\Diffusion_1D.h"
 
 Diffusion_1D::Diffusion_1D() {}
 

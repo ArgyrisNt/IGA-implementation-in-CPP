@@ -4,16 +4,16 @@
 // ==================================================
 
 #include <iostream>
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\include\Bspline.h"
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\src\Bspline.cpp"
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\include\Matrix.h"
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\src\Matrix.cpp"
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\include\IGA.h"
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\src\IGA.cpp"
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\include\IGA_1D.h"
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\src\IGA_1D.cpp"
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\include\Poisson_1D.h"
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\src\Poisson_1D.cpp"
+#include "C:\Users\argir\IGA-implementation-in-CPP\include\Bspline.h"
+#include "C:\Users\argir\IGA-implementation-in-CPP\src\Bspline.cpp"
+#include "C:\Users\argir\IGA-implementation-in-CPP\include\Matrix.h"
+#include "C:\Users\argir\IGA-implementation-in-CPP\src\Matrix.cpp"
+#include "C:\Users\argir\IGA-implementation-in-CPP\include\IGA.h"
+#include "C:\Users\argir\IGA-implementation-in-CPP\src\IGA.cpp"
+#include "C:\Users\argir\IGA-implementation-in-CPP\include\IGA_1D.h"
+#include "C:\Users\argir\IGA-implementation-in-CPP\src\IGA_1D.cpp"
+#include "C:\Users\argir\IGA-implementation-in-CPP\include\Poisson_1D.h"
+#include "C:\Users\argir\IGA-implementation-in-CPP\src\Poisson_1D.cpp"
 
 // - - - - - - - - - - - - - TO DO - - - - - - - - - - - - -
 //  

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\include\IGA_1D.h"
+#include "C:\Users\argir\IGA-implementation-in-CPP\include\IGA_1D.h"
 
 IGA_1D::IGA_1D() {}
 

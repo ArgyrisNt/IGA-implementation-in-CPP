@@ -1,5 +1,5 @@
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\include\Bspline.h"
-#include "C:\Users\argir\OneDrive\Desktop\IGA_new\include\Matrix.h"
+#include "C:\Users\argir\IGA-implementation-in-CPP\include\Bspline.h"
+#include "C:\Users\argir\IGA-implementation-in-CPP\include\Matrix.h"
 #include <algorithm>
 #include <cassert>
 
