@@ -23,19 +23,38 @@ IGA::IGA(IGA& bas)
 
 IGA::~IGA() {}
 
-void IGA::solve(std::string solver, int iters = 10)
+void IGA::JacobiSolver(Matrix A, std::vector<double> b, int iters)
 {
-	if (solver == "Jacobi")
+	solution = A.Jacobi_iterator(b, iters);
+}
+
+void IGA::LUsolver(Matrix A, std::vector<double> b)
+{
+	std::vector<Matrix> LU = A.LU_factor();
+	Matrix L = LU[0];
+	Matrix U = LU[1];
+	std::vector<double> y;
+	y = L.forward_Euler(b);
+	solution = U.backward_Euler(y);
+}
+
+void IGA::expandSol(int x)
+{
+	std::vector<double> final_sol;
+	int j = 0;
+	int nOF = 0;
+	nOF = x;
+	for (int i = 0; i < nOF; i++)
 	{
-		solution = stiff.Jacobi_iterator(rhs, iters);
+		if (std::count(interior_basis.begin(), interior_basis.end(), i))
+		{
+			final_sol.push_back(solution[j]);
+			j++;
+		}
+		else
+		{
+			final_sol.push_back(bc_cond);
+		}
 	}
-	else if (solver == "LU")
-	{
-		std::vector<Matrix> LU = stiff.LU_factor();
-		Matrix L = LU[0];
-		Matrix U = LU[1];
-		std::vector<double> y;
-		y = L.forward_Euler(rhs);
-		solution = U.backward_Euler(y);
-	}
+	solution = final_sol;
 }

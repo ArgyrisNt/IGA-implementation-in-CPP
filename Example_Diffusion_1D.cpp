@@ -32,12 +32,12 @@ int main()
 	Bspline bspline_x(start, end, p, numElems);
 
 	// - - - - - Diffusion info - - - - -
-	double src = 0.0;
-	double bc = 0.0;
-	double coef = 1.0;
+	double src = 0.0; // source function
+	double bc = 0.0; // dirichlet boundary condition's value
+	double coef = 1.0; // coefficient of diffusion problem
 	double t_end = 0.05; // 1
 	double numSteps = 10.0; // 200
-	double Dt = t_end / numSteps;
+	double Dt = t_end / numSteps; // time step
 	Diffusion_1D my_diffusion(src, bc, bspline_x, coef, Dt);
 
 	// - - - - - Compute stiffness matrix, mass matrix and rhs - - - - - 
@@ -52,8 +52,7 @@ int main()
 	{
 		std::cout << std::endl << "---------------- " << t + 1 << " step ----------------";
 		std::vector<double> b = my_diffusion.nextStep(); // build next rhs
-		my_diffusion.solution = my_diffusion.sysMat.Jacobi_iterator(b, 100);
-		my_diffusion.expandSol();
+		my_diffusion.JacobiSolver(my_diffusion.sysMat, b, 100);
 		my_diffusion.plotSol(std::to_string(t + 1) + "sol.dat");
 	}
 

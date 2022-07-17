@@ -17,7 +17,6 @@
 
 // - - - - - - - - - - - - - TO DO - - - - - - - - - - - - -
 //  
-// • bspline_x != bspline_y has problem in plot_sol function
 // • Neumann boundary conditions
 // • Plot B-spline basis
 // 
@@ -38,8 +37,7 @@ int main()
 	my_poisson.discretize();
 
 	// - - - - - Solve - - - - - 
-	my_poisson.solve("LU"); // "LU" or "Jacobi"
-	my_poisson.expandSol();
+	my_poisson.LUsolver(my_poisson.stiff, my_poisson.rhs);
 
 	// - - - - - Write solution data - - - - - 
 	my_poisson.plotSol("Poisson1D_sol.dat");

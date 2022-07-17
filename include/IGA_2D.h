@@ -18,7 +18,8 @@ public:
 	void calcStiff();
 	void calcRhs();
 	void calcInteriorBasis();
-	void expandSol();
+	void LUsolver(Matrix, std::vector<double>);
+	void JacobiSolver(Matrix, std::vector<double>, int iters = 10);
 
 	// Member variables
 	Bspline bspline_x;

@@ -16,7 +16,9 @@ public:
 	~IGA();
 
 	// Member functions
-	void solve(std::string, int); // Solve the linear problem Ax=b
+	void JacobiSolver(Matrix, std::vector<double>, int iters = 10);
+	void LUsolver(Matrix, std::vector<double>);
+	void expandSol(int);
 
 	// Member variables
 	double f;

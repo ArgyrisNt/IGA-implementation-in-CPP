@@ -113,23 +113,14 @@ void IGA_1D::calcInteriorBasis()
 	}
 }
 
-void IGA_1D::expandSol()
+void IGA_1D::LUsolver(Matrix A, std::vector<double> b)
 {
-	std::vector<double> final_sol;
-	int j = 0;
-	int nOF = 0;
-	nOF = bspline_x.nOF;
-	for (int i = 0; i < nOF; i++)
-	{
-		if (std::count(interior_basis.begin(), interior_basis.end(), i))
-		{
-			final_sol.push_back(solution[j]);
-			j++;
-		}
-		else
-		{
-			final_sol.push_back(bc_cond);
-		}
-	}
-	solution = final_sol;
+	IGA::LUsolver(A, b);
+	expandSol(bspline_x.nOF);
+}
+
+void IGA_1D::JacobiSolver(Matrix A, std::vector<double> b, int iters)
+{
+	IGA::JacobiSolver(A, b, iters);
+	expandSol(bspline_x.nOF);
 }
