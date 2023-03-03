@@ -1,4 +1,4 @@
-// Solve Poisson 2D problem on a Bspline trimmed square
+// Solve Poisson 2D problem on a Bspline trimmed square domain
 
 #include <iostream>
 #include "..\IGA.h"
