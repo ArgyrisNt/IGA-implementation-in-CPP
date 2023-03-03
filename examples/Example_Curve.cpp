@@ -1,3 +1,5 @@
+// Example of a NURBS curve
+
 #include <iostream>
 #include "..\IGA.h"
 

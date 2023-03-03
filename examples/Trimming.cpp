@@ -1,3 +1,5 @@
+// Example of a trimmed NURBS surface
+
 #include <iostream>
 #include "..\IGA.h"
 

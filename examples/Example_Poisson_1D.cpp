@@ -1,4 +1,4 @@
-// Solve Poisson 1D problem on a Nurbs hemicycle
+// Solve Poisson 1D problem on a Nurbs circular line
 
 #include <iostream>
 #include "..\IGA.h"
