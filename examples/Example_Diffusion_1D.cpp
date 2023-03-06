@@ -34,17 +34,17 @@ int main()
     int p = 3;
     int numElems = 200;
     std::vector<double> W{};
-    std::vector<std::vector<double>> ctrlPts;
+    std::vector<std::vector<double>> controlPoints;
     Bspline bspline_x(start, end, p, numElems, W);
     for (int i = 0; i < numElems + p; i++)
     {
-        ctrlPts.push_back({(1.0 / (numElems + p - 1)) * (double)(i), 0.0});
+        controlPoints.push_back({(1.0 / (numElems + p - 1)) * (double)(i), 0.0});
         W.push_back(1.0);
     }
     bspline_x.setWeights(W);
 
     // - - - - - B-spline curve - - - - -
-    BsplineCurve curve(bspline_x, ctrlPts);
+    BsplineCurve curve(bspline_x, controlPoints);
 
     // - - - - - Assempler info - - - - -
     double src = 0.0;
@@ -58,22 +58,22 @@ int main()
 
     // - - - - - Enforce boundary conditions - - - - -
     std::string mode("Ellimination");
-    ass.enforceBoundary(mode);
+    ass.enforceBoundaryConditions(mode);
 
     // - - - - - Apply and plot initial condition - - - - -
     Poisson<DiffusionAssembler_1D> diffusion(ass, Solver::GaussSeidel);
-    std::vector<double> init_sol = ass.applyInitCond(init_cond);
+    std::vector<double> init_sol = ass.applyInitialCondition(init_cond);
     diffusion.setSolution(init_sol);
-    diffusion.plotSol("curve.dat", "0sol.dat");
+    diffusion.plotSolution("curve.dat", "0sol.dat");
 
     // - - - - - Solve - - - - - 
     for (int t = 0; t < numSteps; t++) // until 6
     {
         std::cout << std::endl << "---------------- " << t + 1 << " step ----------------";
         std::vector<double> b = ass.nextStep(diffusion.getSolution()); // build next rhs
-        diffusion.setSolution(diffusion.getSolver()->solve(ass.getSysMat(), b));
-        diffusion.constructSol();
-        diffusion.plotSol("curve.dat", std::to_string(t + 1) + "sol.dat");
+        diffusion.setSolution(diffusion.getSolver()->solve(ass.getSystemMatrix(), b));
+        diffusion.expandSolutionOnBoundary();
+        diffusion.plotSolution("curve.dat", std::to_string(t + 1) + "sol.dat");
     }
 
     return 0;

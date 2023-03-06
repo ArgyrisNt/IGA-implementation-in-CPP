@@ -2,103 +2,93 @@
 #include "..\include\Assembler.h"
 
 
-void Assembler::applyBoundEllimination()
+void Assembler::applyBoundaryEllimination()
 {
-    struct CompareFirst
-    {
-        CompareFirst(int val) : val_(val) {}
-        bool operator()(const std::pair<int,char>& elem) const {
-            return val_ == elem.first;
-        }
-    private:
-        int val_;
-    };
-
-	Matrix<double> new_stiff(stiff.getRows() - boundary_ids.size(), stiff.getCols() - boundary_ids.size());
-	std::vector<double> new_rhs;
+	Matrix<double> newStiffnessMatrix(stiffnessMatrix.getNumberOfRows() - boundaryBasisFunctions.size(), stiffnessMatrix.getNumberOfColumns() - boundaryBasisFunctions.size());
+	std::vector<double> newRightHandSide;
 	int i = 0;
-	for (int ii = 0; ii < stiff.getRows(); ii++)
+	for (int ii = 0; ii < stiffnessMatrix.getNumberOfRows(); ii++)
 	{
-		auto it = std::find_if(boundary_ids.begin(), boundary_ids.end(), CompareFirst(ii));
-		if (it != boundary_ids.end())
+		auto it = std::find_if(boundaryBasisFunctions.begin(), boundaryBasisFunctions.end(), CompareFirst(ii));
+		if (it != boundaryBasisFunctions.end())
 		{
 			continue;
 		}
 		int j = 0;
-		for (int jj = 0; jj < stiff.getRows(); jj++)
+		for (int jj = 0; jj < stiffnessMatrix.getNumberOfRows(); jj++)
 		{
-			it = std::find_if(boundary_ids.begin(), boundary_ids.end(), CompareFirst(jj));
-			if (it != boundary_ids.end())
+			it = std::find_if(boundaryBasisFunctions.begin(), boundaryBasisFunctions.end(), CompareFirst(jj));
+			if (it != boundaryBasisFunctions.end())
 			{
 				continue;
 			}
-			new_stiff.setValue(i, j, stiff(ii, jj));
+			newStiffnessMatrix.setValue(i, j, stiffnessMatrix(ii, jj));
 			j++;
 		}
-		new_rhs.push_back(rhs[ii]);
+		newRightHandSide.push_back(rightHandSide[ii]);
 		i++;
 	}
 
-	stiff = new_stiff;
-	rhs = new_rhs;
+	stiffnessMatrix = newStiffnessMatrix;
+	rightHandSide = newRightHandSide;
 }
 
-void Assembler::applyBoundMultipliers()
+void Assembler::applyBoundaryMultipliers()
 {
-	int new_dim = stiff.getRows() + boundary_ids.size();
-	Matrix<double> new_stiff(new_dim, new_dim);
-	std::vector<double> new_rhs;
+	int new_dim = stiffnessMatrix.getNumberOfRows() + boundaryBasisFunctions.size();
+	Matrix<double> newStiffnessMatrix(new_dim, new_dim);
+	std::vector<double> newRightHandSide;
 	int cnt2 = 0;
-	for (auto it = boundary_ids.begin(); it != boundary_ids.end(); it++)
+	for (auto it = boundaryBasisFunctions.begin(); it != boundaryBasisFunctions.end(); it++)
 	{
-		new_stiff.setValue(cnt2, (*it).first+boundary_ids.size(), 1.0);
-		new_stiff.setValue((*it).first+boundary_ids.size(), cnt2, 1.0);
-		if (boundary_ids[cnt2].second == 1)
+		newStiffnessMatrix.setValue(cnt2, (*it).first + boundaryBasisFunctions.size(), 1.0);
+		newStiffnessMatrix.setValue((*it).first + boundaryBasisFunctions.size(), cnt2, 1.0);
+		if (boundaryBasisFunctions[cnt2].second == 1)
 		{
-			new_rhs.push_back(bc->getWval());
+			newRightHandSide.push_back(boundaryConditions->getWestValue());
 		}
-		else if (boundary_ids[cnt2].second == 2)
+		else if (boundaryBasisFunctions[cnt2].second == 2)
 		{
-			new_rhs.push_back(bc->getEval());
+			newRightHandSide.push_back(boundaryConditions->getEastValue());
 		}
-		else if (boundary_ids[cnt2].second == 3)
+		else if (boundaryBasisFunctions[cnt2].second == 3)
 		{
-			new_rhs.push_back(bc->getNval());
+			newRightHandSide.push_back(boundaryConditions->getNorthValue());
 		}
-		else if (boundary_ids[cnt2].second == 4)
+		else if (boundaryBasisFunctions[cnt2].second == 4)
 		{
-			new_rhs.push_back(bc->getSval());
+			newRightHandSide.push_back(boundaryConditions->getSouthValue());
 		}
 		cnt2++;
 	}
 
 	int ii = 0;
-	for (int i = cnt2; i < new_stiff.getRows(); i++)
+	for (int i = cnt2; i < newStiffnessMatrix.getNumberOfRows(); i++)
 	{
 		int jj = 0;
-		for (int j = cnt2; j < new_stiff.getCols(); j++)
+		for (int j = cnt2; j < newStiffnessMatrix.getNumberOfColumns(); j++)
 		{
-			new_stiff.setValue(i, j, stiff(ii, jj));
+			newStiffnessMatrix.setValue(i, j, stiffnessMatrix(ii, jj));
 			jj++;
 		}
-		new_rhs.push_back(rhs[ii]);
+		newRightHandSide.push_back(rightHandSide[ii]);
 		ii++;
 	}
 
-	stiff = new_stiff;
-	rhs = new_rhs;
+	stiffnessMatrix = newStiffnessMatrix;
+	rightHandSide = newRightHandSide;
 }
 
-void Assembler::enforceBoundary(std::string& mode)
+void Assembler::enforceBoundaryConditions(std::string& mode)
 {
     boundaryMode = mode;
     if (mode == "Ellimination")
 	{		
-		applyBoundEllimination();
+		applyBoundaryEllimination();
 	}
 	else if (mode == "Multipliers")
 	{
-		applyBoundMultipliers();
+		applyBoundaryMultipliers();
 	}
 	else
 	{	

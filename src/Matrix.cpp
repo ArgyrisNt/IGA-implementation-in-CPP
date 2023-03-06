@@ -21,124 +21,113 @@ double norm(std::vector<T> &v)
 template <class T>
 Matrix<T>::Matrix()
 {
-	rows = 0;
-	cols = 0;
-	detVal = 0;
-	mat = new T* [rows];
-	for (int i = 0; i < rows; i++)
+	numberOfRows = 0;
+	numberOfColumns = 0;
+	values = new T *[numberOfRows];
+	for (int i = 0; i < numberOfRows; i++)
 	{
-		mat[i] = new T[cols];
+		values[i] = new T[numberOfColumns];
 	}
 }
 
 template <class T>
-Matrix<T>::Matrix(int my_rows, int my_cols, T val)
+Matrix<T>::Matrix(int rows, int columns, T value)
 {
-	rows = my_rows;
-	cols = my_cols;
-	detVal = 0;
-	mat = new T* [rows];
-	for (int i = 0; i < rows; i++)
+	numberOfRows = rows;
+	numberOfColumns = columns;
+	values = new T *[numberOfRows];
+	for (int i = 0; i < numberOfRows; i++)
 	{
-		mat[i] = new T[cols];
+		values[i] = new T[numberOfColumns];
 	}
-	for (int i = 0; i < rows; i++)
+	for (int i = 0; i < numberOfRows; i++)
 	{
-		for (int j = 0; j < cols; j++)
+		for (int j = 0; j < numberOfColumns; j++)
 		{
-			mat[i][j] = val;
+			values[i][j] = value;
 		}
 	}
 }
 
 template <class T>
-Matrix<T>::Matrix(const Matrix &m)
+Matrix<T>::Matrix(const Matrix &matrix)
 {
-	rows = m.rows;
-	cols = m.cols;
-	detVal = m.detVal;
-	mat = m.mat;
+	numberOfRows = matrix.numberOfRows;
+	numberOfColumns = matrix.numberOfColumns;
+	values = matrix.values;
 }
 
 template <class T>
 Matrix<T>::~Matrix() {}
 
 template <class T>
-Matrix<T> &Matrix<T>::operator=(Matrix m)
+Matrix<T> &Matrix<T>::operator=(Matrix matrix)
 {
-	rows = m.rows;
-	cols = m.cols;
-	detVal = m.detVal;
-	mat = m.mat;
+	numberOfRows = matrix.numberOfRows;
+	numberOfColumns = matrix.numberOfColumns;
+	values = matrix.values;
 
 	return *this;
 }
 
 template <class T>
-Matrix<T> Matrix<T>::operator+(Matrix m)
+Matrix<T> Matrix<T>::operator+(Matrix matrix)
 {
-	assert(m.rows == rows);
-	assert(m.cols == cols);
-	Matrix res(rows, cols);
-	for (int i = 0; i < rows; i++)
+	assert(matrix.getNumberOfRows() == getNumberOfRows());
+	assert(matrix.getNumberOfColumns() == getNumberOfColumns());
+	Matrix result(getNumberOfRows(), getNumberOfColumns());
+	for (int i = 0; i < getNumberOfRows(); i++)
 	{
-		for (int j = 0; j < cols; j++)
+		for (int j = 0; j < getNumberOfColumns(); j++)
 		{
-			res.setValue(i, j, mat[i][j] + m.mat[i][j]);
+			result.setValue(i, j, values[i][j] + matrix.values[i][j]);
 		}
 	}
 
-	return res;
+	return result;
 }
 
 template <class T>
-Matrix<T> Matrix<T>::operator-(Matrix &m)
+Matrix<T> Matrix<T>::operator-(Matrix &matrix)
 {
-	assert(m.rows == rows);
-	assert(m.cols == cols);
-	for (int i = 0; i < rows; i++)
+	assert(matrix.getNumberOfRows() == getNumberOfRows());
+	assert(matrix.getNumberOfColumns() == getNumberOfColumns());
+	for (int i = 0; i < getNumberOfRows(); i++)
 	{
-		for (int j = 0; j < cols; j++)
+		for (int j = 0; j < getNumberOfColumns(); j++)
 		{
-			mat[i][j] -= m.mat[i][j];
+			values[i][j] -= matrix.values[i][j];
 		}
 	}
 	return *this;
 }
 
 template <class T>
-Matrix<T> Matrix<T>::operator*(Matrix &m)
+Matrix<T> Matrix<T>::operator*(Matrix &matrix)
 {
-	assert(m.rows == cols);
-	Matrix n(rows, m.cols);
-	for (int i = 0; i < rows; ++i)
+	assert(matrix.getNumberOfRows() == getNumberOfColumns());
+	Matrix result(getNumberOfRows(), matrix.getNumberOfColumns());
+	for (int i = 0; i < getNumberOfRows(); ++i)
 	{
-		for (int j = 0; j < m.cols; ++j)
+		for (int j = 0; j < matrix.getNumberOfColumns(); ++j)
 		{
-			n.setValue(i, j, 0.0);
-		}
-	}
-	for (int i = 0; i < rows; ++i)
-	{
-		for (int j = 0; j < m.cols; ++j)
-		{
-			for (int k = 0; k < cols; ++k)
+			for (int k = 0; k < getNumberOfColumns(); ++k)
 			{
-				n.mat[i][j] += mat[i][k] * m.mat[k][j];
+				result.values[i][j] += values[i][k] * matrix.values[k][j];
 			}
 		}
 	}
-	return n;
+	return result;
 }
 
 template <class T>
-Matrix<T> Matrix<T>::operator*(const T &c)
+Matrix<T> Matrix<T>::operator*(const T &constant)
 {
-	for (int i = 0; i < rows; i++)
+	for (int i = 0; i < getNumberOfRows(); i++)
 	{
-		for (int j = 0; j < cols; j++)
+		for (int j = 0; j < getNumberOfColumns(); j++)
 		{
-			mat[i][j] = mat[i][j] * c;
+			values[i][j] = values[i][j] * constant;
 		}
 	}
 
@@ -146,47 +135,47 @@ Matrix<T> Matrix<T>::operator*(const T &c)
 }
 
 template <class T>
-std::vector<T> Matrix<T>::operator*(std::vector<T> &vec)
+std::vector<T> Matrix<T>::operator*(std::vector<T> &matrixVector)
 {
-	assert(vec.size() == cols);
-	std::vector<T> res(rows, 0.0);
-	for (int i = 0; i < rows; i++)
+	assert(matrixVector.size() == getNumberOfColumns());
+	std::vector<T> result(getNumberOfRows(), 0.0);
+	for (int i = 0; i < getNumberOfRows(); i++)
 	{
-		for (int j = 0; j < cols; j++)
+		for (int j = 0; j < getNumberOfColumns(); j++)
 		{
-			res[i] += mat[i][j] * vec[j];
+			result[i] += values[i][j] * matrixVector[j];
 		}
 	}
 
-	return res;
+	return result;
 }
 
 template <class T>
-T Matrix<T>::operator()(int row, int col)
+T Matrix<T>::operator()(int row, int column)
 {
-	assert(row < rows);
-	assert(col < cols);
-	return mat[row][col];
+	assert(row < getNumberOfRows());
+	assert(column < getNumberOfColumns());
+	return values[row][column];
 }
 
 template <class T>
-void Matrix<T>::setValue(int row, int col, T val)
+void Matrix<T>::setValue(int row, int column, T value)
 {
-	assert(row < rows);
-	assert(col < cols);
-	mat[row][col] = val;
+	assert(row < getNumberOfRows());
+	assert(column < getNumberOfColumns());
+	values[row][column] = value;
 }
 
 template <class T>
-void Matrix<T>::calcDet()
+T Matrix<T>::determinant()
 {
-	switch (rows)
+	switch (getNumberOfRows())
 	{
 	case 1:
-		detVal = mat[0][0];
+		return values[0][0];
 		break;
 	case 2:
-		detVal = mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
+		return (values[0][0] * values[1][1] - values[0][1] * values[1][0]);
 		break;
 	default:
 		throw std::invalid_argument("Invalid dimensions");
@@ -197,11 +186,11 @@ void Matrix<T>::calcDet()
 template <class T>
 void Matrix<T>::print()
 {
-	for (int i = 0; i < rows; i++)
+	for (int i = 0; i < getNumberOfRows(); i++)
 	{
-		for (int j = 0; j < cols; j++)
+		for (int j = 0; j < getNumberOfColumns(); j++)
 		{
-			std::cout << mat[i][j] << " ";
+			std::cout << values[i][j] << " ";
 		}
 		std::cout << std::endl;
 	}
@@ -210,15 +199,14 @@ void Matrix<T>::print()
 template <class T>
 Matrix<T> Matrix<T>::transpose()
 {
-	Matrix result(rows, cols);
-	for (int i = 0; i < rows; i++)
+	Matrix result(getNumberOfRows(), getNumberOfColumns());
+	for (int i = 0; i < getNumberOfRows(); i++)
 	{
-		for (int j = 0; j < cols; j++)
+		for (int j = 0; j < getNumberOfColumns(); j++)
 		{
-			result.mat[i][j] = mat[j][i];
+			result.values[i][j] = values[j][i];
 		}
 	}
-	result.detVal = detVal;
 
 	return result;
 }
@@ -226,24 +214,22 @@ Matrix<T> Matrix<T>::transpose()
 template <class T>
 Matrix<T> Matrix<T>::inverse()
 {
-	Matrix result(rows, cols);
-	switch (rows)
+	Matrix result(getNumberOfRows(), getNumberOfColumns());
+	switch (getNumberOfRows())
 	{
 	case 1:
-		result.mat[0][0] = 1.0 / mat[0][0];
+		result.values[0][0] = 1.0 / values[0][0];
 		break;
 	case 2:
-		calcDet();
-		if (!detVal)
+		if (!determinant())
 		{
 			throw std::invalid_argument("Non invertible matrix");
 			break;
 		}
-		result.detVal = 1 / detVal;
-		result.mat[0][0] = result.detVal * mat[1][1];
-		result.mat[1][1] = result.detVal * mat[0][0];
-		result.mat[0][1] = -result.detVal * mat[0][1];
-		result.mat[1][0] = -result.detVal * mat[1][0];
+		result.values[0][0] = (1 / determinant()) * values[1][1];
+		result.values[1][1] = (1 / determinant()) * values[0][0];
+		result.values[0][1] = -(1 / determinant()) * values[0][1];
+		result.values[1][0] = -(1 / determinant()) * values[1][0];
 		break;
 	default:
 		throw std::invalid_argument("Invalid dimensions");
@@ -254,107 +240,107 @@ Matrix<T> Matrix<T>::inverse()
 }
 
 template <class T>
-std::vector<T> Matrix<T>::Jacobi_iterator(std::vector<T> b, int iters)
+std::vector<T> Matrix<T>::Jacobi_iterator(std::vector<T> rightHandSide, int NumberOfIterations)
 {
-	assert(rows == b.size());
-	assert(cols == b.size());
+	double threshold = 1e-7;
+	assert(getNumberOfRows() == rightHandSide.size());
+	assert(getNumberOfColumns() == rightHandSide.size());
 	std::cout << "\nSolving with Jacobi iterative method. . ." << "\n";
-	size_t n = rows;
-	std::vector<T> x(n), r(n), sec(n);
-	for (size_t i = 0; i < x.size(); i++)
+	size_t n = getNumberOfRows();
+	std::vector<T> solution(n), residual(n), estimation(n);
+	for (size_t i = 0; i < solution.size(); i++)
 	{
-		x[i] = 0.0;
+		solution[i] = 0.0;
 	}
-	for (int iter = 0; iter <= iters; iter++)
+	for (int iteration = 0; iteration <= NumberOfIterations; iteration++)
 	{
 		std::vector<T> c(n);
 		for (size_t i = 0; i < n; i++)
 		{
-			c[i] = b[i];
+			c[i] = rightHandSide[i];
 			for (size_t j = 0; j < n; j++)
 			{
-				if (j != i)	c[i] -= mat[i][j] * x[j];
+				if (j != i)	c[i] -= values[i][j] * solution[j];
 			}
 		}
 		for (size_t i = 0; i < n; i++)
 		{
-			x[i] = c[i] / mat[i][i];
+			solution[i] = c[i] / values[i][i];
 		}
-		sec = (*this) * x;
-		for (size_t k = 0; k < x.size(); k++)
+		estimation = (*this) * solution;
+		for (size_t k = 0; k < solution.size(); k++)
 		{
-			r[k] = b[k] - sec[k];
+			residual[k] = rightHandSide[k] - estimation[k];
 		}
-		if (norm(r) < 1e-7)
+		if (norm(residual) < threshold)
 		{
-			std::cout << iter << " iterations\n";
+			std::cout << iteration << " iterations\n";
 			break;
 		}
 	}
-	return x;
+	return solution;
 }
 
 template <class T>
-std::vector<T> Matrix<T>::GaussSeidel_iterator(std::vector<T> b, int iters)
+std::vector<T> Matrix<T>::GaussSeidel_iterator(std::vector<T> rightHandSide, int NumberOfIterations)
 {
-	assert(rows == b.size());
-	assert(cols == b.size());
+	double threshold = 1e-7;
+	assert(getNumberOfRows() == rightHandSide.size());
+	assert(getNumberOfColumns() == rightHandSide.size());
 	std::cout << "\nSolving with Gauss Seidel iterative method. . ." << "\n";
-	size_t n = rows;
-	std::vector<T> x(n), y(n), r(n), sec(n);
-	for (size_t i = 0; i < x.size(); i++)
+	size_t n = getNumberOfRows();
+	std::vector<T> solution(n), y(n), residual(n), estimation(n);
+	for (size_t i = 0; i < solution.size(); i++)
 	{
-		x[i] = 0.0;
+		solution[i] = 0.0;
 	}
-	for (int iter = 0; iter <= iters; iter++)
+	for (int iteration = 0; iteration <= NumberOfIterations; iteration++)
 	{
 		for (size_t i = 0; i < n; i++)
 		{
-			y[i] = b[i] / mat[i][i];
+			y[i] = rightHandSide[i] / values[i][i];
 			for (size_t j = 0; j < n; j++)
 			{
-				if (j == i)
-				{
-					continue;
-				}
-				y[i] -= (mat[i][j] / mat[i][i]) * x[j];
-				x[i] = y[i];
+				if (j == i) continue;
+				y[i] -= (values[i][j] / values[i][i]) * solution[j];
+				solution[i] = y[i];
 			}
 		}
-		sec = (*this) * x;
-		for (size_t k = 0; k < x.size(); k++)
+		estimation = (*this) * solution;
+		for (size_t k = 0; k < solution.size(); k++)
 		{
-			r[k] = b[k] - sec[k];
+			residual[k] = rightHandSide[k] - estimation[k];
 		}
-		if (norm(r) < 1e-7)
+		if (norm(residual) < threshold)
 		{
-			std::cout << iter << " iterations\n";
+			std::cout << iteration << " iterations\n";
 			break;
 		}
 	}
-	return x;
+	return solution;
 }
 
 template <class T>
-std::vector<T> Matrix<T>::SOR_iterator(std::vector<T> b, int iters, double omega)
+std::vector<T> Matrix<T>::SOR_iterator(std::vector<T> rightHandSide, int NumberOfIterations, double omega)
 {
-	assert(rows == b.size());
-	assert(cols == b.size());
+	double threshold = 1e-7;
+	assert(getNumberOfRows() == rightHandSide.size());
+	assert(getNumberOfColumns() == rightHandSide.size());
 	std::cout << "\nSolving with SOR iterative method. . ." << "\n";
-	size_t n = rows;
-	std::vector<T> x(n), y(n), r(n), sec(n);
-	for (size_t i = 0; i < x.size(); i++)
+	size_t n = getNumberOfRows();
+	std::vector<T> solution(n), residual(n), estimation(n);
+	for (size_t i = 0; i < solution.size(); i++)
 	{
-		if ((i == 0) || (i == x.size() - 1))
+		if ((i == 0) || (i == solution.size() - 1))
 		{
-			x[i] = 0.5;
+			solution[i] = 0.5;
 		}
 		else
 		{
-			x[i] = 0.25;
+			solution[i] = 0.25;
 		}
 	}
-	for (int iter = 0; iter <= iters; iter++)
+	for (int iteration = 0; iteration <= NumberOfIterations; iteration++)
 	{
 		for (size_t i = 0; i < n; i++)
 		{
@@ -363,31 +349,31 @@ std::vector<T> Matrix<T>::SOR_iterator(std::vector<T> b, int iters, double omega
 			{
 				if (j != i)
 				{
-					sigma += mat[i][j] * x[j];
+					sigma += values[i][j] * solution[j];
 				}
 			}
-			x[i] = (1 - omega) * x[i] + (omega / mat[i][i]) * (b[i] - sigma);
+			solution[i] = (1 - omega) * solution[i] + (omega / values[i][i]) * (rightHandSide[i] - sigma);
 		}
-		sec = (*this) * x;
-		for (size_t k = 0; k < x.size(); k++)
+		estimation = (*this) * solution;
+		for (size_t k = 0; k < solution.size(); k++)
 		{
-			r[k] = b[k] - sec[k];
+			residual[k] = rightHandSide[k] - estimation[k];
 		}
-		if (norm(r) < 1e-7)
+		if (norm(residual) < threshold)
 		{
-			std::cout << iter << " iterations\n";
+			std::cout << iteration << " iterations\n";
 			break;
 		}
 	}
 
-	return x;
+	return solution;
 }
 
 template <class T>
 std::vector<T> Matrix<T>::gradient_iterator(std::vector<T> b, int iters)
 {
 	std::cout << "\nSolving with Gradient iterative method. . ." << "\n";
-	size_t n = rows;
+	size_t n = getNumberOfRows();
 	std::vector<T> x(n), mult(n), r(n), denominator1(n);
 	double nominator = 0.0;
 	double denominator = 0.0;
@@ -425,10 +411,10 @@ std::vector<T> Matrix<T>::gradient_iterator(std::vector<T> b, int iters)
 }
 
 template <typename T>
-std::vector<T> Matrix<T>::conjugate_gradient_iter(std::vector<T> &b, int iters)
+std::vector<T> Matrix<T>::conjugate_gradient_iterator(std::vector<T> &rightHandSide, int NumberOfIterations)
 {
 	std::cout << "\nSolving with Conjugate Gradient iterative method. . ." << "\n";
-	size_t n = rows;
+	size_t n = getNumberOfRows();
 	std::vector<T> x(n), mult(n), temp(n), r(n), t(n);
 	std::vector<T> denominator1(n), nom1(n);
 	double nominator = 0;
@@ -438,14 +424,14 @@ std::vector<T> Matrix<T>::conjugate_gradient_iter(std::vector<T> &b, int iters)
 	{
 		x[i] = 0;
 	}
-	for (int iter = 0; iter < iters; iter++)
+	for (int iteration = 0; iteration < NumberOfIterations; iteration++)
 	{
 		mult = (*this) * x;
 		for (size_t i = 0; i < x.size(); i++)
 		{
-			r[i] = b[i] - mult[i];
+			r[i] = rightHandSide[i] - mult[i];
 		}
-		if (iter == 0)
+		if (iteration == 0)
 		{
 			t = r;
 		}
@@ -475,7 +461,7 @@ std::vector<T> Matrix<T>::conjugate_gradient_iter(std::vector<T> &b, int iters)
 		}
 		if (norm(r) < 1e-7)
 		{
-			std::cout << iter << " iterations\n";
+			std::cout << iteration << " iterations\n";
 			break;
 		}
 	}
@@ -484,11 +470,11 @@ std::vector<T> Matrix<T>::conjugate_gradient_iter(std::vector<T> &b, int iters)
 }
 
 template <class T>
-std::vector<Matrix<T>> Matrix<T>::LU_factor()
+std::vector<Matrix<T>> Matrix<T>::LU_factorization()
 {
-	assert(rows == cols);
+	assert(getNumberOfRows() == getNumberOfColumns());
 	std::cout << "\nSolving with LU decomposition method. . ." << "\n";
-	size_t n = rows;
+	size_t n = getNumberOfRows();
 	Matrix L(n, n);
 	Matrix U(n, n);
 
@@ -503,7 +489,7 @@ std::vector<Matrix<T>> Matrix<T>::LU_factor()
 			{
 				sum += L(i, j) * U(j, k);
 			}
-			U.setValue(i, k, mat[i][k] - sum);
+			U.setValue(i, k, values[i][k] - sum);
 		}
 
 		// matrix L
@@ -517,7 +503,7 @@ std::vector<Matrix<T>> Matrix<T>::LU_factor()
 				{
 					sum += L(k, j) * U(j, i);
 				}
-				L.setValue(k, i, (mat[k][i] - sum) / U(i, i));
+				L.setValue(k, i, (values[k][i] - sum) / U(i, i));
 			}
 		}
 	}
@@ -529,71 +515,71 @@ std::vector<Matrix<T>> Matrix<T>::LU_factor()
 }
 
 template <class T>
-std::vector<T> Matrix<T>::forward_Euler(std::vector<T> b)
+std::vector<T> Matrix<T>::forward_Euler(std::vector<T> rightHandSide)
 {
-	size_t n = rows;
-	std::vector<T> y(n);
+	size_t n = getNumberOfRows();
+	std::vector<T> solution(n);
 	for (size_t j = 0; j < n; j++)
 	{
-		y[0] = b[0] / mat[0][0];
+		solution[0] = rightHandSide[0] / values[0][0];
 		for (size_t i = 1; i < n; i++)
 		{
 			T sum = 0;
 			for (size_t k = 0; k <= i - 1; k++)
 			{
-				sum += mat[i][k] * y[k];
+				sum += values[i][k] * solution[k];
 			}
-			y[i] = (b[i] - sum) / mat[i][i];
+			solution[i] = (rightHandSide[i] - sum) / values[i][i];
 		}
 	}
-	return y;
+	return solution;
 }
 
 template <class T>
-std::vector<T> Matrix<T>::backward_Euler(std::vector<T> b)
+std::vector<T> Matrix<T>::backward_Euler(std::vector<T> rightHandSide)
 {
-	int n = rows;
-	std::vector<T> x(n);
+	int n = getNumberOfRows();
+	std::vector<T> solution(n);
 
 	for (int j = 0; j < n; j++)
 	{
-		x[n - 1] = b[n - 1] / mat[n - 1][n - 1]; // OK
+		solution[n - 1] = rightHandSide[n - 1] / values[n - 1][n - 1]; // OK
 		for (int i = n - 2; i >= 0; i--)
 		{
 			T sum = 0.0;
 			for (int k = i + 1; k < n; k++)
 			{
-				sum += mat[i][k] * x[k];
+				sum += values[i][k] * solution[k];
 			}
-			x[i] = (b[i] - sum) / mat[i][i];
+			solution[i] = (rightHandSide[i] - sum) / values[i][i];
 		}
 	}
-	return x;
+	return solution;
 }
 
 template <class T>
-std::vector<Matrix<T>> Matrix<T>::QR_factor()
+std::vector<Matrix<T>> Matrix<T>::QR_factorization()
 {
-	assert(rows == cols);
+	assert(getNumberOfRows() == getNumberOfColumns());
 	std::cout << "\nSolving with QR decomposition method. . ." << "\n";
-	size_t n = rows;
+	size_t n = getNumberOfRows();
 	Matrix Q(n, n);
 	Matrix R(n, n);
 
-	int cnt = 0;
-	Matrix AT = transpose();
-	Matrix QT = Q.transpose();
+	int counter = 0;
+	Matrix ATranspose = transpose();
+	Matrix QTranspose = Q.transpose();
 	for (int j = 0; j < n; j++)
 	{
 		std::vector<T> e;
 		std::vector<T> a;
-		for (int col = 0; col < n; col++)
+		for (int column = 0; column < n; column++)
 		{
-			a.push_back(AT.mat[j][col]);
+			a.push_back(ATranspose.values[j][column]);
 		}
 		std::vector<T> u(a);
 
-		for (int i = 0; i < cnt; i++)
+		for (int i = 0; i < counter; i++)
 		{
 			T temp = 0.0;
 			for (int k = 0; k < n; k++)
@@ -627,14 +613,14 @@ std::vector<Matrix<T>> Matrix<T>::QR_factor()
 
 		for (int k = 0; k < n; k++)
 		{
-			Q.setValue(k,cnt,e[k]);
+			Q.setValue(k,counter,e[k]);
 		}
 
-		cnt++;
+		counter++;
 	}
 
-	QT = Q.transpose();
-	R = QT * (*this);
+	QTranspose = Q.transpose();
+	R = QTranspose * (*this);
 
 	std::vector<Matrix> result(2, Matrix(n, n));
 	result[0] = Q;

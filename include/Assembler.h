@@ -9,32 +9,33 @@ class Assembler
 {
 public:
     // Cunstructor
-    Assembler(double src, BoundCond& bcinfo, Bspline& bas) : f(src), bc(&bcinfo), bspline_x(&bas) {}
+    Assembler(double newSourceFunction, BoundCond &newBoundaryConditions, Bspline &bspline)
+        : sourceFunction(newSourceFunction), boundaryConditions(&newBoundaryConditions), bspline_x(&bspline) {}
 
     // Destructor
     virtual ~Assembler() {}
 
     // Member functions
     virtual void assemble() = 0;
-    virtual void applyBoundEllimination();
-    virtual void applyBoundMultipliers();
-    virtual void enforceBoundary(std::string&);
+    virtual void applyBoundaryEllimination();
+    virtual void applyBoundaryMultipliers();
+    virtual void enforceBoundaryConditions(std::string&);
 
     // Member getter functions
-    Matrix<double>& getStiff() { return stiff; }
-    std::vector<double>& getRhs() { return rhs; }
+    Matrix<double> &getStiffnessMatrix() { return stiffnessMatrix; }
+    std::vector<double> &getRightHandSide() { return rightHandSide; }
     Bspline& getBspline_x() { return *bspline_x; }
-    BoundCond& getBc() { return *bc; }  
+    BoundCond &getBoundaryConditions() { return *boundaryConditions; }
     std::string& getBoundaryMode() { return boundaryMode; }
-    std::vector<std::pair<int, int>>& getBoundaryIds() { return boundary_ids; }
-    
+    std::vector<std::pair<int, int>> &getBoundaryBasisFunctions() { return boundaryBasisFunctions; }
+
 protected:
     // Member variables
-    Matrix<double> stiff;
-    std::vector<double> rhs;
+    Matrix<double> stiffnessMatrix;
+    std::vector<double> rightHandSide;
     Bspline* bspline_x;
-    double f;
-    BoundCond* bc;
+    double sourceFunction;
+    BoundCond* boundaryConditions;
     std::string boundaryMode;
-    std::vector<std::pair<int, int>> boundary_ids;
+    std::vector<std::pair<int, int>> boundaryBasisFunctions;
 };

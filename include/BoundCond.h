@@ -8,33 +8,33 @@ class BoundCond
 public:
     // Constructors
     BoundCond() {}
-    BoundCond(const std::string _west, const std::string _east, double _wval, double _eval)
-        : west(_west), east(_east), wval(_wval), eval(_eval) {};
-        
-    BoundCond(const std::string _west, const std::string _east, const std::string _north, const std::string _south, double _wval, double _eval, double _nval, double _sval)
-        : west(_west), east(_east), north(_north), south(_south), wval(_wval), eval(_eval), nval(_nval), sval(_sval) {};
+    BoundCond(const std::string newWestType, const std::string newEastType, double newWestValue, double newEastValue)
+        : westType(newWestType), eastType(newEastType), westValue(newWestValue), eastvalue(newEastValue){};
+
+    BoundCond(const std::string newWestType, const std::string newEastType, const std::string newNorthType, const std::string newSouthType, double newWestValue, double newEastValue, double newNorthValue, double newSouthValue)
+        : westType(newWestType), eastType(newEastType), northType(newNorthType), southType(newSouthType), westValue(newWestValue), eastvalue(newEastValue), northValue(newNorthValue), southValue(newSouthValue){};
 
     // Destructor
     ~BoundCond() {}
 
     // Member getter functions
-    const std::string& getWest() { return west; }
-    const std::string& getEast() { return east; }
-    const std::string& getNorth() { return north; }
-    const std::string& getSouth() { return south; }
-    double getWval() { return wval; }
-    double getEval() { return eval; }
-    double getNval() { return nval; }
-    double getSval() { return sval; }
+    const std::string &getWestType() { return westType; }
+    const std::string &getEastType() { return eastType; }
+    const std::string &getNorthType() { return northType; }
+    const std::string &getSouthType() { return southType; }
+    double getWestValue() { return westValue; }
+    double getEastValue() { return eastvalue; }
+    double getNorthValue() { return northValue; }
+    double getSouthValue() { return southValue; }
 
 private:
     // Member variables
-    const std::string west;
-    const std::string east;
-    const std::string north;
-    const std::string south;
-    double wval;
-    double eval;
-    double nval;
-    double sval;
+    const std::string westType;
+    const std::string eastType;
+    const std::string northType;
+    const std::string southType;
+    double westValue;
+    double eastvalue;
+    double northValue;
+    double southValue;
 };

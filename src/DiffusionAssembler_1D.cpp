@@ -1,14 +1,14 @@
 #include <iostream>
 #include "..\include\DiffusionAssembler_1D.h"
 
-void DiffusionAssembler_1D::calcMass()
+void DiffusionAssembler_1D::computeMassMatrix()
 {
     // Assemble mass matrix
-	Matrix<double> M(bspline_x->getNOF(), bspline_x->getNOF());
-	int N = bspline_x->knots.size() - 1; // Number of elements
+	Matrix<double> M(bspline_x->getNumberOfBasisFunctions(), bspline_x->getNumberOfBasisFunctions());
+	int N = bspline_x->distinctKnots.size() - 1; // Number of elements
 	for (int ie1 = 0; ie1 <= N; ie1++)
 	{
-		int i_span_1 = bspline_x->findSpan(bspline_x->knots[ie1]);
+		int i_span_1 = bspline_x->findSpanInVector(bspline_x->distinctKnots[ie1]);
 		for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
 		{
 			for (int jl_1 = 0; jl_1 < bspline_x->getDegree() + 1; jl_1++)
@@ -17,12 +17,12 @@ void DiffusionAssembler_1D::calcMass()
 				int j1 = i_span_1 - bspline_x->getDegree() + jl_1;
 
 				double v = 0.0;
-				std::pair<std::vector<double>, std::vector<double>> gauss = bspline_x->calcGaussPts(bspline_x->getDegree() + 3, bspline_x->knots[ie1], bspline_x->knots[ie1 + 1]);
+				std::pair<std::vector<double>, std::vector<double>> gauss = bspline_x->GaussPointsAndWeights(bspline_x->getDegree() + 3, bspline_x->distinctKnots[ie1], bspline_x->distinctKnots[ie1 + 1]);
 				for (int g1 = 0; g1 < gauss.first.size(); g1++)
 				{
-					std::pair<std::vector<double>, std::vector<double>> eval = bspline_x->eval(gauss.first[g1]);
+					std::pair<std::vector<double>, std::vector<double>> eval = bspline_x->evaluateAtPoint(gauss.first[g1]);
 
-					double jacob = calcJacobian(g1, bspline_x->findSpan(gauss.first[g1]), eval.second);
+					double jacob = Jacobian(g1, bspline_x->findSpanInVector(gauss.first[g1]), eval.second);
 
 					std::vector<double> ph_bVal;
 					for (int kk = 0; kk < eval.first.size(); kk++)
@@ -43,29 +43,29 @@ void DiffusionAssembler_1D::calcMass()
 			}
 		}
 	}
-	mass = M;
+	massMatrix = M;
 }
 
 std::vector<double> DiffusionAssembler_1D::nextStep(std::vector<double> sol)
 {
-    std::vector<double> b(rhs.size(), 0.0);
-	std::vector<double> temp = mass * sol;
-	for (int i = 0; i < rhs.size(); i++)
+    std::vector<double> b(rightHandSide.size(), 0.0);
+	std::vector<double> temp = massMatrix * sol;
+	for (int i = 0; i < rightHandSide.size(); i++)
 	{
-		b[i] = rhs[i] + temp[i];
+		b[i] = rightHandSide[i] + temp[i];
 	}
 
 	return b;
 }
 
-std::vector<double> DiffusionAssembler_1D::applyInitCond(double (*func)(double))
+std::vector<double> DiffusionAssembler_1D::applyInitialCondition(double (*func)(double))
 {
 	std::vector<double> sol;
 	std::vector<double> linspaced;
 	double start = bspline_x->getKnotvector()[0];
 	double end = bspline_x->getKnotvector()[bspline_x->getKnotvector().size() - 1];
-	double delta = (end - start) / (bspline_x->getNOF() - 1);
-	for (int i = 0; i < bspline_x->getNOF() - 1; i++)
+	double delta = (end - start) / (bspline_x->getNumberOfBasisFunctions() - 1);
+	for (int i = 0; i < bspline_x->getNumberOfBasisFunctions() - 1; i++)
 	{
 		linspaced.push_back(start + delta * i);
 	}
@@ -77,95 +77,85 @@ std::vector<double> DiffusionAssembler_1D::applyInitCond(double (*func)(double))
 	return sol;
 }
 
-void DiffusionAssembler_1D::applyBoundEllimination()
+void DiffusionAssembler_1D::applyBoundaryEllimination()
 {
-    struct CompareFirst
-    {
-        CompareFirst(int val) : val_(val) {}
-        bool operator()(const std::pair<int,char>& elem) const {
-            return val_ == elem.first;
-        }
-    private:
-        int val_;
-    };
-
-	Matrix<double> new_sysMatrix(sysMat.getRows() - boundary_ids.size(), sysMat.getCols() - boundary_ids.size());
+	Matrix<double> new_sysMatrix(systemMatrix.getNumberOfRows() - boundaryBasisFunctions.size(), systemMatrix.getNumberOfColumns() - boundaryBasisFunctions.size());
 	std::vector<double> new_rhs;
 	int i = 0;
-	for (int ii = 0; ii < stiff.getRows(); ii++)
+	for (int ii = 0; ii < stiffnessMatrix.getNumberOfRows(); ii++)
 	{
-		auto it = std::find_if(boundary_ids.begin(), boundary_ids.end(), CompareFirst(ii));
-		if (it != boundary_ids.end())
+		auto it = std::find_if(boundaryBasisFunctions.begin(), boundaryBasisFunctions.end(), CompareFirst(ii));
+		if (it != boundaryBasisFunctions.end())
 		{
 			continue;
 		}
 		int j = 0;
-		for (int jj = 0; jj < stiff.getRows(); jj++)
+		for (int jj = 0; jj < stiffnessMatrix.getNumberOfRows(); jj++)
 		{
-			it = std::find_if(boundary_ids.begin(), boundary_ids.end(), CompareFirst(jj));
-			if (it != boundary_ids.end())
+			it = std::find_if(boundaryBasisFunctions.begin(), boundaryBasisFunctions.end(), CompareFirst(jj));
+			if (it != boundaryBasisFunctions.end())
 			{
 				continue;
 			}
-			new_sysMatrix.setValue(i, j, sysMat(ii, jj));
+			new_sysMatrix.setValue(i, j, systemMatrix(ii, jj));
 			j++;
 		}
-		new_rhs.push_back(rhs[ii]);
+		new_rhs.push_back(rightHandSide[ii]);
 		i++;
 	}
 
-	sysMat = new_sysMatrix;
-	rhs = new_rhs;
+	systemMatrix = new_sysMatrix;
+	rightHandSide = new_rhs;
 }
 
-void DiffusionAssembler_1D::applyBoundMultipliers()
+void DiffusionAssembler_1D::applyBoundaryMultipliers()
 {
-	int new_dim = sysMat.getRows() + boundary_ids.size();
+	int new_dim = systemMatrix.getNumberOfRows() + boundaryBasisFunctions.size();
 	Matrix<double> new_sysMatrix(new_dim, new_dim, 0.0);
 	std::vector<double> new_rhs;
 	int cnt2 = 0;
-	for (auto it = boundary_ids.begin(); it != boundary_ids.end(); it++)
+	for (auto it = boundaryBasisFunctions.begin(); it != boundaryBasisFunctions.end(); it++)
 	{
-		new_sysMatrix.setValue(cnt2, (*it).first+boundary_ids.size(), 1.0);
-		new_sysMatrix.setValue((*it).first+boundary_ids.size(), cnt2, 1.0);
-		if (boundary_ids[cnt2].second == 1)
+		new_sysMatrix.setValue(cnt2, (*it).first + boundaryBasisFunctions.size(), 1.0);
+		new_sysMatrix.setValue((*it).first + boundaryBasisFunctions.size(), cnt2, 1.0);
+		if (boundaryBasisFunctions[cnt2].second == 1)
 		{
-			new_rhs.push_back(bc->getWval());
+			new_rhs.push_back(boundaryConditions->getWestValue());
 		}
-		else if (boundary_ids[cnt2].second == 2)
+		else if (boundaryBasisFunctions[cnt2].second == 2)
 		{
-			new_rhs.push_back(bc->getEval());
+			new_rhs.push_back(boundaryConditions->getEastValue());
 		}
 		cnt2++;
 	}
 
 	int ii = 0;
-	for (int i = cnt2; i < new_sysMatrix.getRows(); i++)
+	for (int i = cnt2; i < new_sysMatrix.getNumberOfRows(); i++)
 	{
 		int jj = 0;
-		for (int j = cnt2; j < new_sysMatrix.getCols(); j++)
+		for (int j = cnt2; j < new_sysMatrix.getNumberOfColumns(); j++)
 		{
-			new_sysMatrix.setValue(i, j, sysMat(ii, jj));
+			new_sysMatrix.setValue(i, j, systemMatrix(ii, jj));
 			jj++;
 		}
-		new_rhs.push_back(rhs[ii]);
+		new_rhs.push_back(rightHandSide[ii]);
 		ii++;
 	}
 
-	sysMat = new_sysMatrix;
-	rhs = new_rhs;
+	systemMatrix = new_sysMatrix;
+	rightHandSide = new_rhs;
 }
 
-void DiffusionAssembler_1D::enforceBoundary(std::string& mode)
+void DiffusionAssembler_1D::enforceBoundaryConditions(std::string& mode)
 {
     boundaryMode = mode;
     if (mode == "Ellimination")
 	{	
-		applyBoundEllimination();
+		applyBoundaryEllimination();
 	}
 	else if (mode == "Multipliers")
 	{
-		applyBoundMultipliers();
+		applyBoundaryMultipliers();
 	}
 	else
 	{	
