@@ -8,17 +8,17 @@ class Poisson
 {
 public:
     // Constructor
-    Poisson(T& ass, Solver& solv) : assembler(&ass), solver(&solv) {};
-    
+    Poisson(T &newAssembler, Solver &newSolver) : assembler(&newAssembler), solver(&newSolver){};
+
     // Destructor
     virtual ~Poisson() {}
 
     // Member functions
-    virtual void constructSol();
-    virtual void plotSol(std::string filename1, std::string filename2);
+    virtual void expandSolutionOnBoundary();
+    virtual void plotSolution(std::string filename1, std::string filename2);
 
     // Member setter functions
-    void setSolution(std::vector<double>& _solution) { solution = _solution; }
+    void setSolution(std::vector<double> &newSolution) { solution = newSolution; }
 
     // Member getter functions
     std::vector<double>& getSolution() { return solution; }
@@ -32,12 +32,12 @@ protected:
     Solver *solver;
 };
 
-inline std::ostream& operator << (std::ostream& os, std::vector<double>& obj)
+inline std::ostream& operator << (std::ostream& os, std::vector<double>& vec)
 {
     os << "Solution is: " << std::endl;
-    for (auto el: obj)
+    for (auto value : vec)
     {
-        os << el << std::endl;
+        os << value << std::endl;
     }
 
     return os;

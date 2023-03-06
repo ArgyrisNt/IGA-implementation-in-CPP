@@ -16,10 +16,10 @@ int main()
     Bspline bspline_y(bspline_x);
 
     // - - - - - B-spline surface - - - - -
-    std::vector<std::vector<double>> ctrlPts{ {0.0, 0.0}, {0.0, 3.0}, {0.0, 6.0},
+    std::vector<std::vector<double>> controlPoints{ {0.0, 0.0}, {0.0, 3.0}, {0.0, 6.0},
                                               {3.0, 0.0}, {3.0, 3.0}, {3.0, 6.0},
                                               {6.0, 0.0}, {6.0, 3.0}, {6.0, 6.0} };
-    BsplineSurface surface(bspline_x, bspline_y, ctrlPts);
+    BsplineSurface surface(bspline_x, bspline_y, controlPoints);
     for (int i = 0; i < 1; i++) surface.uniformRefine_x();
     for (int i = 0; i < 1; i++) surface.uniformRefine_y();
 
@@ -33,16 +33,16 @@ int main()
 
     // - - - - - Enforce boundary conditions - - - - -
     std::string mode("Ellimination");
-    ass2.enforceBoundary(mode);
+    ass2.enforceBoundaryConditions(mode);
 
     // - - - - - Poisson info - - - - -
     Poisson_2D poisson(ass2, Solver::GaussSeidel);
-    poisson.setSolution(poisson.getSolver()->solve(ass2.getStiff(), ass2.getRhs()));
-    poisson.constructSol();
+    poisson.setSolution(poisson.getSolver()->solve(ass2.getStiffnessMatrix(), ass2.getRightHandSide()));
+    poisson.expandSolutionOnBoundary();
     std::cout << poisson.getSolution();
 
     // - - - - - Write solution data - - - - - 
-    poisson.plotSol(400); // resolution = 500
+    poisson.plotSolution(400); // resolution = 500
 
     return 0;
 }

@@ -6,34 +6,35 @@
 int main()
 {   
 	// - - - - - B-spline basis on x-direction - - - - - 
-	int p = 2;
-	std::vector<double> U{ 0.0,0.0,0.0,0.5,0.5,1.0,1.0,1.0 };
-	std::vector<double> W{ 1.0,sqrt(2.0)/2.0,1.0,sqrt(2.0)/2.0,1.0 };
-	Bspline bspline_x(p, U, W);
-	//bspline_x.plot_basis();
+	int degree = 2;
+	std::vector<double> knotVector{ 0.0,0.0,0.0,0.5,0.5,1.0,1.0,1.0 };
+	std::vector<double> weights{ 1.0,sqrt(2.0)/2.0,1.0,sqrt(2.0)/2.0,1.0 };
+	Bspline bspline_x(degree, knotVector, weights);
+	//int resolution = 100;
+	//bspline_x.plot(resolution);
 
 	// - - - - - B-spline curve - - - - -
-	std::vector<std::vector<double>> ctrlPts{{2.0, 0.0}, {2.0, 1.0}, {1.0, 1.0}, {0.0, 1.0}, {0.0, 0.0}};
-	BsplineCurve curve(bspline_x, ctrlPts);
+	std::vector<std::vector<double>> controlPoints{{2.0, 0.0}, {2.0, 1.0}, {1.0, 1.0}, {0.0, 1.0}, {0.0, 0.0}};
+	BsplineCurve curve(bspline_x, controlPoints);
 
 	// - - - - - Assempler info - - - - -
-	double src = 3.0;
-	BoundCond _bc("Dirichlet", "Dirichlet", 0.0, 0.0);
-	Assembler_1D ass1(src, _bc, curve);
-	ass1.assemble();
+	double sourceFunction = 3.0;
+	BoundCond boundaryConditions("Dirichlet", "Dirichlet", 0.0, 0.0);
+	Assembler_1D assembler(sourceFunction, boundaryConditions, curve);
+	assembler.assemble();
 
 	// - - - - - Enforce boundary conditions - - - - -
 	std::string mode("Ellimination");
-	ass1.enforceBoundary(mode);
+	assembler.enforceBoundaryConditions(mode);
 
 	// - - - - - Poisson info - - - - -
-	Poisson<Assembler_1D> poisson(ass1, Solver::ConjugateGradient);
-	poisson.setSolution(poisson.getSolver()->solve(ass1.getStiff(), ass1.getRhs()));
-	poisson.constructSol();
+	Poisson<Assembler_1D> poisson(assembler, Solver::Jacobi);
+	poisson.setSolution(poisson.getSolver()->solve(assembler.getStiffnessMatrix(), assembler.getRightHandSide()));
+	poisson.expandSolutionOnBoundary();
 	std::cout << poisson.getSolution();
 
 	// - - - - - Write solution data - - - - -
-	poisson.plotSol("curve.dat", "sol.dat");
+	poisson.plotSolution("curve.dat", "sol.dat");
 
 	return 0;
 }

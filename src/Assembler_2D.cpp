@@ -1,52 +1,41 @@
 #include <iostream>
 #include "..\include\Assembler_2D.h"
 
-struct CompareFirst
-{
-	CompareFirst(int val) : val_(val) {}
-	bool operator()(const std::pair<int, char> &elem) const
-	{
-		return val_ == elem.first;
-	}
 
-private:
-	int val_;
-};
-
-void Assembler_2D::calcBound()
+void Assembler_2D::computeBoundary()
 {
-	for (int i = 0; i < getNOF(); i++)
+	for (int i = 0; i < getNumberOfBasisFunctions(); i++)
 	{
-		if ((i >= 0 && i <= bspline_y->getNOF() - 1) && (bc->getWest() == "Dirichlet"))
+		if ((i >= 0 && i <= bspline_y->getNumberOfBasisFunctions() - 1) && (boundaryConditions->getWestType() == "Dirichlet"))
 		{
-			auto it = std::find_if(boundary_ids.begin(), boundary_ids.end(), CompareFirst(i));
-			if (it == boundary_ids.end())
+			auto it = std::find_if(boundaryBasisFunctions.begin(), boundaryBasisFunctions.end(), CompareFirst(i));
+			if (it == boundaryBasisFunctions.end())
 			{
-				boundary_ids.push_back(std::make_pair(i, 1));
+				boundaryBasisFunctions.push_back(std::make_pair(i, 1));
 			}
 		}
-		else if ((i % bspline_y->getNOF() == 0) && (bc->getSouth() == "Dirichlet"))
+		else if ((i % bspline_y->getNumberOfBasisFunctions() == 0) && (boundaryConditions->getSouthType() == "Dirichlet"))
 		{
-			auto it = std::find_if(boundary_ids.begin(), boundary_ids.end(), CompareFirst(i));
-			if (it == boundary_ids.end())
+			auto it = std::find_if(boundaryBasisFunctions.begin(), boundaryBasisFunctions.end(), CompareFirst(i));
+			if (it == boundaryBasisFunctions.end())
 			{
-				boundary_ids.push_back(std::make_pair(i,4));
+				boundaryBasisFunctions.push_back(std::make_pair(i, 4));
 			}
 		}
-		else if ((i % bspline_y->getNOF() == bspline_y->getNOF() - 1) && (bc->getNorth() == "Dirichlet"))
+		else if ((i % bspline_y->getNumberOfBasisFunctions() == bspline_y->getNumberOfBasisFunctions() - 1) && (boundaryConditions->getNorthType() == "Dirichlet"))
 		{
-			auto it = std::find_if(boundary_ids.begin(), boundary_ids.end(), CompareFirst(i));
-			if (it == boundary_ids.end())
+			auto it = std::find_if(boundaryBasisFunctions.begin(), boundaryBasisFunctions.end(), CompareFirst(i));
+			if (it == boundaryBasisFunctions.end())
 			{
-				boundary_ids.push_back(std::make_pair(i,3));
+				boundaryBasisFunctions.push_back(std::make_pair(i, 3));
 			}
 		}
-		else if ((i >= getNOF() - bspline_y->getNOF()) && (bc->getEast() == "Dirichlet"))
+		else if ((i >= getNumberOfBasisFunctions() - bspline_y->getNumberOfBasisFunctions()) && (boundaryConditions->getEastType() == "Dirichlet"))
 		{
-			auto it = std::find_if(boundary_ids.begin(), boundary_ids.end(), CompareFirst(i));
-			if (it == boundary_ids.end())
+			auto it = std::find_if(boundaryBasisFunctions.begin(), boundaryBasisFunctions.end(), CompareFirst(i));
+			if (it == boundaryBasisFunctions.end())
 			{
-				boundary_ids.push_back(std::make_pair(i,2));
+				boundaryBasisFunctions.push_back(std::make_pair(i, 2));
 			}
 		}
 	}
@@ -66,7 +55,7 @@ std::vector<double> Assembler_2D::createTensorProduct(std::vector<double>& vec1,
 	return tensor_product;
 }
 
-Matrix<double> Assembler_2D::calcJacobian(double g1, double g2, int span_g1, int span_g2, std::vector<double>& shp_fnc_dx, std::vector<double>& shp_fnc_dy)
+Matrix<double> Assembler_2D::Jacobian(double g1, double g2, int span_g1, int span_g2, std::vector<double>& shp_fnc_dx, std::vector<double>& shp_fnc_dy)
 {	
 	std::vector<int> index, index_x, index_y;
 	for (int kk = 0; kk < bspline_x->getDegree() + 1; kk++)
@@ -88,15 +77,15 @@ Matrix<double> Assembler_2D::calcJacobian(double g1, double g2, int span_g1, int
 	std::vector<double>	temp_x(2, 0.0);
 	for (int kk = 0; kk < shp_fnc_dx.size(); kk++)
 	{
-		temp_x[0] += shp_fnc_dx[kk] * ctrlPts[index[kk]][0];
-		temp_x[1] += shp_fnc_dx[kk] * ctrlPts[index[kk]][1];
+		temp_x[0] += shp_fnc_dx[kk] * controlPoints[index[kk]][0];
+		temp_x[1] += shp_fnc_dx[kk] * controlPoints[index[kk]][1];
 	}
 
 	std::vector<double>	temp_y(2, 0.0);
 	for (int kk = 0; kk < shp_fnc_dy.size(); kk++)
 	{
-		temp_y[0] += shp_fnc_dy[kk] * ctrlPts[index[kk]][0];
-		temp_y[1] += shp_fnc_dy[kk] * ctrlPts[index[kk]][1];
+		temp_y[0] += shp_fnc_dy[kk] * controlPoints[index[kk]][0];
+		temp_y[1] += shp_fnc_dy[kk] * controlPoints[index[kk]][1];
 	}
 
 	Matrix<double> Jacobian(2, 2);
@@ -131,351 +120,390 @@ std::pair<std::vector<double>,std::vector<double>> Assembler_2D::Map2Physical(Ma
 	return std::make_pair(ph_grad_val_1, ph_grad_val_2);
 }
 
-void Assembler_2D::calcTrimmed()
+int Assembler_2D::numberOfVoidNodesInElement(int elementX, int elementY)
 {
-	int Nx = bspline_x->knots.size() - 1; // Number of elements on x-direction
-	int Ny = bspline_y->knots.size() - 1; // NUmber of elements on y-direction
+	int count = 0;
+	int element = elementX * (bspline_x->distinctKnots.size() - 1) + elementY;
+	if (checkIfOutside(std::make_pair(bspline_x->distinctKnots[elementX], bspline_y->distinctKnots[elementY])))
+	{
+		count++;
+	}
+	else
+		trimmed_elements_info[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX], bspline_y->distinctKnots[elementY]));
+	elements_vertices[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX], bspline_y->distinctKnots[elementY]));
+	if (checkIfOutside(std::make_pair(bspline_x->distinctKnots[elementX], bspline_y->distinctKnots[elementY + 1])))
+	{
+		count++;
+	}
+	else
+		trimmed_elements_info[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX], bspline_y->distinctKnots[elementY + 1]));
+	elements_vertices[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX], bspline_y->distinctKnots[elementY + 1]));
+	if (checkIfOutside(std::make_pair(bspline_x->distinctKnots[elementX + 1], bspline_y->distinctKnots[elementY])))
+	{
+		count++;
+	}
+	else
+		trimmed_elements_info[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX + 1], bspline_y->distinctKnots[elementY]));
+	elements_vertices[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX + 1], bspline_y->distinctKnots[elementY]));
+	if (checkIfOutside(std::make_pair(bspline_x->distinctKnots[elementX + 1], bspline_y->distinctKnots[elementY + 1])))
+	{
+		count++;
+	}
+	else
+		trimmed_elements_info[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX + 1], bspline_y->distinctKnots[elementY + 1]));
+	elements_vertices[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX + 1], bspline_y->distinctKnots[elementY + 1]));
+
+	return count;
+}
+
+void Assembler_2D::categoriseElement(int elementX, int elementY)
+{
+	std::pair<double, double> center = std::make_pair((bspline_x->distinctKnots[elementX + 1] + bspline_x->distinctKnots[elementX]) / 2.0, (bspline_y->distinctKnots[elementY + 1] + bspline_y->distinctKnots[elementY]) / 2.0);
+	double di = projection_on_trimming(center);
+	double r_in = sqrt(std::pow(bspline_x->distinctKnots[elementX + 1] - center.first, 2));
+	double r_out = sqrt(std::pow(bspline_x->distinctKnots[elementX] - center.first, 2) + std::pow(bspline_y->distinctKnots[elementY] - center.second, 2));
+	int count = numberOfVoidNodesInElement(elementX, elementY);
+
+	if (di < r_in)
+	{
+		trimmed_elements.push_back(std::make_pair(true, count));
+	}
+	else if (di > r_out)
+	{
+		trimmed_elements.push_back(std::make_pair(false, count));
+	}
+	else if (di > r_in && di < r_out)
+	{
+		if (count != 0)
+			trimmed_elements.push_back(std::make_pair(true, count));
+		else
+			trimmed_elements.push_back(std::make_pair(false, count));
+	}
+}
+
+void Assembler_2D::computeTrimmedElements()
+{
+	int Nx = bspline_x->distinctKnots.size() - 1; // Number of elements on x-direction
+	int Ny = bspline_y->distinctKnots.size() - 1; // NUmber of elements on y-direction
 	std::vector<std::vector<std::pair<double, double>>> temp_vec(Nx * Ny);
-	trimmed_elements_info = temp_vec;
-	elements_vertices = temp_vec;
-	int elem = -1;
+	trimmed_elements_info = temp_vec, elements_vertices = temp_vec;
 	for (int ie1 = 0; ie1 < Nx; ie1++)
 	{
 		for (int ie2 = 0; ie2 < Ny; ie2++)
 		{
-			elem++;
 			if (trimming[2] == 0.0)
 			{
 				trimmed_elements.push_back(std::make_pair(false, 0));
 				continue;
 			}
-			std::pair<double, double> center = std::make_pair((bspline_x->knots[ie1 + 1] + bspline_x->knots[ie1]) / 2.0, (bspline_y->knots[ie2 + 1] + bspline_y->knots[ie2]) / 2.0);
-			double di = projection_on_trimming(center);
-			double r_in = sqrt(std::pow(bspline_x->knots[ie1 + 1] - center.first, 2));
-			double r_out = sqrt(std::pow(bspline_x->knots[ie1] - center.first, 2) + std::pow(bspline_y->knots[ie2] - center.second, 2));
-
-			int count = 0;
-			if (checkIfOutside(std::make_pair(bspline_x->knots[ie1], bspline_y->knots[ie2])))
-			{
-				count++;
-			}
-			else trimmed_elements_info[elem].push_back(std::make_pair(bspline_x->knots[ie1], bspline_y->knots[ie2]));
-			elements_vertices[elem].push_back(std::make_pair(bspline_x->knots[ie1], bspline_y->knots[ie2]));
-			if (checkIfOutside(std::make_pair(bspline_x->knots[ie1], bspline_y->knots[ie2 + 1])))
-			{
-				count++;
-			}
-			else trimmed_elements_info[elem].push_back(std::make_pair(bspline_x->knots[ie1], bspline_y->knots[ie2 + 1]));
-			elements_vertices[elem].push_back(std::make_pair(bspline_x->knots[ie1], bspline_y->knots[ie2 + 1]));
-			if (checkIfOutside(std::make_pair(bspline_x->knots[ie1 + 1], bspline_y->knots[ie2]))) 
-			{
-				count++;
-			}
-			else trimmed_elements_info[elem].push_back(std::make_pair(bspline_x->knots[ie1 + 1], bspline_y->knots[ie2]));
-			elements_vertices[elem].push_back(std::make_pair(bspline_x->knots[ie1 + 1], bspline_y->knots[ie2]));
-			if (checkIfOutside(std::make_pair(bspline_x->knots[ie1 + 1], bspline_y->knots[ie2 + 1])))
-			{
-				count++;
-			}
-			else trimmed_elements_info[elem].push_back(std::make_pair(bspline_x->knots[ie1 + 1], bspline_y->knots[ie2 + 1]));
-			elements_vertices[elem].push_back(std::make_pair(bspline_x->knots[ie1 + 1], bspline_y->knots[ie2 + 1]));
-
-			if (di < r_in)
-			{			
-				trimmed_elements.push_back(std::make_pair(true, count));
-			}
-			else if (di > r_out) 
-			{
-				trimmed_elements.push_back(std::make_pair(false, count));
-			}
-			else if (di > r_in && di < r_out)
-			{
-				if (count != 0) trimmed_elements.push_back(std::make_pair(true, count));
-				else trimmed_elements.push_back(std::make_pair(false, count));
-			}
+			categoriseElement(ie1, ie2);	
 		}
 	}
 }
 
-void Assembler_2D::calcStiff()
+std::vector<std::vector<std::pair<double, double>>> Assembler_2D::divideElementInTriangles(int amount, int elementId)
+{
+	std::vector<std::vector<std::pair<double, double>>> triangles;
+	switch (amount)
+	{
+	case 1:
+		triangles = construct_3_triangles(elementId);
+		break;
+	case 2:
+		triangles = construct_2_triangles(elementId);
+		break;
+	case 3:
+		triangles = construct_1_triangle(elementId);
+		break;
+	default:
+		break;
+	}
+
+	return triangles;
+}
+
+void Assembler_2D::computeTriangleStiffnessMatrix(std::vector<std::pair<double, double>> &triangle, int elementX, int elementY, Matrix<double> &A)
+{
+	int spanX = bspline_x->findSpanInVector(bspline_x->distinctKnots[elementX]);
+	int spanY = bspline_y->findSpanInVector(bspline_y->distinctKnots[elementY]);
+	trimmed_triangles.push_back(triangle);
+	double a_x = std::min({triangle[0].first, triangle[1].first, triangle[2].first});
+	double b_x = std::max({triangle[0].first, triangle[1].first, triangle[2].first});
+	double a_y = std::min({triangle[0].second, triangle[1].second, triangle[2].second});
+	double b_y = std::max({triangle[0].second, triangle[1].second, triangle[2].second});
+	int mycnt_1 = 0;
+	for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
+	{
+		for (int il_2 = 0; il_2 < bspline_y->getDegree() + 1; il_2++)
+		{
+			int mycnt_2 = 0;
+			for (int jl_1 = 0; jl_1 < bspline_x->getDegree() + 1; jl_1++)
+			{
+				for (int jl_2 = 0; jl_2 < bspline_y->getDegree() + 1; jl_2++)
+				{
+					int i1 = spanX - bspline_x->getDegree() + il_1;
+					int j1 = spanX - bspline_x->getDegree() + jl_1;
+
+					int i2 = spanY - bspline_y->getDegree() + il_2;
+					int j2 = spanY - bspline_y->getDegree() + jl_2;
+
+					double v = 0.0;
+					std::pair<std::vector<double>, std::vector<double>> gauss_x = GaussPointsAndWeightsTria(a_x, b_x);
+					std::pair<std::vector<double>, std::vector<double>> gauss_y = GaussPointsAndWeightsTria(a_y, b_y);
+
+					for (int g1 = 0; g1 < gauss_x.first.size(); g1++)
+					{
+						for (int g2 = 0; g2 < gauss_y.first.size(); g2++)
+						{
+							if (g1 == (gauss_x.first.size() - 1) && g2 == (gauss_y.first.size() - 1))
+								break;
+							std::pair<std::vector<double>, std::vector<double>> eval_1 = bspline_x->evaluateAtPoint(gauss_x.first[g1]);
+							std::pair<std::vector<double>, std::vector<double>> eval_2 = bspline_y->evaluateAtPoint(gauss_y.first[g2]);
+
+							std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
+							std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
+
+							Matrix<double> J = Jacobian(g1, g2, bspline_x->findSpanInVector(gauss_x.first[g1]), bspline_y->findSpanInVector(gauss_y.first[g2]), shp_fnc_dx, shp_fnc_dy);
+							std::pair<std::vector<double>, std::vector<double>> ph_grad_val = Map2Physical(J, shp_fnc_dx, shp_fnc_dy);
+
+							double bi_x = ph_grad_val.first[mycnt_1];
+							double bi_y = ph_grad_val.second[mycnt_1];
+							double bj_x = ph_grad_val.first[mycnt_2];
+							double bj_y = ph_grad_val.second[mycnt_2];
+							double wvol = gauss_x.second[g1] * gauss_y.second[g2];
+
+							v += J.determinant() * (bi_x * bj_x + bi_y * bj_y) * wvol;
+						}
+					}
+					int index1 = i1 * bspline_y->getNumberOfBasisFunctions() + i2;
+					int index2 = j1 * bspline_y->getNumberOfBasisFunctions() + j2;
+					double temp = A(index1, index2) + v;
+					A.setValue(index1, index2, temp);
+
+					mycnt_2++;
+				}
+			}
+			mycnt_1++;
+		}
+	}
+}
+
+void Assembler_2D::computeQuadStiffnessMatrix(int elementX, int elementY, Matrix<double> &A)
+{
+	int spanX = bspline_x->findSpanInVector(bspline_x->distinctKnots[elementX]);
+	int spanY = bspline_y->findSpanInVector(bspline_y->distinctKnots[elementY]);
+	int mycnt_1 = 0;
+	for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
+	{
+		for (int il_2 = 0; il_2 < bspline_y->getDegree() + 1; il_2++)
+		{
+			int mycnt_2 = 0;
+			for (int jl_1 = 0; jl_1 < bspline_x->getDegree() + 1; jl_1++)
+			{
+				for (int jl_2 = 0; jl_2 < bspline_y->getDegree() + 1; jl_2++)
+				{
+					int i1 = spanX - bspline_x->getDegree() + il_1;
+					int j1 = spanX - bspline_x->getDegree() + jl_1;
+
+					int i2 = spanY - bspline_y->getDegree() + il_2;
+					int j2 = spanY - bspline_y->getDegree() + jl_2;
+
+					double v = 0.0;
+					std::pair<std::vector<double>, std::vector<double>> gauss_x = bspline_x->GaussPointsAndWeights(bspline_x->getDegree() + 3, bspline_x->distinctKnots[elementX], bspline_x->distinctKnots[elementX + 1]);
+					std::pair<std::vector<double>, std::vector<double>> gauss_y = bspline_y->GaussPointsAndWeights(bspline_y->getDegree() + 3, bspline_y->distinctKnots[elementY], bspline_y->distinctKnots[elementY + 1]);
+
+					for (int g1 = 0; g1 < gauss_x.first.size(); g1++)
+					{
+						for (int g2 = 0; g2 < gauss_y.first.size(); g2++)
+						{
+							std::pair<std::vector<double>, std::vector<double>> eval_1 = bspline_x->evaluateAtPoint(gauss_x.first[g1]);
+							std::pair<std::vector<double>, std::vector<double>> eval_2 = bspline_y->evaluateAtPoint(gauss_y.first[g2]);
+
+							std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
+							std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
+
+							Matrix<double> J = Jacobian(g1, g2, bspline_x->findSpanInVector(gauss_x.first[g1]), bspline_y->findSpanInVector(gauss_y.first[g2]), shp_fnc_dx, shp_fnc_dy);
+							std::pair<std::vector<double>, std::vector<double>> ph_grad_val = Map2Physical(J, shp_fnc_dx, shp_fnc_dy);
+
+							double bi_x = ph_grad_val.first[mycnt_1];
+							double bi_y = ph_grad_val.second[mycnt_1];
+							double bj_x = ph_grad_val.first[mycnt_2];
+							double bj_y = ph_grad_val.second[mycnt_2];
+							double wvol = gauss_x.second[g1] * gauss_y.second[g2];
+
+							v += J.determinant() * (bi_x * bj_x + bi_y * bj_y) * wvol;
+						}
+					}
+
+					int index1 = i1 * bspline_y->getNumberOfBasisFunctions() + i2;
+					int index2 = j1 * bspline_y->getNumberOfBasisFunctions() + j2;
+					double temp = A(index1, index2) + v;
+					A.setValue(index1, index2, temp);
+
+					mycnt_2++;
+				}
+			}
+			mycnt_1++;
+		}
+	}
+}
+
+void Assembler_2D::computeStiffnessMatrix()
 {
 	// Assemble stiffness matrix
-	int Nx = bspline_x->knots.size() - 1; // Number of elements on x-direction
-	int Ny = bspline_y->knots.size() - 1; // NUmber of elements on y-direction
-	Matrix<double> A(getNOF(), getNOF());
-	int cnt = -1;
+	int Nx = bspline_x->distinctKnots.size() - 1; // Number of elements on x-direction
+	int Ny = bspline_y->distinctKnots.size() - 1; // NUmber of elements on y-direction
+	Matrix<double> A(getNumberOfBasisFunctions(), getNumberOfBasisFunctions());
+	int elementId = -1;
 	for (int ie1 = 0; ie1 < Nx; ie1++)
 	{
-		int i_span_1 = bspline_x->findSpan(bspline_x->knots[ie1]);
 		for (int ie2 = 0; ie2 < Ny; ie2++)
 		{
-			cnt++;
-			if (trimmed_elements[cnt].first)
+			elementId++;
+			bool elementIsTrimmed = trimmed_elements[elementId].first;
+			if (elementIsTrimmed)
 			{
-				std::vector<std::vector<std::pair<double, double>>> triangles;
-				if (trimmed_elements[cnt].second == 1)
-				{
-					triangles = construct_3_triangles(cnt);
-				}
-				else if (trimmed_elements[cnt].second == 2)
-				{
-					triangles = construct_2_triangles(cnt);
-				}
-				else if (trimmed_elements[cnt].second == 3)
-				{
-					triangles = construct_1_triangle(cnt);
-				}
+				std::vector<std::vector<std::pair<double, double>>> triangles = divideElementInTriangles(trimmed_elements[elementId].second, elementId);
 				for (auto triangle : triangles)
 				{
-					trimmed_triangles.push_back(triangle);
-/*----SOS---->*/	double a_x = std::min({triangle[0].first, triangle[1].first, triangle[2].first});
-					double b_x = std::max({triangle[0].first, triangle[1].first, triangle[2].first});
-					double a_y = std::min({triangle[0].second, triangle[1].second, triangle[2].second});
-					double b_y = std::max({triangle[0].second, triangle[1].second, triangle[2].second});
-					int i_span_2 = bspline_y->findSpan(bspline_y->knots[ie2]);
-					int mycnt_1 = 0;
-					for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
-					{
-						for (int il_2 = 0; il_2 < bspline_y->getDegree() + 1; il_2++)
-						{
-							int mycnt_2 = 0;
-							for (int jl_1 = 0; jl_1 < bspline_x->getDegree() + 1; jl_1++)
-							{
-								for (int jl_2 = 0; jl_2 < bspline_y->getDegree() + 1; jl_2++)
-								{
-									int i1 = i_span_1 - bspline_x->getDegree() + il_1;
-									int j1 = i_span_1 - bspline_x->getDegree() + jl_1;
-
-									int i2 = i_span_2 - bspline_y->getDegree() + il_2;
-									int j2 = i_span_2 - bspline_y->getDegree() + jl_2;
-
-									double v = 0.0;
-									std::pair<std::vector<double>, std::vector<double>> gauss_x = calcGaussPtsTria(a_x, b_x);
-									std::pair<std::vector<double>, std::vector<double>> gauss_y = calcGaussPtsTria(a_y, b_y);
-									
-									for (int g1 = 0; g1 < gauss_x.first.size(); g1++)
-									{
-										for (int g2 = 0; g2 < gauss_y.first.size(); g2++)
-										{
-											if (g1 == (gauss_x.first.size()-1) && g2 == (gauss_y.first.size()-1)) break;
-											std::pair<std::vector<double>, std::vector<double>> eval_1 = bspline_x->eval(gauss_x.first[g1]);
-											std::pair<std::vector<double>, std::vector<double>> eval_2 = bspline_y->eval(gauss_y.first[g2]);
-
-											std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
-											std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
-
-											Matrix<double> Jacobian = calcJacobian(g1, g2, bspline_x->findSpan(gauss_x.first[g1]), bspline_y->findSpan(gauss_y.first[g2]), shp_fnc_dx, shp_fnc_dy);
-											std::pair<std::vector<double>,std::vector<double>> ph_grad_val = Map2Physical(Jacobian, shp_fnc_dx, shp_fnc_dy);
-
-
-											double bi_x = ph_grad_val.first[mycnt_1];
-											double bi_y = ph_grad_val.second[mycnt_1];
-											double bj_x = ph_grad_val.first[mycnt_2];
-											double bj_y = ph_grad_val.second[mycnt_2];
-											double wvol = gauss_x.second[g1] * gauss_y.second[g2];
-
-											v += Jacobian.getDetVal() * (bi_x * bj_x + bi_y * bj_y) * wvol;
-										}
-									}
-									int index1 = i1 * bspline_y->getNOF() + i2;
-									int index2 = j1 * bspline_y->getNOF() + j2;
-									double temp = A(index1, index2) + v;
-									A.setValue(index1, index2, temp);
-
-									mycnt_2++;
-								}
-							}
-							mycnt_1++;
-						}
-					}
+					computeTriangleStiffnessMatrix(triangle, ie1, ie2, A);
 				}
 			}
 			else
 			{
-				if (trimmed_elements[cnt].second == 4) continue;
-				int i_span_2 = bspline_y->findSpan(bspline_y->knots[ie2]);
-				int mycnt_1 = 0;
-				for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
-				{
-					for (int il_2 = 0; il_2 < bspline_y->getDegree() + 1; il_2++)
-					{
-						int mycnt_2 = 0;
-						for (int jl_1 = 0; jl_1 < bspline_x->getDegree() + 1; jl_1++)
-						{
-							for (int jl_2 = 0; jl_2 < bspline_y->getDegree() + 1; jl_2++)
-							{
-								int i1 = i_span_1 - bspline_x->getDegree() + il_1;
-								int j1 = i_span_1 - bspline_x->getDegree() + jl_1;
-
-								int i2 = i_span_2 - bspline_y->getDegree() + il_2;
-								int j2 = i_span_2 - bspline_y->getDegree() + jl_2;
-
-								double v = 0.0;
-								std::pair<std::vector<double>, std::vector<double>> gauss_x = bspline_x->calcGaussPts(bspline_x->getDegree() + 3, bspline_x->knots[ie1], bspline_x->knots[ie1 + 1]);
-								std::pair<std::vector<double>, std::vector<double>> gauss_y = bspline_y->calcGaussPts(bspline_y->getDegree() + 3, bspline_y->knots[ie2], bspline_y->knots[ie2 + 1]);
-								
-								for (int g1 = 0; g1 < gauss_x.first.size(); g1++)
-								{
-									for (int g2 = 0; g2 < gauss_y.first.size(); g2++)
-									{
-										std::pair<std::vector<double>, std::vector<double>> eval_1 = bspline_x->eval(gauss_x.first[g1]);
-										std::pair<std::vector<double>, std::vector<double>> eval_2 = bspline_y->eval(gauss_y.first[g2]);
-
-										std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
-										std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
-
-										Matrix<double> Jacobian = calcJacobian(g1, g2, bspline_x->findSpan(gauss_x.first[g1]), bspline_y->findSpan(gauss_y.first[g2]), shp_fnc_dx, shp_fnc_dy);																		
-										std::pair<std::vector<double>,std::vector<double>> ph_grad_val = Map2Physical(Jacobian, shp_fnc_dx, shp_fnc_dy);
-
-										double bi_x = ph_grad_val.first[mycnt_1];
-										double bi_y = ph_grad_val.second[mycnt_1];
-										double bj_x = ph_grad_val.first[mycnt_2];
-										double bj_y = ph_grad_val.second[mycnt_2];
-										double wvol = gauss_x.second[g1] * gauss_y.second[g2];
-
-										v += Jacobian.getDetVal() * (bi_x * bj_x + bi_y * bj_y) * wvol;																
-									}
-								}
-
-								int index1 = i1 * bspline_y->getNOF() + i2;
-								int index2 = j1 * bspline_y->getNOF() + j2;
-								double temp = A(index1, index2) + v;
-								A.setValue(index1, index2, temp);
-
-								mycnt_2++;
-							}
-						}
-						mycnt_1++;
-					}
-				}
+				bool elementIsVoid = (trimmed_elements[elementId].second == 4);
+				if (elementIsVoid) continue;
+				computeQuadStiffnessMatrix(ie1, ie2, A);
 			}
 		}
 	}
-	stiff = A;
+	stiffnessMatrix = A;
 }
 
-void Assembler_2D::calcRhs()
+void Assembler_2D::computeTriangleRightHandSide(std::vector<std::pair<double, double>> &triangle, int elementX, int elementY, std::vector<double> &b)
+{
+	int i_span_1 = bspline_x->findSpanInVector(bspline_x->distinctKnots[elementX]);
+	double a_x = std::min({triangle[0].first, triangle[1].first, triangle[2].first});
+	double b_x = std::max({triangle[0].first, triangle[1].first, triangle[2].first});
+	double a_y = std::min({triangle[0].second, triangle[1].second, triangle[2].second});
+	double b_y = std::max({triangle[0].second, triangle[1].second, triangle[2].second});
+	int i_span_2 = bspline_y->findSpanInVector(bspline_y->distinctKnots[elementY]);
+	int mycnt_1 = 0;
+	for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
+	{
+		for (int il_2 = 0; il_2 < bspline_y->getDegree() + 1; il_2++)
+		{
+			int i1 = i_span_1 - bspline_x->getDegree() + il_1;
+			int i2 = i_span_2 - bspline_y->getDegree() + il_2;
+
+			double v = 0.0;
+			std::pair<std::vector<double>, std::vector<double>> gauss_x = GaussPointsAndWeightsTria(a_x, b_x);
+			std::pair<std::vector<double>, std::vector<double>> gauss_y = GaussPointsAndWeightsTria(a_y, b_y);
+			for (int g1 = 0; g1 < gauss_x.first.size(); g1++)
+			{
+				for (int g2 = 0; g2 < gauss_y.first.size(); g2++)
+				{
+					if (g1 == (gauss_x.first.size() - 1) && g2 == (gauss_y.first.size() - 1))
+						break;
+					std::pair<std::vector<double>, std::vector<double>> eval_1 = bspline_x->evaluateAtPoint(gauss_x.first[g1]);
+					std::pair<std::vector<double>, std::vector<double>> eval_2 = bspline_y->evaluateAtPoint(gauss_y.first[g2]);
+
+					std::vector<double> shp_fnc = createTensorProduct(eval_1.first, eval_2.first);
+					std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
+					std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
+
+					Matrix<double> J = Jacobian(g1, g2, bspline_x->findSpanInVector(gauss_x.first[g1]), bspline_y->findSpanInVector(gauss_y.first[g2]), shp_fnc_dx, shp_fnc_dy);
+
+					std::pair<std::vector<double>, std::vector<double>> ph_val = Map2Physical(J, shp_fnc, shp_fnc);
+
+					double bi_0 = ph_val.first[mycnt_1] * ph_val.second[mycnt_1];
+					double wvol = gauss_x.second[g1] * gauss_y.second[g2];
+
+					v += J.determinant() * bi_0 * sourceFunction * wvol;
+				}
+			}
+			int index = i1 * bspline_y->getNumberOfBasisFunctions() + i2;
+			b[index] += v;
+		}
+	}
+	mycnt_1++;
+}
+
+void Assembler_2D::computeQuadRightHandSide(int elementX, int elementY, std::vector<double> &b)
+{
+	int i_span_1 = bspline_x->findSpanInVector(bspline_x->distinctKnots[elementX]);
+	int i_span_2 = bspline_y->findSpanInVector(bspline_y->distinctKnots[elementY]);
+	int mycnt_1 = 0;
+
+	for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
+	{
+		for (int il_2 = 0; il_2 < bspline_y->getDegree() + 1; il_2++)
+		{
+			int i1 = i_span_1 - bspline_x->getDegree() + il_1;
+			int i2 = i_span_2 - bspline_y->getDegree() + il_2;
+
+			double v = 0.0;
+			std::pair<std::vector<double>, std::vector<double>> gauss_x = bspline_x->GaussPointsAndWeights(bspline_x->getDegree() + 3, bspline_x->distinctKnots[elementX], bspline_x->distinctKnots[elementX + 1]);
+			std::pair<std::vector<double>, std::vector<double>> gauss_y = bspline_y->GaussPointsAndWeights(bspline_y->getDegree() + 3, bspline_y->distinctKnots[elementY], bspline_y->distinctKnots[elementY + 1]);
+			for (int g1 = 0; g1 < gauss_x.first.size(); g1++)
+			{
+				for (int g2 = 0; g2 < gauss_y.first.size(); g2++)
+				{
+					std::pair<std::vector<double>, std::vector<double>> eval_1 = bspline_x->evaluateAtPoint(gauss_x.first[g1]);
+					std::pair<std::vector<double>, std::vector<double>> eval_2 = bspline_y->evaluateAtPoint(gauss_y.first[g2]);
+
+					std::vector<double> shp_fnc = createTensorProduct(eval_1.first, eval_2.first);
+					std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
+					std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
+
+					Matrix<double> J = Jacobian(g1, g2, bspline_x->findSpanInVector(gauss_x.first[g1]), bspline_y->findSpanInVector(gauss_y.first[g2]), shp_fnc_dx, shp_fnc_dy);
+
+					std::pair<std::vector<double>, std::vector<double>> ph_val = Map2Physical(J, shp_fnc, shp_fnc);
+
+					double bi_0 = ph_val.first[mycnt_1] * ph_val.second[mycnt_1];
+					double wvol = gauss_x.second[g1] * gauss_y.second[g2];
+
+					v += J.determinant() * bi_0 * sourceFunction * wvol;
+				}
+			}
+
+			int index = i1 * bspline_y->getNumberOfBasisFunctions() + i2;
+			b[index] += v;
+		}
+	}
+	mycnt_1++;
+}
+
+void Assembler_2D::computeRightHandSide()
 {
 	// Assemble rhs vector
-	std::vector<double> b(getNOF(), 0.0);
-	int Nx = bspline_x->knots.size() - 1;
-	int Ny = bspline_y->knots.size() - 1;
-	int cnt = -1;
+	std::vector<double> b(getNumberOfBasisFunctions(), 0.0);
+	int Nx = bspline_x->distinctKnots.size() - 1;
+	int Ny = bspline_y->distinctKnots.size() - 1;
+	int elementId = -1;
 	for (int ie1 = 0; ie1 < Nx; ie1++)
 	{
-		int i_span_1 = bspline_x->findSpan(bspline_x->knots[ie1]);
 		for (int ie2 = 0; ie2 < Ny; ie2++)
 		{
-			cnt++;
-			if (trimmed_elements[cnt].first)
+			elementId++;
+			bool elementIsTrimmed = trimmed_elements[elementId].first;
+			if (elementIsTrimmed)
 			{
-				std::vector<std::vector<std::pair<double, double>>> triangles;
-				if (trimmed_elements[cnt].second == 1)
-				{
-					triangles = construct_3_triangles(cnt);
-				}
-				else if (trimmed_elements[cnt].second == 2)
-				{
-					triangles = construct_2_triangles(cnt);
-				}
-				else if (trimmed_elements[cnt].second == 3)
-				{
-					triangles = construct_1_triangle(cnt);
-				}
+				std::vector<std::vector<std::pair<double, double>>> triangles = divideElementInTriangles(trimmed_elements[elementId].second, elementId);
 				for (auto triangle : triangles)
 				{
-					double a_x = std::min({triangle[0].first, triangle[1].first, triangle[2].first});
-					double b_x = std::max({triangle[0].first, triangle[1].first, triangle[2].first});
-					double a_y = std::min({triangle[0].second, triangle[1].second, triangle[2].second});
-					double b_y = std::max({triangle[0].second, triangle[1].second, triangle[2].second});
-					int i_span_2 = bspline_y->findSpan(bspline_y->knots[ie2]);
-					int mycnt_1 = 0;
-					for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
-					{
-						for (int il_2 = 0; il_2 < bspline_y->getDegree() + 1; il_2++)
-						{
-							int i1 = i_span_1 - bspline_x->getDegree() + il_1;
-							int i2 = i_span_2 - bspline_y->getDegree() + il_2;
-
-							double v = 0.0;
-							std::pair<std::vector<double>, std::vector<double>> gauss_x = calcGaussPtsTria(a_x, b_x);
-							std::pair<std::vector<double>, std::vector<double>> gauss_y = calcGaussPtsTria(a_y, b_y);
-							for (int g1 = 0; g1 < gauss_x.first.size(); g1++)
-							{
-								for (int g2 = 0; g2 < gauss_y.first.size(); g2++)
-								{
-									if (g1 == (gauss_x.first.size()-1) && g2 == (gauss_y.first.size()-1)) break;
-									std::pair<std::vector<double>, std::vector<double>> eval_1 = bspline_x->eval(gauss_x.first[g1]);
-									std::pair<std::vector<double>, std::vector<double>> eval_2 = bspline_y->eval(gauss_y.first[g2]);
-
-									std::vector<double> shp_fnc = createTensorProduct(eval_1.first, eval_2.first);
-									std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
-									std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
-
-									Matrix<double> Jacobian = calcJacobian(g1, g2, bspline_x->findSpan(gauss_x.first[g1]), bspline_y->findSpan(gauss_y.first[g2]), shp_fnc_dx, shp_fnc_dy);
-
-									std::pair<std::vector<double>, std::vector<double>> ph_val = Map2Physical(Jacobian, shp_fnc, shp_fnc);
-
-									double bi_0 = ph_val.first[mycnt_1] * ph_val.second[mycnt_1];
-									double wvol = gauss_x.second[g1] * gauss_y.second[g2];
-
-									v += Jacobian.getDetVal() * bi_0 * f * wvol;
-								}
-							}
-							int index = i1 * bspline_y->getNOF() + i2;
-							b[index] += v;
-						}
-					}
-					mycnt_1++;
+					computeTriangleRightHandSide(triangle, ie1, ie2, b);
 				}
 			}
 			else
 			{
-				if (trimmed_elements[cnt].second == 4) continue;
-				int i_span_2 = bspline_y->findSpan(bspline_y->knots[ie2]);
-				int mycnt_1 = 0;
-
-				for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
-				{
-					for (int il_2 = 0; il_2 < bspline_y->getDegree() + 1; il_2++)
-					{
-						int i1 = i_span_1 - bspline_x->getDegree() + il_1;
-						int i2 = i_span_2 - bspline_y->getDegree() + il_2;
-
-						double v = 0.0;
-						std::pair<std::vector<double>, std::vector<double>> gauss_x = bspline_x->calcGaussPts(bspline_x->getDegree() + 3, bspline_x->knots[ie1], bspline_x->knots[ie1 + 1]);
-						std::pair<std::vector<double>, std::vector<double>> gauss_y = bspline_y->calcGaussPts(bspline_y->getDegree() + 3, bspline_y->knots[ie2], bspline_y->knots[ie2 + 1]);
-						for (int g1 = 0; g1 < gauss_x.first.size(); g1++)
-						{
-							for (int g2 = 0; g2 < gauss_y.first.size(); g2++)
-							{
-								std::pair<std::vector<double>, std::vector<double>> eval_1 = bspline_x->eval(gauss_x.first[g1]);
-								std::pair<std::vector<double>, std::vector<double>> eval_2 = bspline_y->eval(gauss_y.first[g2]);
-
-								std::vector<double> shp_fnc = createTensorProduct(eval_1.first, eval_2.first);
-								std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
-								std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
-
-								Matrix<double> Jacobian = calcJacobian(g1, g2, bspline_x->findSpan(gauss_x.first[g1]), bspline_y->findSpan(gauss_y.first[g2]), shp_fnc_dx, shp_fnc_dy);	 			
-
-								std::pair<std::vector<double>,std::vector<double>> ph_val = Map2Physical(Jacobian, shp_fnc, shp_fnc);
-
-								double bi_0 = ph_val.first[mycnt_1] * ph_val.second[mycnt_1];
-								double wvol = gauss_x.second[g1] * gauss_y.second[g2];
-
-								v += Jacobian.getDetVal() * bi_0 * f * wvol;
-							}
-						}
-
-						int index = i1 * bspline_y->getNOF() + i2;
-						b[index] += v;
-					}
-				}
-				mycnt_1++;
+				bool elementIsVoid = (trimmed_elements[elementId].second == 4);
+				if (elementIsVoid) continue;
+				computeQuadRightHandSide(ie1, ie2, b);
 			}
 		}
 	}
-	rhs = b;
+	rightHandSide = b;
 }
 
 std::pair<double, double> Assembler_2D::evaluate_trimming(double t)
@@ -557,17 +585,17 @@ int Assembler_2D::checkIfOutside(std::pair<double, double> point)
 void Assembler_2D::plot_trimming()
 {
 	std::string filename("trimming_curve.dat");
-	std::ofstream my_file(filename);
-	my_file << "variables= " << "\"x\"" << "," << "\"y\"" << "\n";
-    my_file << "zone t= " << "\"1\"" << ",i=" << 63 << ",j=" << 63 << "\n";
+	std::ofstream plotTrimmedCurve(filename);
+	plotTrimmedCurve << "variables= " << "\"x\"" << "," << "\"y\"" << "\n";
+    plotTrimmedCurve << "zone t= " << "\"1\"" << ",i=" << 63 << ",j=" << 63 << "\n";
 	double u = 0.0;
 	while (u <= 2 * 3.14159265)
 	{
 		std::pair<double, double> point = evaluate_trimming(u);
-		my_file << point.first << " " << point.second << "\n";
+		plotTrimmedCurve << point.first << " " << point.second << "\n";
 		u += 0.1;
 	}
-	my_file.close();
+	plotTrimmedCurve.close();
 }
 
 std::vector<std::vector<std::pair<double, double>>> Assembler_2D::construct_3_triangles(int id)
@@ -870,7 +898,7 @@ std::vector<std::vector<std::pair<double, double>>> Assembler_2D::construct_1_tr
 	return std::vector<std::vector<std::pair<double, double>>>{triangle1};
 }
 
-std::pair<std::vector<double>, std::vector<double>> Assembler_2D::calcGaussPtsTria(double a, double b)
+std::pair<std::vector<double>, std::vector<double>> Assembler_2D::GaussPointsAndWeightsTria(double a, double b)
 {
 	std::vector<double> GS_pts_temp{1.0/6.0, 2.0/3.0};
 	std::vector<double> GS_wgts{1.0/3.0, 1.0/3.0};

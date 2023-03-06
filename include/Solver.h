@@ -23,12 +23,12 @@ public:
     ~Solver() {}
 
     // Member functions
-    std::vector<double>& solve(Matrix<double>& A, std::vector<double>& b, int iters = 10, double omega = 1.03)
+    std::vector<double>& solve(Matrix<double>& A, std::vector<double>& b, int numberOfIterations = 10, double omega = 1.03)
     {
         if (mode == "LU")
         {
-            std::vector<Matrix<double>> LU = A.LU_factor();
-	        Matrix<double> L = LU[0];
+            std::vector<Matrix<double>> LU = A.LU_factorization();
+            Matrix<double> L = LU[0];
             Matrix<double> U = LU[1];
             std::vector<double> y;
 	        y = L.forward_Euler(b);
@@ -37,35 +37,34 @@ public:
         }
         else if (mode == "QR")
         {
-            std::vector<Matrix<double>> QR = A.QR_factor();
+            std::vector<Matrix<double>> QR = A.QR_factorization();
 	        std::vector<double> rhs = QR[0].transpose() * b;
-	        std::vector<double> sol = QR[1].backward_Euler(rhs);
-            solution = sol;
+            solution = QR[1].backward_Euler(rhs);
             return solution;
         }
         else if (mode == "GaussSeidel")
         {
-            solution = A.GaussSeidel_iterator(b, iters);
+            solution = A.GaussSeidel_iterator(b, numberOfIterations);
             return solution;
         }
         else if (mode == "Jacobi")
         {
-            solution = A.Jacobi_iterator(b, iters);
+            solution = A.Jacobi_iterator(b, numberOfIterations);
             return solution;
         }
         else if (mode == "SOR")
         {
-            solution = A.SOR_iterator(b, iters, omega);
+            solution = A.SOR_iterator(b, numberOfIterations, omega);
             return solution;
         }
         else if (mode == "Gradient")
         {
-            solution = A.gradient_iterator(b, iters);
+            solution = A.gradient_iterator(b, numberOfIterations);
             return solution;
         }
         else if (mode == "ConjugateGradient")
         {
-            solution = A.conjugate_gradient_iter(b, iters);
+            solution = A.conjugate_gradient_iterator(b, numberOfIterations);
             return solution;
         }
         else
@@ -80,8 +79,6 @@ public:
 
 private:
     // Member variables
-    const Matrix<double> lhs;
-    const std::vector<double> rhs;
     std::vector<double> solution;
     const std::string mode;
 };

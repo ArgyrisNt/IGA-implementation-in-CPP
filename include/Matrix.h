@@ -26,7 +26,7 @@ public:
 
 	//Member functions
 	void setValue(int row, int col, T val); // Set a value on a specific position
-	void calcDet(); // Compute determinant
+	T determinant(); // Compute determinant
 	void print(); // Print matrix
 	Matrix transpose(); // Transpose matrix
 	Matrix inverse(); // Inverse matrix
@@ -35,22 +35,32 @@ public:
 	std::vector<T> GaussSeidel_iterator(std::vector<T> b, int iters); // Gauss Seidel iterative method to solve a linear system
 	std::vector<T> SOR_iterator(std::vector<T> b, int iters, double omega);
 	std::vector<T> gradient_iterator(std::vector<T> b, int iters);
-	std::vector<T> conjugate_gradient_iter(std::vector<T> &b, int iters);
+	std::vector<T> conjugate_gradient_iterator(std::vector<T> &b, int iters);
 
-	std::vector<Matrix> LU_factor(); // LU decomposition
+	std::vector<Matrix> LU_factorization(); // LU decomposition
 	std::vector<T> forward_Euler(std::vector<T> b); // forward Euler method to solve a linear system
 	std::vector<T> backward_Euler(std::vector<T> b); // backward Euler method to solve a linear system
-	std::vector<Matrix> QR_factor(); // with Grand Schmidt method
+	std::vector<Matrix> QR_factorization(); // with Grand Schmidt method
 
 	// Member getter functions
-	int getRows() { return rows; }
-	int getCols() { return cols; }
-	T getDetVal() { return detVal; }
+	int getNumberOfRows() { return numberOfRows; }
+	int getNumberOfColumns() { return numberOfColumns; }
 
 private:
 	// Member variables
-	T** mat;
-	int rows;
-	int cols;
-	T detVal;
+	T** values;
+	int numberOfRows;
+	int numberOfColumns;
+};
+
+struct CompareFirst
+{
+	CompareFirst(int val) : val_(val) {}
+	bool operator()(const std::pair<int, char> &elem) const
+	{
+		return val_ == elem.first;
+	}
+
+private:
+	int val_;
 };

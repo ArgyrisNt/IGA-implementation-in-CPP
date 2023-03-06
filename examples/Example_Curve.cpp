@@ -6,15 +6,16 @@
 int main()
 {
     // - - - - - B-spline basis - - - - -
-    int p = 2;
-    std::vector<double> U{0.0, 0.0, 0.0, 0.5, 0.5, 1.0, 1.0, 1.0};
-    std::vector<double> W{1.0, sqrt(2.0) / 2.0, 1.0, sqrt(2.0) / 2.0, 1.0};
-    std::vector<std::vector<double>> ctrlPts{{2.0, 0.0}, {2.0, 1.0}, {1.0, 1.0}, {0.0, 1.0}, {0.0, 0.0}};
-    Bspline bspline_x(p, U, W, ctrlPts);
+    int degree = 2;
+    std::vector<double> knotVector{0.0, 0.0, 0.0, 0.5, 0.5, 1.0, 1.0, 1.0};
+    std::vector<double> weights{1.0, sqrt(2.0) / 2.0, 1.0, sqrt(2.0) / 2.0, 1.0};
+    Bspline bspline_x(degree, knotVector, weights);
 
     // - - - - - B-spline curve - - - - -
-    BsplineCurve curve(bspline_x, ctrlPts);
-    curve.evaluate();
+    std::vector<std::vector<double>> controlPoints{{2.0, 0.0}, {2.0, 1.0}, {1.0, 1.0}, {0.0, 1.0}, {0.0, 0.0}};
+    BsplineCurve curve(bspline_x, controlPoints);
+    int resolution = 100;
+    curve.plot(resolution);
 
     return 0;
 }

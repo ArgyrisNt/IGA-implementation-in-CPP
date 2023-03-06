@@ -8,8 +8,8 @@ class DiffusionAssembler_1D : public Assembler_1D
 {
 public:
     // Constructor
-    DiffusionAssembler_1D(double src, BoundCond &bcinfo, BsplineCurve &curve, double k, double delta)
-        : Assembler_1D(src, bcinfo, curve), coef(k), Dt(delta) {}
+    DiffusionAssembler_1D(double newSourceFunction, BoundCond &boundaryConditions, BsplineCurve &curve, double newCoefficient, double delta)
+        : Assembler_1D(newSourceFunction, boundaryConditions, curve), coefficient(newCoefficient), Timestep(delta) {}
 
     // Destructor
     virtual ~DiffusionAssembler_1D() {}
@@ -17,33 +17,33 @@ public:
     // Member functions
     void assemble() override
     {
-        calcStiff();
-        calcMass();
-        calcRhs();
-        calcBound();
-        sysMat = mass + stiff * (coef * Dt);
-        for (int i = 0; i < rhs.size(); i++)
+        computeStiffnessMatrix();
+        computeMassMatrix();
+        computeRightHandSide();
+        computeBoundary();
+        systemMatrix = massMatrix + stiffnessMatrix * (coefficient * Timestep);
+        for (int i = 0; i < rightHandSide.size(); i++)
         {
-            rhs[i] = rhs[i] * Dt;
+            rightHandSide[i] = rightHandSide[i] * Timestep;
         }
     }
     std::vector<double> nextStep(std::vector<double>);
-    std::vector<double> applyInitCond(double (*func)(double));
-    void applyBoundEllimination() override;
-    void applyBoundMultipliers() override;
-    void enforceBoundary(std::string&) override;
+    std::vector<double> applyInitialCondition(double (*func)(double));
+    void applyBoundaryEllimination() override;
+    void applyBoundaryMultipliers() override;
+    void enforceBoundaryConditions(std::string&) override;
 
     // Member getter functions
-    Matrix<double>& getMass() { return mass; }
-    Matrix<double>& getSysMat() { return sysMat; }    
+    Matrix<double> &getMassMatrix() { return massMatrix; }
+    Matrix<double> &getSystemMatrix() { return systemMatrix; }
 
 private:
     // Member local functions
-    void calcMass();
+    void computeMassMatrix();
 
     // Member variables
-    Matrix<double> mass;
-    Matrix<double> sysMat;
-    double coef;
-    double Dt; 
+    Matrix<double> massMatrix;
+    Matrix<double> systemMatrix;
+    double coefficient;
+    double Timestep; 
 };
