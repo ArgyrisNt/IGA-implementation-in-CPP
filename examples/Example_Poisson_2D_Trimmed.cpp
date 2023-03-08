@@ -6,13 +6,13 @@
 int main()
 {   
     // - - - - - B-spline basis on x-direction - - - - - 
-    int p = 2;
-    std::vector<double> U{ 0.0,0.0,0.0,1.0,1.0,1.0 };
-    std::vector<double> W{ 1.0,1.0,1.0 };
-    Bspline bspline_x(p, U, W);
+    int x_degree = 2;
+    std::vector<double> x_values{ 0.0,0.0,0.0,1.0,1.0,1.0 };
+    KnotVector<double> knotVector(x_degree, x_values);
+    std::vector<double> x_weights{ 1.0,1.0,1.0 };
+    Bspline bspline_x(x_degree, knotVector, x_weights);
 
     // - - - - - B-spline basis on y-direction - - - - - 
-    int q = 2;
     Bspline bspline_y(bspline_x);
 
     // - - - - - B-spline surface - - - - -
@@ -42,7 +42,7 @@ int main()
     std::cout << poisson.getSolution();
 
     // - - - - - Write solution data - - - - - 
-    poisson.plotSolution(400); // resolution = 500
+    poisson.plotSolution(100); // resolution = 500
 
     return 0;
 }

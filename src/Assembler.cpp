@@ -10,18 +10,12 @@ void Assembler::applyBoundaryEllimination()
 	for (int ii = 0; ii < stiffnessMatrix.getNumberOfRows(); ii++)
 	{
 		auto it = std::find_if(boundaryBasisFunctions.begin(), boundaryBasisFunctions.end(), CompareFirst(ii));
-		if (it != boundaryBasisFunctions.end())
-		{
-			continue;
-		}
+		if (it != boundaryBasisFunctions.end()) continue;
 		int j = 0;
 		for (int jj = 0; jj < stiffnessMatrix.getNumberOfRows(); jj++)
 		{
 			it = std::find_if(boundaryBasisFunctions.begin(), boundaryBasisFunctions.end(), CompareFirst(jj));
-			if (it != boundaryBasisFunctions.end())
-			{
-				continue;
-			}
+			if (it != boundaryBasisFunctions.end()) continue;
 			newStiffnessMatrix.setValue(i, j, stiffnessMatrix(ii, jj));
 			j++;
 		}

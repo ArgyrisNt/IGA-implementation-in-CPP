@@ -15,7 +15,7 @@ double init_cond(double val)
     {
         return 2 - 2 * val;
     }
-    // if (val >=0 && val <= 1)
+    // if (val >=0.0 && val <= 1.0)
     // {
     // 	return exp(-pow((val - 0.5), 2) / (pow(0.05, 2)));
     // }
@@ -31,17 +31,18 @@ int main()
     // - - - - - B-spline basis on x-direction - - - - - 
     double start = 0.0;
     double end = 1.0;
-    int p = 3;
-    int numElems = 200;
-    std::vector<double> W{};
+    int degree = 3;
+    int numberOfElements = 200;
+    std::vector<double> weights{};
+    KnotVector<double> knotVector(start, end, degree, numberOfElements);
     std::vector<std::vector<double>> controlPoints;
-    Bspline bspline_x(start, end, p, numElems, W);
-    for (int i = 0; i < numElems + p; i++)
+    Bspline bspline_x(degree, knotVector, weights);
+    for (int i = 0; i < numberOfElements + degree; i++)
     {
-        controlPoints.push_back({(1.0 / (numElems + p - 1)) * (double)(i), 0.0});
-        W.push_back(1.0);
+        controlPoints.push_back({(1.0 / (numberOfElements + degree - 1)) * (double)(i), 0.0});
+        weights.push_back(1.0);
     }
-    bspline_x.setWeights(W);
+    bspline_x.setWeights(weights);
 
     // - - - - - B-spline curve - - - - -
     BsplineCurve curve(bspline_x, controlPoints);
@@ -67,7 +68,7 @@ int main()
     diffusion.plotSolution("curve.dat", "0sol.dat");
 
     // - - - - - Solve - - - - - 
-    for (int t = 0; t < numSteps; t++) // until 6
+    for (int t = 0; t < numSteps; t++)
     {
         std::cout << std::endl << "---------------- " << t + 1 << " step ----------------";
         std::vector<double> b = ass.nextStep(diffusion.getSolution()); // build next rhs

@@ -55,8 +55,8 @@ template <class T>
 void Poisson<T>::plotSolution(std::string filename1, std::string filename2)
 {
     // Create B-spline curve
-    double left_limit_x = assembler->getBspline_x().getKnotvector()[0];
-    double right_limit_x = assembler->getBspline_x().getKnotvector()[assembler->getBspline_x().getKnotvector().size() - 1];
+    double left_limit_x = assembler->getBspline_x().getKnotvector()(0);
+    double right_limit_x = assembler->getBspline_x().getKnotvector()(assembler->getBspline_x().getKnotvector().getSize() - 1);
 
     //std::string filename1("curve.dat");
     std::ofstream my_file1(filename1);
@@ -72,7 +72,7 @@ void Poisson<T>::plotSolution(std::string filename1, std::string filename2)
     for (int i = (int) (left_limit_x); i <= 100; i++)
     {
         double i_step = left_limit_x + (double)(i) * ((right_limit_x - left_limit_x) / 100.0);
-        int span = assembler->getBspline_x().findSpanInVector(i_step);
+        int span = assembler->getBspline_x().getKnotvector().findSpanOfValue(i_step);
         std::vector<double> bVal = assembler->getBspline_x().evaluateAtPoint(i_step).first;
 
         double coord_x = 0.0, coord_y = 0.0, coord_z = 0.0;

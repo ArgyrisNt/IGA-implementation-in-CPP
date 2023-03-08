@@ -7,13 +7,15 @@ int main()
 {
     // - - - - - B-spline basis on x-direction - - - - - 
     int x_degree = 2;
-    std::vector<double> x_knotVector{0.0, 0.0, 0.0, 1.0, 1.0, 1.0};
+    std::vector<double> x_values{0.0, 0.0, 0.0, 1.0, 1.0, 1.0};
+    KnotVector<double> x_knotVector(x_degree, x_values);
     std::vector<double> x_weights{ 1.0,1.0,1.0 };
     Bspline bspline_x(x_degree, x_knotVector, x_weights);
 
     // - - - - - B-spline basis on y-direction - - - - - 
     int y_degree = 2;
-    std::vector<double> y_knotVector{0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0};
+    std::vector<double> y_values{0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0};
+    KnotVector<double> y_knotVector(y_degree, y_values);
     std::vector<double> y_weights{1.0, 1.0, 1.0, 1.0};
     Bspline bspline_y(y_degree, y_knotVector, y_weights);
 
@@ -25,7 +27,7 @@ int main()
     // - - - - - B-spline surface - - - - -
     BsplineSurface surface(bspline_x, bspline_y, controlPoints);
 
-    int numberOfRefinements;
+    int numberOfRefinements = 3;
     for (int i = 0; i < numberOfRefinements; i++)
     {
         surface.uniformRefine_x();

@@ -42,8 +42,7 @@ public:
 protected:
     // Functions for mapping coordinates
     std::vector<double> createTensorProduct(std::vector<double> &, std::vector<double> &);
-    Matrix<double> Jacobian(double, double, int, int, std::vector<double> &, std::vector<double> &);
-    std::pair<std::vector<double>, std::vector<double>> Map2Physical(Matrix<double> &, std::vector<double> &, std::vector<double> &);
+    Matrix<double> Jacobian(double, double, std::pair<std::vector<double>, std::vector<double>> &, std::pair<std::vector<double>, std::vector<double>> &);
     
     std::pair<double, double> evaluate_trimming(double t);
     std::pair<double, double> evaluate_trimming_der(double t);

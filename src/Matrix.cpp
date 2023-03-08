@@ -5,19 +5,6 @@
 #include "..\include\Matrix.h"
 
 
-template <typename T>
-double norm(std::vector<T> &v)
-{
-	double result = 0;
-	for (size_t i = 0; i < v.size(); i++)
-	{
-		result += v[i] * v[i];
-	}
-	result = sqrt(result);
-
-	return result;
-}
-
 template <class T>
 Matrix<T>::Matrix()
 {
@@ -73,9 +60,9 @@ Matrix<T> &Matrix<T>::operator=(Matrix matrix)
 template <class T>
 Matrix<T> Matrix<T>::operator+(Matrix matrix)
 {
+	Matrix<T> result(numberOfRows, numberOfColumns);
 	assert(matrix.getNumberOfRows() == getNumberOfRows());
 	assert(matrix.getNumberOfColumns() == getNumberOfColumns());
-	Matrix result(getNumberOfRows(), getNumberOfColumns());
 	for (int i = 0; i < getNumberOfRows(); i++)
 	{
 		for (int j = 0; j < getNumberOfColumns(); j++)
@@ -90,16 +77,17 @@ Matrix<T> Matrix<T>::operator+(Matrix matrix)
 template <class T>
 Matrix<T> Matrix<T>::operator-(Matrix &matrix)
 {
+	Matrix<T> result(numberOfRows, numberOfColumns);
 	assert(matrix.getNumberOfRows() == getNumberOfRows());
 	assert(matrix.getNumberOfColumns() == getNumberOfColumns());
 	for (int i = 0; i < getNumberOfRows(); i++)
 	{
 		for (int j = 0; j < getNumberOfColumns(); j++)
 		{
-			values[i][j] -= matrix.values[i][j];
+			result.setValue(i, j, values[i][j] - matrix.values[i][j]);
 		}
 	}
-	return *this;
+	return result;
 }
 
 template <class T>
@@ -123,15 +111,16 @@ Matrix<T> Matrix<T>::operator*(Matrix &matrix)
 template <class T>
 Matrix<T> Matrix<T>::operator*(const T &constant)
 {
+	Matrix<T> result(numberOfRows, numberOfColumns);
 	for (int i = 0; i < getNumberOfRows(); i++)
 	{
 		for (int j = 0; j < getNumberOfColumns(); j++)
 		{
-			values[i][j] = values[i][j] * constant;
+			result.setValue(i, j, values[i][j] * constant);
 		}
 	}
 
-	return *this;
+	return result;
 }
 
 template <class T>
@@ -164,6 +153,19 @@ void Matrix<T>::setValue(int row, int column, T value)
 	assert(row < getNumberOfRows());
 	assert(column < getNumberOfColumns());
 	values[row][column] = value;
+}
+
+template <typename T>
+double norm(std::vector<T> &v)
+{
+	double result = 0;
+	for (size_t i = 0; i < v.size(); i++)
+	{
+		result += v[i] * v[i];
+	}
+	result = sqrt(result);
+
+	return result;
 }
 
 template <class T>
@@ -214,6 +216,8 @@ Matrix<T> Matrix<T>::transpose()
 template <class T>
 Matrix<T> Matrix<T>::inverse()
 {
+	if (determinant() > -1e-7 && determinant() < 1e-7) throw std::invalid_argument("Non invertible matrix");
+
 	Matrix result(getNumberOfRows(), getNumberOfColumns());
 	switch (getNumberOfRows())
 	{
@@ -221,11 +225,6 @@ Matrix<T> Matrix<T>::inverse()
 		result.values[0][0] = 1.0 / values[0][0];
 		break;
 	case 2:
-		if (!determinant())
-		{
-			throw std::invalid_argument("Non invertible matrix");
-			break;
-		}
 		result.values[0][0] = (1 / determinant()) * values[1][1];
 		result.values[1][1] = (1 / determinant()) * values[0][0];
 		result.values[0][1] = -(1 / determinant()) * values[0][1];
@@ -240,19 +239,16 @@ Matrix<T> Matrix<T>::inverse()
 }
 
 template <class T>
-std::vector<T> Matrix<T>::Jacobi_iterator(std::vector<T> rightHandSide, int NumberOfIterations)
+std::vector<T> Matrix<T>::Jacobi_iterator(std::vector<T> rightHandSide, int numberOfIterations)
 {
 	double threshold = 1e-7;
 	assert(getNumberOfRows() == rightHandSide.size());
 	assert(getNumberOfColumns() == rightHandSide.size());
 	std::cout << "\nSolving with Jacobi iterative method. . ." << "\n";
 	size_t n = getNumberOfRows();
-	std::vector<T> solution(n), residual(n), estimation(n);
-	for (size_t i = 0; i < solution.size(); i++)
-	{
-		solution[i] = 0.0;
-	}
-	for (int iteration = 0; iteration <= NumberOfIterations; iteration++)
+	std::vector<T> solution(n, 0.0), residual(n), estimation(n);
+	int iteration = 0;
+	for (iteration = 0; iteration <= numberOfIterations; iteration++)
 	{
 		std::vector<T> c(n);
 		for (size_t i = 0; i < n; i++)
@@ -274,36 +270,36 @@ std::vector<T> Matrix<T>::Jacobi_iterator(std::vector<T> rightHandSide, int Numb
 		}
 		if (norm(residual) < threshold)
 		{
-			std::cout << iteration << " iterations\n";
 			break;
 		}
 	}
+
+	std::cout << iteration << " iterations\n";
 	return solution;
 }
 
 template <class T>
-std::vector<T> Matrix<T>::GaussSeidel_iterator(std::vector<T> rightHandSide, int NumberOfIterations)
+std::vector<T> Matrix<T>::GaussSeidel_iterator(std::vector<T> rightHandSide, int numberOfIterations)
 {
 	double threshold = 1e-7;
 	assert(getNumberOfRows() == rightHandSide.size());
 	assert(getNumberOfColumns() == rightHandSide.size());
 	std::cout << "\nSolving with Gauss Seidel iterative method. . ." << "\n";
 	size_t n = getNumberOfRows();
-	std::vector<T> solution(n), y(n), residual(n), estimation(n);
-	for (size_t i = 0; i < solution.size(); i++)
-	{
-		solution[i] = 0.0;
-	}
-	for (int iteration = 0; iteration <= NumberOfIterations; iteration++)
+	std::vector<T> solution(n, 0.0), y(n), residual(n), estimation(n);
+	int iteration = 0;
+	for (iteration = 0; iteration <= numberOfIterations; iteration++)
 	{
 		for (size_t i = 0; i < n; i++)
 		{
 			y[i] = rightHandSide[i] / values[i][i];
 			for (size_t j = 0; j < n; j++)
 			{
-				if (j == i) continue;
-				y[i] -= (values[i][j] / values[i][i]) * solution[j];
-				solution[i] = y[i];
+				if (j != i)
+				{
+					y[i] -= (values[i][j] / values[i][i]) * solution[j];
+					solution[i] = y[i];
+				}
 			}
 		}
 		estimation = (*this) * solution;
@@ -313,44 +309,36 @@ std::vector<T> Matrix<T>::GaussSeidel_iterator(std::vector<T> rightHandSide, int
 		}
 		if (norm(residual) < threshold)
 		{
-			std::cout << iteration << " iterations\n";
 			break;
 		}
 	}
+
+	std::cout << iteration << " iterations\n";
 	return solution;
 }
 
 template <class T>
-std::vector<T> Matrix<T>::SOR_iterator(std::vector<T> rightHandSide, int NumberOfIterations, double omega)
+std::vector<T> Matrix<T>::SOR_iterator(std::vector<T> rightHandSide, int numberOfIterations, double omega)
 {
 	double threshold = 1e-7;
 	assert(getNumberOfRows() == rightHandSide.size());
 	assert(getNumberOfColumns() == rightHandSide.size());
 	std::cout << "\nSolving with SOR iterative method. . ." << "\n";
 	size_t n = getNumberOfRows();
-	std::vector<T> solution(n), residual(n), estimation(n);
+	std::vector<T> solution(n, 0.25), residual(n), estimation(n);
 	for (size_t i = 0; i < solution.size(); i++)
 	{
-		if ((i == 0) || (i == solution.size() - 1))
-		{
-			solution[i] = 0.5;
-		}
-		else
-		{
-			solution[i] = 0.25;
-		}
+		if ((i == 0) || (i == solution.size() - 1)) solution[i] = 0.5;
 	}
-	for (int iteration = 0; iteration <= NumberOfIterations; iteration++)
+	int iteration = 0;
+	for (iteration = 0; iteration <= numberOfIterations; iteration++)
 	{
 		for (size_t i = 0; i < n; i++)
 		{
 			double sigma = 0;
 			for (size_t j = 0; j < n; j++)
 			{
-				if (j != i)
-				{
-					sigma += values[i][j] * solution[j];
-				}
+				if (j != i) sigma += values[i][j] * solution[j];
 			}
 			solution[i] = (1 - omega) * solution[i] + (omega / values[i][i]) * (rightHandSide[i] - sigma);
 		}
@@ -361,112 +349,90 @@ std::vector<T> Matrix<T>::SOR_iterator(std::vector<T> rightHandSide, int NumberO
 		}
 		if (norm(residual) < threshold)
 		{
-			std::cout << iteration << " iterations\n";
 			break;
 		}
 	}
 
+	std::cout << iteration << " iterations\n";
 	return solution;
 }
 
 template <class T>
-std::vector<T> Matrix<T>::gradient_iterator(std::vector<T> b, int iters)
+std::vector<T> Matrix<T>::gradient_iterator(std::vector<T> rightHandSide, int numberOfIterations)
 {
 	std::cout << "\nSolving with Gradient iterative method. . ." << "\n";
 	size_t n = getNumberOfRows();
-	std::vector<T> x(n), mult(n), r(n), denominator1(n);
+	std::vector<T> solution(n, 0.0), residual(n);
 	double nominator = 0.0;
 	double denominator = 0.0;
-	double a = 0.0;
-	for (size_t i = 0; i < x.size(); i++)
+	int iteration = 0;
+	for (iteration = 0; iteration < numberOfIterations; iteration++)
 	{
-		x[i] = 0;
-	}
-	for (int iter = 0; iter < iters; iter++)
-	{
-		mult = (*this) * x;
-		for (size_t i = 0; i < x.size(); i++)
+		for (size_t i = 0; i < solution.size(); i++)
 		{
-			r[i] = b[i] - mult[i];
+			residual[i] = rightHandSide[i] - ((*this) * solution)[i];
 		}
-		denominator1 = (*this) * r;
-		for (size_t i = 0; i < x.size(); i++)
+		for (size_t i = 0; i < solution.size(); i++)
 		{
-			nominator += r[i] * r[i];
-			denominator += r[i] * denominator1[i];
+			nominator += residual[i] * residual[i];
+			denominator += residual[i] * ((*this) * residual)[i];
 		}		
-		a = nominator / denominator;
-		for (size_t i = 0; i < x.size(); i++)
+		for (size_t i = 0; i < solution.size(); i++)
 		{
-			x[i] = x[i] + a * r[i];
+			solution[i] = solution[i] + (nominator / denominator) * residual[i];
 		}
-		if (norm(r) < 1e-7)
+		if (norm(residual) < 1e-7)
 		{
-			std::cout << iter << " iterations\n";
 			break;
 		}
 	}
 
-	return x;
+	std::cout << iteration << " iterations\n";
+	return solution;
 }
 
 template <typename T>
-std::vector<T> Matrix<T>::conjugate_gradient_iterator(std::vector<T> &rightHandSide, int NumberOfIterations)
+std::vector<T> Matrix<T>::conjugate_gradient_iterator(std::vector<T> &rightHandSide, int numberOfIterations)
 {
 	std::cout << "\nSolving with Conjugate Gradient iterative method. . ." << "\n";
 	size_t n = getNumberOfRows();
-	std::vector<T> x(n), mult(n), temp(n), r(n), t(n);
-	std::vector<T> denominator1(n), nom1(n);
-	double nominator = 0;
-	double denominator = 0;
-	double a = 0, beta = 0, nom = 0, denom = 0;
-	for (size_t i = 0; i < x.size(); i++)
+	std::vector<T> solution(n, 0.0), residual(n), t(n);
+	double nominator = 0, denominator = 0, nom = 0, denom = 0;
+	int iteration = 0;
+	for (iteration = 0; iteration < numberOfIterations; iteration++)
 	{
-		x[i] = 0;
-	}
-	for (int iteration = 0; iteration < NumberOfIterations; iteration++)
-	{
-		mult = (*this) * x;
-		for (size_t i = 0; i < x.size(); i++)
+		for (size_t i = 0; i < solution.size(); i++)
 		{
-			r[i] = rightHandSide[i] - mult[i];
+			residual[i] = rightHandSide[i] - ((*this) * solution)[i];
 		}
-		if (iteration == 0)
+		if (iteration == 0) t = residual;
+		for (size_t i = 0; i < solution.size(); i++)
 		{
-			t = r;
+			nominator += residual[i] * residual[i];
+			denominator += t[i] * ((*this) * t)[i];
 		}
-		denominator1 = (*this) * t;
-		for (size_t i = 0; i < x.size(); i++)
+		for (size_t i = 0; i < solution.size(); i++)
 		{
-			nominator += r[i] * r[i];
-			denominator += t[i] * denominator1[i];
+			solution[i] = solution[i] + (nominator / denominator) * t[i];
+			residual[i] = residual[i] - (nominator / denominator) * ((*this) * t)[i];
 		}
-		a = nominator / denominator;
-		temp = (*this) * t;
-		for (size_t i = 0; i < x.size(); i++)
+		for (size_t i = 0; i < solution.size(); i++)
 		{
-			x[i] = x[i] + a * t[i];
-			r[i] = r[i] - a * temp[i];
+			nom += residual[i] * ((*this) * t)[i];
+			denom += t[i] * ((*this) * t)[i];
 		}
-		nom1 = (*this) * t;
-		for (size_t i = 0; i < x.size(); i++)
+		for (size_t i = 0; i < solution.size(); i++)
 		{
-			nom += r[i] * nom1[i];
-			denom += t[i] * nom1[i];
+			t[i] = residual[i] - (nom / denom) * t[i];
 		}
-		beta = nom / denom;
-		for (size_t i = 0; i < x.size(); i++)
+		if (norm(residual) < 1e-7)
 		{
-			t[i] = r[i] - beta * t[i];
-		}
-		if (norm(r) < 1e-7)
-		{
-			std::cout << iteration << " iterations\n";
 			break;
 		}
 	}
 
-	return x;
+	std::cout << iteration << " iterations\n";
+	return solution;
 }
 
 template <class T>

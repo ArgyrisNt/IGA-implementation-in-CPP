@@ -55,8 +55,14 @@ std::vector<double> Assembler_2D::createTensorProduct(std::vector<double>& vec1,
 	return tensor_product;
 }
 
-Matrix<double> Assembler_2D::Jacobian(double g1, double g2, int span_g1, int span_g2, std::vector<double>& shp_fnc_dx, std::vector<double>& shp_fnc_dy)
-{	
+Matrix<double> Assembler_2D::Jacobian(double g1, double g2, std::pair<std::vector<double>, std::vector<double>> &eval_1, std::pair<std::vector<double>, std::vector<double>>& eval_2)
+{
+	int span_g1 = bspline_x->getKnotvector().findSpanOfValue(g1);
+	int span_g2 = bspline_y->getKnotvector().findSpanOfValue(g2);
+	
+	std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
+	std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
+	
 	std::vector<int> index, index_x, index_y;
 	for (int kk = 0; kk < bspline_x->getDegree() + 1; kk++)
 	{
@@ -70,7 +76,7 @@ Matrix<double> Assembler_2D::Jacobian(double g1, double g2, int span_g1, int spa
 	{
 		for (auto indy: index_y)
 		{
-			index.push_back(indx * (bspline_y->getKnotvector().size() - bspline_y->getDegree() - 1) + indy);
+			index.push_back(indx * (bspline_y->getKnotvector().getSize() - bspline_y->getDegree() - 1) + indy);
 		}
 	}
 	
@@ -93,77 +99,53 @@ Matrix<double> Assembler_2D::Jacobian(double g1, double g2, int span_g1, int spa
 	Jacobian.setValue(0, 1, temp_y[0]);
 	Jacobian.setValue(1, 0, temp_x[1]);
 	Jacobian.setValue(1, 1, temp_y[1]);
-	
+
 	return Jacobian;
-}
-
-std::pair<std::vector<double>,std::vector<double>> Assembler_2D::Map2Physical(Matrix<double>& Jacobian, std::vector<double>& shp_fnc_dx, std::vector<double>& shp_fnc_dy)
-{
-	Matrix<double> inv_Jacobian = Jacobian.inverse();
-	std::vector<double> ph_grad_val_1(shp_fnc_dx.size(), 0.0);
-	std::vector<double> ph_grad_val_2(shp_fnc_dy.size(), 0.0);
-	for (int kk = 0; kk < shp_fnc_dx.size(); kk++)
-	{
-		std::vector<double> res(2, 0.0);
-		std::vector<double> vec{ shp_fnc_dx[kk], shp_fnc_dy[kk] };
-		for (int i = 0; i < 2; i++)
-		{
-			for (int j = 0; j < 2; j++)
-			{
-				res[i] +=  vec[j] * inv_Jacobian(i, j);
-			}
-		}
-		ph_grad_val_1[kk] = res[0];
-		ph_grad_val_2[kk] = res[1];
-	}
-
-	return std::make_pair(ph_grad_val_1, ph_grad_val_2);
 }
 
 int Assembler_2D::numberOfVoidNodesInElement(int elementX, int elementY)
 {
 	int count = 0;
-	int element = elementX * (bspline_x->distinctKnots.size() - 1) + elementY;
-	if (checkIfOutside(std::make_pair(bspline_x->distinctKnots[elementX], bspline_y->distinctKnots[elementY])))
+	int element = elementX * (bspline_y->getKnotvector().distinctKnots.size() - 1) + elementY;
+	if (checkIfOutside(std::make_pair(bspline_x->getKnotvector().distinctKnots[elementX], bspline_y->getKnotvector().distinctKnots[elementY])))
 	{
 		count++;
 	}
 	else
-		trimmed_elements_info[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX], bspline_y->distinctKnots[elementY]));
-	elements_vertices[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX], bspline_y->distinctKnots[elementY]));
-	if (checkIfOutside(std::make_pair(bspline_x->distinctKnots[elementX], bspline_y->distinctKnots[elementY + 1])))
+		trimmed_elements_info[element].push_back(std::make_pair(bspline_x->getKnotvector().distinctKnots[elementX], bspline_y->getKnotvector().distinctKnots[elementY]));
+	elements_vertices[element].push_back(std::make_pair(bspline_x->getKnotvector().distinctKnots[elementX], bspline_y->getKnotvector().distinctKnots[elementY]));
+	if (checkIfOutside(std::make_pair(bspline_x->getKnotvector().distinctKnots[elementX], bspline_y->getKnotvector().distinctKnots[elementY + 1])))
 	{
 		count++;
 	}
 	else
-		trimmed_elements_info[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX], bspline_y->distinctKnots[elementY + 1]));
-	elements_vertices[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX], bspline_y->distinctKnots[elementY + 1]));
-	if (checkIfOutside(std::make_pair(bspline_x->distinctKnots[elementX + 1], bspline_y->distinctKnots[elementY])))
+		trimmed_elements_info[element].push_back(std::make_pair(bspline_x->getKnotvector().distinctKnots[elementX], bspline_y->getKnotvector().distinctKnots[elementY + 1]));
+	elements_vertices[element].push_back(std::make_pair(bspline_x->getKnotvector().distinctKnots[elementX], bspline_y->getKnotvector().distinctKnots[elementY + 1]));
+	if (checkIfOutside(std::make_pair(bspline_x->getKnotvector().distinctKnots[elementX + 1], bspline_y->getKnotvector().distinctKnots[elementY])))
 	{
 		count++;
 	}
 	else
-		trimmed_elements_info[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX + 1], bspline_y->distinctKnots[elementY]));
-	elements_vertices[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX + 1], bspline_y->distinctKnots[elementY]));
-	if (checkIfOutside(std::make_pair(bspline_x->distinctKnots[elementX + 1], bspline_y->distinctKnots[elementY + 1])))
+		trimmed_elements_info[element].push_back(std::make_pair(bspline_x->getKnotvector().distinctKnots[elementX + 1], bspline_y->getKnotvector().distinctKnots[elementY]));
+	elements_vertices[element].push_back(std::make_pair(bspline_x->getKnotvector().distinctKnots[elementX + 1], bspline_y->getKnotvector().distinctKnots[elementY]));
+	if (checkIfOutside(std::make_pair(bspline_x->getKnotvector().distinctKnots[elementX + 1], bspline_y->getKnotvector().distinctKnots[elementY + 1])))
 	{
 		count++;
 	}
 	else
-		trimmed_elements_info[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX + 1], bspline_y->distinctKnots[elementY + 1]));
-	elements_vertices[element].push_back(std::make_pair(bspline_x->distinctKnots[elementX + 1], bspline_y->distinctKnots[elementY + 1]));
+		trimmed_elements_info[element].push_back(std::make_pair(bspline_x->getKnotvector().distinctKnots[elementX + 1], bspline_y->getKnotvector().distinctKnots[elementY + 1]));
+	elements_vertices[element].push_back(std::make_pair(bspline_x->getKnotvector().distinctKnots[elementX + 1], bspline_y->getKnotvector().distinctKnots[elementY + 1]));
 
 	return count;
 }
 
 void Assembler_2D::categoriseElement(int elementX, int elementY)
 {
-	std::pair<double, double> center = std::make_pair((bspline_x->distinctKnots[elementX + 1] + bspline_x->distinctKnots[elementX]) / 2.0, (bspline_y->distinctKnots[elementY + 1] + bspline_y->distinctKnots[elementY]) / 2.0);
+	std::pair<double, double> center = std::make_pair((bspline_x->getKnotvector().distinctKnots[elementX + 1] + bspline_x->getKnotvector().distinctKnots[elementX]) / 2.0, (bspline_y->getKnotvector().distinctKnots[elementY + 1] + bspline_y->getKnotvector().distinctKnots[elementY]) / 2.0);
 	double di = projection_on_trimming(center);
-	double r_in = sqrt(std::pow(bspline_x->distinctKnots[elementX + 1] - center.first, 2));
-	double r_out = sqrt(std::pow(bspline_x->distinctKnots[elementX] - center.first, 2) + std::pow(bspline_y->distinctKnots[elementY] - center.second, 2));
+	double r_in = sqrt(std::pow(bspline_x->getKnotvector().distinctKnots[elementX + 1] - center.first, 2));
+	double r_out = sqrt(std::pow(bspline_x->getKnotvector().distinctKnots[elementX] - center.first, 2) + std::pow(bspline_y->getKnotvector().distinctKnots[elementY] - center.second, 2));
 	int count = numberOfVoidNodesInElement(elementX, elementY);
-
 	if (di < r_in)
 	{
 		trimmed_elements.push_back(std::make_pair(true, count));
@@ -183,8 +165,8 @@ void Assembler_2D::categoriseElement(int elementX, int elementY)
 
 void Assembler_2D::computeTrimmedElements()
 {
-	int Nx = bspline_x->distinctKnots.size() - 1; // Number of elements on x-direction
-	int Ny = bspline_y->distinctKnots.size() - 1; // NUmber of elements on y-direction
+	int Nx = bspline_x->getKnotvector().distinctKnots.size() - 1; // Number of elements on x-direction
+	int Ny = bspline_y->getKnotvector().distinctKnots.size() - 1; // NUmber of elements on y-direction
 	std::vector<std::vector<std::pair<double, double>>> temp_vec(Nx * Ny);
 	trimmed_elements_info = temp_vec, elements_vertices = temp_vec;
 	for (int ie1 = 0; ie1 < Nx; ie1++)
@@ -196,7 +178,7 @@ void Assembler_2D::computeTrimmedElements()
 				trimmed_elements.push_back(std::make_pair(false, 0));
 				continue;
 			}
-			categoriseElement(ie1, ie2);	
+			categoriseElement(ie1, ie2);
 		}
 	}
 }
@@ -224,19 +206,17 @@ std::vector<std::vector<std::pair<double, double>>> Assembler_2D::divideElementI
 
 void Assembler_2D::computeTriangleStiffnessMatrix(std::vector<std::pair<double, double>> &triangle, int elementX, int elementY, Matrix<double> &A)
 {
-	int spanX = bspline_x->findSpanInVector(bspline_x->distinctKnots[elementX]);
-	int spanY = bspline_y->findSpanInVector(bspline_y->distinctKnots[elementY]);
+	int spanX = bspline_x->getKnotvector().findSpanOfValue(bspline_x->getKnotvector().distinctKnots[elementX]);
+	int spanY = bspline_y->getKnotvector().findSpanOfValue(bspline_y->getKnotvector().distinctKnots[elementY]);
 	trimmed_triangles.push_back(triangle);
 	double a_x = std::min({triangle[0].first, triangle[1].first, triangle[2].first});
 	double b_x = std::max({triangle[0].first, triangle[1].first, triangle[2].first});
 	double a_y = std::min({triangle[0].second, triangle[1].second, triangle[2].second});
 	double b_y = std::max({triangle[0].second, triangle[1].second, triangle[2].second});
-	int mycnt_1 = 0;
 	for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
 	{
 		for (int il_2 = 0; il_2 < bspline_y->getDegree() + 1; il_2++)
 		{
-			int mycnt_2 = 0;
 			for (int jl_1 = 0; jl_1 < bspline_x->getDegree() + 1; jl_1++)
 			{
 				for (int jl_2 = 0; jl_2 < bspline_y->getDegree() + 1; jl_2++)
@@ -260,44 +240,36 @@ void Assembler_2D::computeTriangleStiffnessMatrix(std::vector<std::pair<double, 
 							std::pair<std::vector<double>, std::vector<double>> eval_1 = bspline_x->evaluateAtPoint(gauss_x.first[g1]);
 							std::pair<std::vector<double>, std::vector<double>> eval_2 = bspline_y->evaluateAtPoint(gauss_y.first[g2]);
 
-							std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
-							std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
+							Matrix<double> J = Jacobian(gauss_x.first[g1], gauss_y.first[g2], eval_1, eval_2);
 
-							Matrix<double> J = Jacobian(g1, g2, bspline_x->findSpanInVector(gauss_x.first[g1]), bspline_y->findSpanInVector(gauss_y.first[g2]), shp_fnc_dx, shp_fnc_dy);
-							std::pair<std::vector<double>, std::vector<double>> ph_grad_val = Map2Physical(J, shp_fnc_dx, shp_fnc_dy);
+							double bi_x = (1.0 / J.determinant()) * (J(1, 1) * eval_1.second[il_1] * eval_2.first[il_2] - J(1, 0) * eval_1.first[il_1] * eval_2.second[il_2]);
+							double bi_y = (1.0 / J.determinant()) * (-J(0, 1) * eval_1.second[il_1] * eval_2.first[il_2] + J(0, 0) * eval_1.first[il_1] * eval_2.second[il_2]);
+							double bj_x = (1.0 / J.determinant()) * (J(1, 1) * eval_1.second[jl_1] * eval_2.first[jl_2] - J(1, 0) * eval_1.first[jl_1] * eval_2.second[jl_2]);
+							double bj_y = (1.0 / J.determinant()) * (-J(0, 1) * eval_1.second[jl_1] * eval_2.first[jl_2] + J(0, 0) * eval_1.first[jl_1] * eval_2.second[jl_2]);
 
-							double bi_x = ph_grad_val.first[mycnt_1];
-							double bi_y = ph_grad_val.second[mycnt_1];
-							double bj_x = ph_grad_val.first[mycnt_2];
-							double bj_y = ph_grad_val.second[mycnt_2];
-							double wvol = gauss_x.second[g1] * gauss_y.second[g2];
+							double wvol = gauss_x.second[g1] * gauss_y.second[g2] * fabs(J.determinant());
 
-							v += J.determinant() * (bi_x * bj_x + bi_y * bj_y) * wvol;
+							v += (bi_x * bj_x + bi_y * bj_y) * wvol;
 						}
 					}
 					int index1 = i1 * bspline_y->getNumberOfBasisFunctions() + i2;
 					int index2 = j1 * bspline_y->getNumberOfBasisFunctions() + j2;
 					double temp = A(index1, index2) + v;
 					A.setValue(index1, index2, temp);
-
-					mycnt_2++;
 				}
 			}
-			mycnt_1++;
 		}
 	}
 }
 
 void Assembler_2D::computeQuadStiffnessMatrix(int elementX, int elementY, Matrix<double> &A)
 {
-	int spanX = bspline_x->findSpanInVector(bspline_x->distinctKnots[elementX]);
-	int spanY = bspline_y->findSpanInVector(bspline_y->distinctKnots[elementY]);
-	int mycnt_1 = 0;
+	int spanX = bspline_x->getKnotvector().findSpanOfValue(bspline_x->getKnotvector().distinctKnots[elementX]);
+	int spanY = bspline_y->getKnotvector().findSpanOfValue(bspline_y->getKnotvector().distinctKnots[elementY]);
 	for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
 	{
 		for (int il_2 = 0; il_2 < bspline_y->getDegree() + 1; il_2++)
 		{
-			int mycnt_2 = 0;
 			for (int jl_1 = 0; jl_1 < bspline_x->getDegree() + 1; jl_1++)
 			{
 				for (int jl_2 = 0; jl_2 < bspline_y->getDegree() + 1; jl_2++)
@@ -309,8 +281,8 @@ void Assembler_2D::computeQuadStiffnessMatrix(int elementX, int elementY, Matrix
 					int j2 = spanY - bspline_y->getDegree() + jl_2;
 
 					double v = 0.0;
-					std::pair<std::vector<double>, std::vector<double>> gauss_x = bspline_x->GaussPointsAndWeights(bspline_x->getDegree() + 3, bspline_x->distinctKnots[elementX], bspline_x->distinctKnots[elementX + 1]);
-					std::pair<std::vector<double>, std::vector<double>> gauss_y = bspline_y->GaussPointsAndWeights(bspline_y->getDegree() + 3, bspline_y->distinctKnots[elementY], bspline_y->distinctKnots[elementY + 1]);
+					std::pair<std::vector<double>, std::vector<double>> gauss_x = bspline_x->GaussPointsAndWeights(bspline_x->getDegree() + 3, bspline_x->getKnotvector().distinctKnots[elementX], bspline_x->getKnotvector().distinctKnots[elementX + 1]);
+					std::pair<std::vector<double>, std::vector<double>> gauss_y = bspline_y->GaussPointsAndWeights(bspline_y->getDegree() + 3, bspline_y->getKnotvector().distinctKnots[elementY], bspline_y->getKnotvector().distinctKnots[elementY + 1]);
 
 					for (int g1 = 0; g1 < gauss_x.first.size(); g1++)
 					{
@@ -319,19 +291,16 @@ void Assembler_2D::computeQuadStiffnessMatrix(int elementX, int elementY, Matrix
 							std::pair<std::vector<double>, std::vector<double>> eval_1 = bspline_x->evaluateAtPoint(gauss_x.first[g1]);
 							std::pair<std::vector<double>, std::vector<double>> eval_2 = bspline_y->evaluateAtPoint(gauss_y.first[g2]);
 
-							std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
-							std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
+							Matrix<double> J = Jacobian(gauss_x.first[g1], gauss_y.first[g2], eval_1, eval_2);
 
-							Matrix<double> J = Jacobian(g1, g2, bspline_x->findSpanInVector(gauss_x.first[g1]), bspline_y->findSpanInVector(gauss_y.first[g2]), shp_fnc_dx, shp_fnc_dy);
-							std::pair<std::vector<double>, std::vector<double>> ph_grad_val = Map2Physical(J, shp_fnc_dx, shp_fnc_dy);
+							double bi_x = (1.0 / J.determinant()) * (J(1,1) * eval_1.second[il_1] * eval_2.first[il_2] - J(1,0) * eval_1.first[il_1] * eval_2.second[il_2]);
+							double bi_y = (1.0 / J.determinant()) * (-J(0,1) * eval_1.second[il_1] * eval_2.first[il_2] + J(0,0) * eval_1.first[il_1] * eval_2.second[il_2]);
+							double bj_x = (1.0 / J.determinant()) * (J(1,1) * eval_1.second[jl_1] * eval_2.first[jl_2] - J(1,0) * eval_1.first[jl_1] * eval_2.second[jl_2]);
+							double bj_y = (1.0 / J.determinant()) * (-J(0,1) * eval_1.second[jl_1] * eval_2.first[jl_2] + J(0,0) * eval_1.first[jl_1] * eval_2.second[jl_2]);
 
-							double bi_x = ph_grad_val.first[mycnt_1];
-							double bi_y = ph_grad_val.second[mycnt_1];
-							double bj_x = ph_grad_val.first[mycnt_2];
-							double bj_y = ph_grad_val.second[mycnt_2];
-							double wvol = gauss_x.second[g1] * gauss_y.second[g2];
+							double wvol = gauss_x.second[g1] * gauss_y.second[g2] * fabs(J.determinant());
 
-							v += J.determinant() * (bi_x * bj_x + bi_y * bj_y) * wvol;
+							v += (bi_x * bj_x + bi_y * bj_y) * wvol;
 						}
 					}
 
@@ -339,11 +308,8 @@ void Assembler_2D::computeQuadStiffnessMatrix(int elementX, int elementY, Matrix
 					int index2 = j1 * bspline_y->getNumberOfBasisFunctions() + j2;
 					double temp = A(index1, index2) + v;
 					A.setValue(index1, index2, temp);
-
-					mycnt_2++;
 				}
 			}
-			mycnt_1++;
 		}
 	}
 }
@@ -351,8 +317,8 @@ void Assembler_2D::computeQuadStiffnessMatrix(int elementX, int elementY, Matrix
 void Assembler_2D::computeStiffnessMatrix()
 {
 	// Assemble stiffness matrix
-	int Nx = bspline_x->distinctKnots.size() - 1; // Number of elements on x-direction
-	int Ny = bspline_y->distinctKnots.size() - 1; // NUmber of elements on y-direction
+	int Nx = bspline_x->getKnotvector().distinctKnots.size() - 1; // Number of elements on x-direction
+	int Ny = bspline_y->getKnotvector().distinctKnots.size() - 1; // NUmber of elements on y-direction
 	Matrix<double> A(getNumberOfBasisFunctions(), getNumberOfBasisFunctions());
 	int elementId = -1;
 	for (int ie1 = 0; ie1 < Nx; ie1++)
@@ -382,12 +348,12 @@ void Assembler_2D::computeStiffnessMatrix()
 
 void Assembler_2D::computeTriangleRightHandSide(std::vector<std::pair<double, double>> &triangle, int elementX, int elementY, std::vector<double> &b)
 {
-	int i_span_1 = bspline_x->findSpanInVector(bspline_x->distinctKnots[elementX]);
+	int i_span_1 = bspline_x->getKnotvector().findSpanOfValue(bspline_x->getKnotvector().distinctKnots[elementX]);
 	double a_x = std::min({triangle[0].first, triangle[1].first, triangle[2].first});
 	double b_x = std::max({triangle[0].first, triangle[1].first, triangle[2].first});
 	double a_y = std::min({triangle[0].second, triangle[1].second, triangle[2].second});
 	double b_y = std::max({triangle[0].second, triangle[1].second, triangle[2].second});
-	int i_span_2 = bspline_y->findSpanInVector(bspline_y->distinctKnots[elementY]);
+	int i_span_2 = bspline_y->getKnotvector().findSpanOfValue(bspline_y->getKnotvector().distinctKnots[elementY]);
 	int mycnt_1 = 0;
 	for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
 	{
@@ -408,18 +374,12 @@ void Assembler_2D::computeTriangleRightHandSide(std::vector<std::pair<double, do
 					std::pair<std::vector<double>, std::vector<double>> eval_1 = bspline_x->evaluateAtPoint(gauss_x.first[g1]);
 					std::pair<std::vector<double>, std::vector<double>> eval_2 = bspline_y->evaluateAtPoint(gauss_y.first[g2]);
 
-					std::vector<double> shp_fnc = createTensorProduct(eval_1.first, eval_2.first);
-					std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
-					std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
+					Matrix<double> J = Jacobian(gauss_x.first[g1], gauss_y.first[g2], eval_1, eval_2);
 
-					Matrix<double> J = Jacobian(g1, g2, bspline_x->findSpanInVector(gauss_x.first[g1]), bspline_y->findSpanInVector(gauss_y.first[g2]), shp_fnc_dx, shp_fnc_dy);
+					double bi_0 = eval_1.first[il_1] * eval_2.first[il_2];
+					double wvol = gauss_x.second[g1] * gauss_y.second[g2] * fabs(J.determinant());
 
-					std::pair<std::vector<double>, std::vector<double>> ph_val = Map2Physical(J, shp_fnc, shp_fnc);
-
-					double bi_0 = ph_val.first[mycnt_1] * ph_val.second[mycnt_1];
-					double wvol = gauss_x.second[g1] * gauss_y.second[g2];
-
-					v += J.determinant() * bi_0 * sourceFunction * wvol;
+					v += bi_0 * sourceFunction * wvol;
 				}
 			}
 			int index = i1 * bspline_y->getNumberOfBasisFunctions() + i2;
@@ -431,8 +391,8 @@ void Assembler_2D::computeTriangleRightHandSide(std::vector<std::pair<double, do
 
 void Assembler_2D::computeQuadRightHandSide(int elementX, int elementY, std::vector<double> &b)
 {
-	int i_span_1 = bspline_x->findSpanInVector(bspline_x->distinctKnots[elementX]);
-	int i_span_2 = bspline_y->findSpanInVector(bspline_y->distinctKnots[elementY]);
+	int i_span_1 = bspline_x->getKnotvector().findSpanOfValue(bspline_x->getKnotvector().distinctKnots[elementX]);
+	int i_span_2 = bspline_y->getKnotvector().findSpanOfValue(bspline_y->getKnotvector().distinctKnots[elementY]);
 	int mycnt_1 = 0;
 
 	for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
@@ -443,8 +403,8 @@ void Assembler_2D::computeQuadRightHandSide(int elementX, int elementY, std::vec
 			int i2 = i_span_2 - bspline_y->getDegree() + il_2;
 
 			double v = 0.0;
-			std::pair<std::vector<double>, std::vector<double>> gauss_x = bspline_x->GaussPointsAndWeights(bspline_x->getDegree() + 3, bspline_x->distinctKnots[elementX], bspline_x->distinctKnots[elementX + 1]);
-			std::pair<std::vector<double>, std::vector<double>> gauss_y = bspline_y->GaussPointsAndWeights(bspline_y->getDegree() + 3, bspline_y->distinctKnots[elementY], bspline_y->distinctKnots[elementY + 1]);
+			std::pair<std::vector<double>, std::vector<double>> gauss_x = bspline_x->GaussPointsAndWeights(bspline_x->getDegree() + 3, bspline_x->getKnotvector().distinctKnots[elementX], bspline_x->getKnotvector().distinctKnots[elementX + 1]);
+			std::pair<std::vector<double>, std::vector<double>> gauss_y = bspline_y->GaussPointsAndWeights(bspline_y->getDegree() + 3, bspline_y->getKnotvector().distinctKnots[elementY], bspline_y->getKnotvector().distinctKnots[elementY + 1]);
 			for (int g1 = 0; g1 < gauss_x.first.size(); g1++)
 			{
 				for (int g2 = 0; g2 < gauss_y.first.size(); g2++)
@@ -452,18 +412,12 @@ void Assembler_2D::computeQuadRightHandSide(int elementX, int elementY, std::vec
 					std::pair<std::vector<double>, std::vector<double>> eval_1 = bspline_x->evaluateAtPoint(gauss_x.first[g1]);
 					std::pair<std::vector<double>, std::vector<double>> eval_2 = bspline_y->evaluateAtPoint(gauss_y.first[g2]);
 
-					std::vector<double> shp_fnc = createTensorProduct(eval_1.first, eval_2.first);
-					std::vector<double> shp_fnc_dx = createTensorProduct(eval_1.second, eval_2.first);
-					std::vector<double> shp_fnc_dy = createTensorProduct(eval_1.first, eval_2.second);
+					Matrix<double> J = Jacobian(gauss_x.first[g1], gauss_y.first[g2], eval_1, eval_2);
 
-					Matrix<double> J = Jacobian(g1, g2, bspline_x->findSpanInVector(gauss_x.first[g1]), bspline_y->findSpanInVector(gauss_y.first[g2]), shp_fnc_dx, shp_fnc_dy);
+					double bi_0 = eval_1.first[il_1] * eval_2.first[il_2];
+					double wvol = gauss_x.second[g1] * gauss_y.second[g2] * fabs(J.determinant());
 
-					std::pair<std::vector<double>, std::vector<double>> ph_val = Map2Physical(J, shp_fnc, shp_fnc);
-
-					double bi_0 = ph_val.first[mycnt_1] * ph_val.second[mycnt_1];
-					double wvol = gauss_x.second[g1] * gauss_y.second[g2];
-
-					v += J.determinant() * bi_0 * sourceFunction * wvol;
+					v += bi_0 * sourceFunction * wvol;
 				}
 			}
 
@@ -478,8 +432,8 @@ void Assembler_2D::computeRightHandSide()
 {
 	// Assemble rhs vector
 	std::vector<double> b(getNumberOfBasisFunctions(), 0.0);
-	int Nx = bspline_x->distinctKnots.size() - 1;
-	int Ny = bspline_y->distinctKnots.size() - 1;
+	int Nx = bspline_x->getKnotvector().distinctKnots.size() - 1;
+	int Ny = bspline_y->getKnotvector().distinctKnots.size() - 1;
 	int elementId = -1;
 	for (int ie1 = 0; ie1 < Nx; ie1++)
 	{
