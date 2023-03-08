@@ -4,10 +4,10 @@
 void Poisson_2D::plotSolution(int resolution)
 {
 	// Create B-spline surface
-	double left_limit_x = assembler->getBspline_x().getKnotvector()[0];
-	double right_limit_x = assembler->getBspline_x().getKnotvector()[assembler->getBspline_x().getKnotvector().size() - 1];
-	double left_limit_y = assembler->getBspline_y().getKnotvector()[0];
-	double right_limit_y = assembler->getBspline_y().getKnotvector()[assembler->getBspline_y().getKnotvector().size() - 1];
+	double left_limit_x = assembler->getBspline_x().getKnotvector()(0);
+	double right_limit_x = assembler->getBspline_x().getKnotvector()(assembler->getBspline_x().getKnotvector().getSize() - 1);
+	double left_limit_y = assembler->getBspline_y().getKnotvector()(0);
+	double right_limit_y = assembler->getBspline_y().getKnotvector()(assembler->getBspline_y().getKnotvector().getSize() - 1);
 
 	std::string filename1("surface.dat");
     std::ofstream my_file1(filename1);
@@ -28,9 +28,9 @@ void Poisson_2D::plotSolution(int resolution)
 
 			if ((std::pow(i_step - assembler->trimming[0], 2) + std::pow(j_step - assembler->trimming[1], 2)) < std::pow(assembler->trimming[2], 2)) continue;
 
-			int span_i = assembler->getBspline_x().findSpanInVector(i_step);
+			int span_i = assembler->getBspline_x().getKnotvector().findSpanOfValue(i_step);
 			std::vector<double> bVal_i = assembler->getBspline_x().evaluateAtPoint(i_step).first;
-			int span_j = assembler->getBspline_y().findSpanInVector(j_step);
+			int span_j = assembler->getBspline_y().getKnotvector().findSpanOfValue(j_step);
 			std::vector<double> bVal_j = assembler->getBspline_y().evaluateAtPoint(j_step).first;
 
 			double coord_x = 0.0, coord_y = 0.0, coord_z = 0.0;
@@ -56,12 +56,14 @@ void Poisson_2D::plotSolution(int resolution)
 	std::string filename3("parameter_space.dat");
 	std::ofstream my_file3(filename3);
 	my_file3 << "variables= " << "\"x\"" << "," << "\"y\"" << "\n";
-	my_file3 << "zone t= " << "\"1\"" << ",i=" << assembler->getBspline_x().distinctKnots.size() << ",j=" << assembler->getBspline_y().distinctKnots.size() << "\n";
-	for (int j = 0; j < assembler->getBspline_y().distinctKnots.size(); j++)
+	my_file3 << "zone t= "
+			 << "\"1\""
+			 << ",i=" << assembler->getBspline_x().getKnotvector().distinctKnots.size() << ",j=" << assembler->getBspline_y().getKnotvector().distinctKnots.size() << "\n";
+	for (int j = 0; j < assembler->getBspline_y().getKnotvector().distinctKnots.size(); j++)
 	{
-		for (int i = 0; i < assembler->getBspline_x().distinctKnots.size(); i++)
+		for (int i = 0; i < assembler->getBspline_x().getKnotvector().distinctKnots.size(); i++)
 		{
-			my_file3 << assembler->getBspline_x().distinctKnots[i] << " " << assembler->getBspline_y().distinctKnots[j] << "\n";
+			my_file3 << assembler->getBspline_x().getKnotvector().distinctKnots[i] << " " << assembler->getBspline_y().getKnotvector().distinctKnots[j] << "\n";
 		}
 	}
 	my_file3.close();

@@ -21,8 +21,8 @@ public:
         computeBoundary();
     }
 
-    double Jacobian(double, int, std::vector<double>&);
-    
+    Matrix<double> Jacobian(double, std::vector<double> &);
+
     // Member getter functions
     const int getNumberOfBasisFunctions() const { return numberOfBasisFunctions; }
     std::vector<std::vector<double>> &getControlPoints() { return controlPoints; }

@@ -20,3 +20,20 @@ Solver Solver::Gradient(name6);
 
 std::string name7 = "ConjugateGradient";
 Solver Solver::ConjugateGradient(name7);
+
+void Solver::LUsolve(Matrix<double> &A, std::vector<double> &b)
+{
+    std::vector<Matrix<double>> LU = A.LU_factorization();
+    Matrix<double> L = LU[0];
+    Matrix<double> U = LU[1];
+    std::vector<double> y;
+    y = L.forward_Euler(b);
+    solution = U.backward_Euler(y);
+}
+
+void Solver::QRsolve(Matrix<double> &A, std::vector<double> &b)
+{
+    std::vector<Matrix<double>> QR = A.QR_factorization();
+    std::vector<double> rhs = QR[0].transpose() * b;
+    solution = QR[1].backward_Euler(rhs);
+}

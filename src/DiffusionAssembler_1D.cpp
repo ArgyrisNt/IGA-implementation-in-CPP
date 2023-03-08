@@ -4,11 +4,11 @@
 void DiffusionAssembler_1D::computeMassMatrix()
 {
     // Assemble mass matrix
-	Matrix<double> M(bspline_x->getNumberOfBasisFunctions(), bspline_x->getNumberOfBasisFunctions());
-	int N = bspline_x->distinctKnots.size() - 1; // Number of elements
-	for (int ie1 = 0; ie1 <= N; ie1++)
+	Matrix<double> M(getNumberOfBasisFunctions(), getNumberOfBasisFunctions());
+	int N = bspline_x->getKnotvector().distinctKnots.size() - 1; // Number of elements
+	for (int ie1 = 0; ie1 < N; ie1++)
 	{
-		int i_span_1 = bspline_x->findSpanInVector(bspline_x->distinctKnots[ie1]);
+		int i_span_1 = bspline_x->getKnotvector().findSpanOfValue(bspline_x->getKnotvector().distinctKnots[ie1]);
 		for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
 		{
 			for (int jl_1 = 0; jl_1 < bspline_x->getDegree() + 1; jl_1++)
@@ -17,25 +17,19 @@ void DiffusionAssembler_1D::computeMassMatrix()
 				int j1 = i_span_1 - bspline_x->getDegree() + jl_1;
 
 				double v = 0.0;
-				std::pair<std::vector<double>, std::vector<double>> gauss = bspline_x->GaussPointsAndWeights(bspline_x->getDegree() + 3, bspline_x->distinctKnots[ie1], bspline_x->distinctKnots[ie1 + 1]);
+				std::pair<std::vector<double>, std::vector<double>> gauss = bspline_x->GaussPointsAndWeights(bspline_x->getDegree() + 3, bspline_x->getKnotvector().distinctKnots[ie1], bspline_x->getKnotvector().distinctKnots[ie1 + 1]);
 				for (int g1 = 0; g1 < gauss.first.size(); g1++)
 				{
 					std::pair<std::vector<double>, std::vector<double>> eval = bspline_x->evaluateAtPoint(gauss.first[g1]);
+					Matrix<double> J = Jacobian(gauss.first[g1], eval.second);
+					double detJ = sqrt(pow(J(0, 0), 2) + pow(J(0, 1), 2));
 
-					double jacob = Jacobian(g1, bspline_x->findSpanInVector(gauss.first[g1]), eval.second);
+					double bi_0 = eval.first[il_1];
+					double bj_0 = eval.first[jl_1];
 
-					std::vector<double> ph_bVal;
-					for (int kk = 0; kk < eval.first.size(); kk++)
-					{
-						ph_bVal.push_back((1.0 / jacob) * eval.first[kk]);
-					}
+					double wvol = gauss.second[g1] * fabs(detJ);
 
-					double bi_0 = ph_bVal[il_1];
-					double bj_0 = ph_bVal[jl_1];
-
-					double wvol = gauss.second[g1];
-
-					v += jacob * (bi_0 * bj_0) * wvol;
+					v += (bi_0 * bj_0) * wvol;
 				}
 
 				double temp = M(i1, j1) + v;
@@ -62,8 +56,8 @@ std::vector<double> DiffusionAssembler_1D::applyInitialCondition(double (*func)(
 {
 	std::vector<double> sol;
 	std::vector<double> linspaced;
-	double start = bspline_x->getKnotvector()[0];
-	double end = bspline_x->getKnotvector()[bspline_x->getKnotvector().size() - 1];
+	double start = bspline_x->getKnotvector()(0);
+	double end = bspline_x->getKnotvector()(bspline_x->getKnotvector().getSize() - 1);
 	double delta = (end - start) / (bspline_x->getNumberOfBasisFunctions() - 1);
 	for (int i = 0; i < bspline_x->getNumberOfBasisFunctions() - 1; i++)
 	{

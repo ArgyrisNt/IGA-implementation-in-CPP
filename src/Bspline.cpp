@@ -4,127 +4,62 @@
 #include <iostream>
 #include <fstream>
 
-// - - - - - - - - B-spline - - - - - - - - 
-
-Bspline::Bspline()
+Bspline::Bspline(int newDegree, KnotVector<double>& newKnotVector, std::vector<double> &newWeights)
 {
-	knotvector = {};
-	degree = 1;
-	numberOfBasisFunctions = 0;
-}
-
-Bspline::Bspline(int new_degree, std::vector<double> &new_knotvector, std::vector<double> &new_weights)
-{
-	weights = new_weights;
-	knotvector = new_knotvector;
-	degree = new_degree;
-	numberOfBasisFunctions = knotvector.size() - degree - 1;
-	computeDistinctKnots();
+	weights = newWeights;
+	knotVector = newKnotVector;
+	degree = newDegree;
+	numberOfBasisFunctions = knotVector.getSize() - degree - 1;
 }
 
 Bspline::Bspline(const Bspline &bspline)
 {
-	knotvector = bspline.knotvector;
+	knotVector = bspline.knotVector;
 	weights = bspline.weights;
 	degree = bspline.degree;
 	numberOfBasisFunctions = bspline.numberOfBasisFunctions;
-	computeDistinctKnots();
-}
-
-Bspline::Bspline(const double start, const double end, int new_degree, int numberOfElements, std::vector<double> &new_weights)
-{
-	std::vector<double> new_knotvector;
-	for (int i = 0; i < new_degree; i++)
-	{
-		new_knotvector.push_back(start);
-	}
-	double delta = end / numberOfElements;
-	for (int i = 0; i <= numberOfElements; i++)
-	{
-		new_knotvector.push_back(i * delta);
-	}
-	for (int i = 0; i < new_degree; i++)
-	{
-		new_knotvector.push_back(end);
-	}
-
-	weights = new_weights;
-	knotvector = new_knotvector;
-	degree = new_degree;
-	numberOfBasisFunctions = knotvector.size() - degree - 1;
-	computeDistinctKnots();
 }
 
 Bspline::~Bspline() {}
 
 Bspline &Bspline::operator=(const Bspline &bspline)
 {
-	knotvector = bspline.knotvector;
+	knotVector = bspline.knotVector;
 	weights = bspline.weights;
 	degree = bspline.degree;
 	numberOfBasisFunctions = bspline.numberOfBasisFunctions;
-	computeDistinctKnots();
 
 	return *this;
 }
 
 void Bspline::setWeights(std::vector<double> new_weights)
 {
-	bool is_invalid = false;
 	for (auto weight : new_weights)
 	{
 		if (weight < 0 || weight > 1)
 		{
-			is_invalid = true;
+			std::cout << "Invalid weights. Valid weights are within [0,1]." << std::endl;
+			throw std::invalid_argument("Invalid weights");
 			break;
 		}
 	}
-	if (!is_invalid)
-		weights = new_weights;
-	else
-	{
-		std::cout << "Invalid weights. Valid weights are within [0,1]." << std::endl;
-		throw std::invalid_argument("Invalid weights");
-	}
+
+	weights = new_weights;
 }
 
-int Bspline::findSpanInVector(const double value, std::vector<double> vector)
+void Bspline::mapValuesToDomain(std::vector<double>& GaussPoints, const double left, const double right)
 {
-	if (vector.size() == 0)
-		vector = knotvector;
-	int count = 0;
-	int index = 0;
-	if (value == vector[vector.size() - 1])
+	for (int i = 0; i < GaussPoints.size(); i++)
 	{
-		return (vector.size() - degree - 2);
+		GaussPoints[i] = ((left * (1 - GaussPoints[i]) + right * (1 + GaussPoints[i])) / 2);
 	}
-	for (int i = 0; i < vector.size() - 1; i++)
-	{
-		double start = vector[i];
-		double end = vector[i + 1];
-		if (value >= start && value < end)
-		{
-			index = i;
-			count += 1;
-			break;
-		}
-	}
-	if (count == 0)
-	{
-		std::cout << "Error: Value " << value << " is not in vector." << std::endl;
-		throw std::invalid_argument("Value does not appear in vector");
-	}
-
-	return index;
 }
 
 std::pair<std::vector<double>, std::vector<double>> Bspline::GaussPointsAndWeights(int numberOfPoints, const double left, const double right)
 {
 	assert(numberOfPoints > 0);
-	if (numberOfPoints > 5)
-		numberOfPoints = 5;
-	std::vector<double> GaussPoints;
-	std::vector<double> GaussWeights;
+	if (numberOfPoints > 5) numberOfPoints = 5;
+	std::vector<double> GaussPoints, GaussWeights;
 
 	// Compute Gauss points in interval [0,1]
 	switch (numberOfPoints)
@@ -154,15 +89,9 @@ std::pair<std::vector<double>, std::vector<double>> Bspline::GaussPointsAndWeigh
 		throw std::invalid_argument("Invalid dimension");
 		break;
 	}
+	mapValuesToDomain(GaussPoints, left, right);
 
-	// Convert to interval [left, right]
-	std::vector<double> mappedGaussPoints;
-	for (int i = 0; i < GaussPoints.size(); i++)
-	{
-		mappedGaussPoints.push_back((left * (1 - GaussPoints[i]) + right * (1 + GaussPoints[i])) / 2);
-	}
-
-	return std::make_pair(mappedGaussPoints, GaussWeights);
+	return std::make_pair(GaussPoints, GaussWeights);
 }
 
 void Bspline::basisFunctionsOfDegree(int level, double value, std::vector<double> &valuesOfBasisFunctions, std::vector<double>& derivativesOfBasisFunctions)
@@ -170,36 +99,27 @@ void Bspline::basisFunctionsOfDegree(int level, double value, std::vector<double
 	std::vector<double> oldValuesOfBasisFunctions = valuesOfBasisFunctions;
 	for (int j = 0; j < numberOfBasisFunctions; j++)
 	{
-		double nominator = value - knotvector[j];
-		double denominator = knotvector[j + level] - knotvector[j];
 		double firstCoefficient = 0.0, secondCoefficient = 0.0;
-		if (denominator != 0.0)
-		{
-			firstCoefficient = nominator / denominator;
-		}
-		nominator = knotvector[j + level + 1] - value;
-		denominator = knotvector[j + level + 1] - knotvector[j + 1];
-		if (denominator != 0.0)
-		{
-			secondCoefficient = nominator / denominator;
-		}
-		if (j == knotvector.size() - degree - 2)
-		{
-			valuesOfBasisFunctions[j] = firstCoefficient * oldValuesOfBasisFunctions[j];
-		}
-		else
-		{
-			valuesOfBasisFunctions[j] = firstCoefficient * oldValuesOfBasisFunctions[j] + secondCoefficient * oldValuesOfBasisFunctions[j + 1];
-		}
+
+		double nominator = value - knotVector(j);
+		double denominator = knotVector(j + level) - knotVector(j);
+		if (denominator != 0.0) firstCoefficient = nominator / denominator;
+
+		nominator = knotVector(j + level + 1) - value;
+		denominator = knotVector(j + level + 1) - knotVector(j + 1);
+		if (denominator != 0.0) secondCoefficient = nominator / denominator;
+
+		if (j == knotVector.getSize() - degree - 2) valuesOfBasisFunctions[j] = firstCoefficient * oldValuesOfBasisFunctions[j];
+		else valuesOfBasisFunctions[j] = firstCoefficient * oldValuesOfBasisFunctions[j] + secondCoefficient * oldValuesOfBasisFunctions[j + 1];
 		if (level == degree)
 		{
-			if (knotvector[j + level] - knotvector[j] != 0)
+			if (knotVector(j + level) - knotVector(j) != 0)
 			{
-				firstCoefficient = oldValuesOfBasisFunctions[j] / (knotvector[j + level] - knotvector[j]);
+				firstCoefficient = oldValuesOfBasisFunctions[j] / (knotVector(j + level) - knotVector(j));
 			}
-			if (knotvector[j + level + 1] - knotvector[j + 1] != 0)
+			if (knotVector(j + level + 1) - knotVector(j + 1) != 0)
 			{
-				secondCoefficient = oldValuesOfBasisFunctions[j + 1] / (knotvector[j + level + 1] - knotvector[j + 1]);
+				secondCoefficient = oldValuesOfBasisFunctions[j + 1] / (knotVector(j + level + 1) - knotVector(j + 1));
 			}
 			derivativesOfBasisFunctions[j] = degree * (firstCoefficient - secondCoefficient);
 		}
@@ -211,7 +131,7 @@ void Bspline::computeActiveBasisFunctions(double value, std::vector<double> &val
 	// if value in [ui,ui+1), then active functions are Ni-p,...,Ni
 	std::vector<double> activeValuesOfBasisFunctions;
 	std::vector<double> activeDerivativesOfBasisFunctions;
-	int span = findSpanInVector(value);
+	int span = knotVector.findSpanOfValue(value);
 	double sumValues = 0.0, sumDerivatives = 0.0;
 	for (int i = span - degree; i <= span; i++)
 	{
@@ -237,13 +157,13 @@ std::vector<double> Bspline::initializeBasisFunctions(double value)
 	std::vector<double> valuesOfBasisFunctions(numberOfBasisFunctions, 0.0);
 	for (int j = 0; j < numberOfBasisFunctions; j++)
 	{
-		if (value >= knotvector[j] && value < knotvector[j + 1])
+		if (value >= knotVector(j) && value < knotVector(j + 1))
 		{
 			valuesOfBasisFunctions[j] = 1.0;
 		}
 	}
 
-	if (value == knotvector[knotvector.size() - 1])
+	if (value == knotVector(knotVector.getSize() - 1))
 	{
 		valuesOfBasisFunctions[numberOfBasisFunctions - 1] = 1.0;
 	}
@@ -269,22 +189,10 @@ std::pair<std::vector<double>, std::vector<double>> Bspline::evaluateAtPoint(con
 	return std::make_pair(valuesOfBasisFunctions, derivativesOfBasisFunctions);
 }
 
-void Bspline::computeDistinctKnots()
-{
-	distinctKnots = {};
-	for (int i = degree; i < knotvector.size() - degree; i++)
-	{
-		if (!std::count(distinctKnots.begin(), distinctKnots.end(), knotvector[i]))
-		{
-			distinctKnots.push_back(knotvector[i]);
-		}
-	}
-}
-
 void Bspline::plot(int resolution)
 {
-	double firstKnot = getKnotvector()[0];
-	double lastKnot = getKnotvector()[getKnotvector().size() - 1];
+	double firstKnot = getKnotvector()(0);
+	double lastKnot = getKnotvector()(getKnotvector().getSize() - 1);
 	std::vector<std::vector<double>> ValuesOfBasisFunctions;
 	std::vector<double> evaluationPoints;
 	for (int i = 0; i < resolution; i++)
@@ -315,8 +223,8 @@ void Bspline::plot(int resolution)
 void BsplineCurve::plot(int resolution)
 {
 	// Create B-spline curve
-	double firstKnot = bspline_x.getKnotvector()[0];
-	double lastKnot = bspline_x.getKnotvector()[bspline_x.getKnotvector().size() - 1];
+	double firstKnot = bspline_x.getKnotvector()(0);
+	double lastKnot = bspline_x.getKnotvector()(bspline_x.getKnotvector().getSize() - 1);
 
 	std::string filename("curve.dat");
 	std::ofstream plotCurve(filename);
@@ -326,7 +234,7 @@ void BsplineCurve::plot(int resolution)
 	for (int i = (int)(firstKnot); i < resolution; i++)
 	{
 		double currentStep = firstKnot + (double)(i) * ((lastKnot - firstKnot) / ((double) (resolution - 1)));
-		int span = bspline_x.findSpanInVector(currentStep);
+		int span = bspline_x.getKnotvector().findSpanOfValue(currentStep);
 		std::vector<double> ValuesOfbasisFunctions = bspline_x.evaluateAtPoint(currentStep).first;
 
 		double coordinate_x = 0.0, coordinate_y = 0.0;
@@ -353,10 +261,10 @@ BsplineSurface &BsplineSurface::operator=(const BsplineSurface &old)
 
 void BsplineSurface::plot(int resolution)
 {
-	double firstKnot_x = getBspline_x().getKnotvector()[0];
-	double lastKnot_x = getBspline_x().getKnotvector()[getBspline_x().getKnotvector().size() - 1];
-	double firstKnot_y = getBspline_y().getKnotvector()[0];
-	double lastKnot_y = getBspline_y().getKnotvector()[getBspline_y().getKnotvector().size() - 1];
+	double firstKnot_x = getBspline_x().getKnotvector()(0);
+	double lastKnot_x = getBspline_x().getKnotvector()(getBspline_x().getKnotvector().getSize() - 1);
+	double firstKnot_y = getBspline_y().getKnotvector()(0);
+	double lastKnot_y = getBspline_y().getKnotvector()(getBspline_y().getKnotvector().getSize() - 1);
 	std::string filename("surface.dat");
 	std::ofstream plotSurface(filename);
 	plotSurface << "variables= " << "\"x\"" << "," << "\"y\""<< "\n";
@@ -367,9 +275,9 @@ void BsplineSurface::plot(int resolution)
 		{
 			double currentStep_i = firstKnot_x + (double)(i) * ((lastKnot_x - firstKnot_x) / ((double)(resolution)));
 			double currentStep_j = firstKnot_y + (double)(j) * ((lastKnot_y - firstKnot_y) / ((double)(resolution)));
-			int span_i = getBspline_x().findSpanInVector(currentStep_i);
+			int span_i = getBspline_x().getKnotvector().findSpanOfValue(currentStep_i);
 			std::vector<double> x_ValuesOfbasisFunctions = getBspline_x().evaluateAtPoint(currentStep_i).first;
-			int span_j = getBspline_y().findSpanInVector(currentStep_j);
+			int span_j = getBspline_y().getKnotvector().findSpanOfValue(currentStep_j);
 			std::vector<double> y_ValuesOfbasisFunctions = getBspline_y().evaluateAtPoint(currentStep_j).first;
 
 			double coordinate_x = 0.0, coordinate_y = 0.0;
@@ -389,23 +297,23 @@ void BsplineSurface::plot(int resolution)
 	}
 }
 
-void BsplineSurface::knotInsertion(std::vector<double>& vector, std::vector<std::vector<double>> &points, double newKnot)
+void BsplineSurface::knotInsertion(KnotVector<double>& vector, std::vector<std::vector<double>> &points, double newKnot)
 {
-	std::vector<double> new_knotvector = vector;
-	int span = bspline_x.findSpanInVector(newKnot, vector);
-	new_knotvector.insert(new_knotvector.begin() + span + 1, newKnot);
+	KnotVector<double> new_knotvector = vector;
+	int span = vector.findSpanOfValue(newKnot);
+	new_knotvector.insert(span + 1, newKnot);
 
 	std::vector<std::vector<double>> newPoints;
-	for (int j = span - bspline_x.getDegree() + 1; j <= span; j++)
+	for (int j = span - vector.getDegree() + 1; j <= span; j++)
 	{
-		double alpha = (newKnot - vector[j]) / (vector[j + bspline_x.getDegree()] - vector[j]);
+		double alpha = (newKnot - vector(j)) / (vector(j + vector.getDegree()) - vector(j));
 		double coord_x = (1.0 - alpha) * points[j - 1][0] + alpha * points[j][0];
 		double coord_y = (1.0 - alpha) * points[j - 1][1] + alpha * points[j][1];
 		newPoints.push_back({coord_x, coord_y});
 	}
 
 	std::vector<std::vector<double>> FinalNewPoints;
-	for (int i = 0; i <= span - bspline_x.getDegree(); i++)
+	for (int i = 0; i <= span - vector.getDegree(); i++)
 	{
 		FinalNewPoints.push_back(points[i]);
 	}
@@ -422,13 +330,13 @@ void BsplineSurface::knotInsertion(std::vector<double>& vector, std::vector<std:
 	vector = new_knotvector;
 }
 
-void BsplineSurface::refineParametricCurve(std::vector<double>& vector, std::vector<std::vector<double>> &points)
+void BsplineSurface::refineParametricCurve(KnotVector<double> &vector, std::vector<std::vector<double>> &points)
 {
-	std::vector<double> new_knotvector = vector;
-	for (int i = 0; i < vector.size() - 1; i++)
+	KnotVector<double> new_knotvector = vector;
+	for (int i = 0; i < vector.getSize() - 1; i++)
 	{
-		double a = vector[i];
-		double b = vector[i + 1];
+		double a = vector(i);
+		double b = vector(i + 1);
 		if (a == b)
 			continue;
 		double new_knot = (a + b) / 2.0;
@@ -469,7 +377,7 @@ void BsplineSurface::uniformRefine_x()
 {
 	std::vector<std::vector<std::vector<double>>> all_new_controlPoints;
 	std::vector<std::vector<double>> controlPoints_x;
-	std::vector<double> new_knotvector;
+	KnotVector<double> new_knotvector;
 	for (int j = 0; j < bspline_y.getWeights().size(); j++)
 	{
 		new_knotvector = bspline_x.getKnotvector();
@@ -487,7 +395,8 @@ void BsplineSurface::uniformRefine_x()
 		}
 	}
 
-	std::vector<double> new_weights(new_knotvector.size() - bspline_x.getDegree() - 1, 1.0);
+	std::vector<double> new_weights(new_knotvector.getSize() - bspline_x.getDegree() - 1, 1.0);
+	new_knotvector.computeDistinctKnots();
 	Bspline new_bspline(bspline_x.getDegree(), new_knotvector, new_weights);
 	(*this).setBspline_x(new_bspline);
 	(*this).setControlPoints(controlPoints);
@@ -497,7 +406,7 @@ void BsplineSurface::uniformRefine_y()
 {
 	std::vector<std::vector<std::vector<double>>> all_new_controlPoints;
 	std::vector<std::vector<double>> controlPoints_y;
-	std::vector<double> new_knotvector;
+	KnotVector<double> new_knotvector;
 	for (int j = 0; j < bspline_x.getWeights().size(); j++)
 	{
 		new_knotvector = bspline_y.getKnotvector();
@@ -512,7 +421,8 @@ void BsplineSurface::uniformRefine_y()
 		for (auto el : group) controlPoints.push_back(el);
 	}
 
-	std::vector<double> new_weights(new_knotvector.size() - bspline_y.getDegree() - 1, 1.0);
+	std::vector<double> new_weights(new_knotvector.getSize() - bspline_y.getDegree() - 1, 1.0);
+	new_knotvector.computeDistinctKnots();
 	Bspline new_bspline(bspline_y.getDegree(), new_knotvector, new_weights);
 	(*this).setBspline_y(new_bspline);
 	(*this).setControlPoints(controlPoints);
