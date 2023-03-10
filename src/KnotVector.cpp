@@ -8,7 +8,6 @@ KnotVector<T>::KnotVector()
 {
     degree = 0;
     values = {};
-    computeDistinctKnots();
 }
 
 template <class T>
@@ -16,7 +15,6 @@ KnotVector<T>::KnotVector(int newDegree, std::vector<T> &newValues)
 {
     degree = newDegree;
     values = newValues;
-    computeDistinctKnots();
 }
 
 template<class T>
@@ -36,7 +34,6 @@ KnotVector<T>::KnotVector(const T start, const T end, int newDegree, int numberO
     {
         values.push_back(end);
     }
-    computeDistinctKnots();
 }
 
 template <class T>
@@ -44,7 +41,6 @@ KnotVector<T> &KnotVector<T>::operator=(const KnotVector &oldKnotVector)
 {
     values = oldKnotVector.values;
     degree = oldKnotVector.degree;
-    distinctKnots = oldKnotVector.distinctKnots;
 }
 
 template <class T>
@@ -66,19 +62,6 @@ int KnotVector<T>::findSpanOfValue(const double value)
     }
     std::cout << "Error: Value " << value << " is not in vector." << std::endl;
     throw std::invalid_argument("Value does not appear in vector");
-}
-
-template <class T>
-void KnotVector<T>::computeDistinctKnots()
-{
-    distinctKnots = {};
-    double currentValue, previousValue = -100.0;
-    for (int i = degree; i < getSize() - degree; i++)
-    {
-        currentValue = values[i];
-        if (currentValue != previousValue) distinctKnots.push_back(values[i]);
-        previousValue = values[i];
-    }
 }
 
 template <class T>

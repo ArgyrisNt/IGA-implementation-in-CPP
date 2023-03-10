@@ -29,10 +29,17 @@ public:
     std::string& getBoundaryMode() { return boundaryMode; }
     std::vector<std::pair<int, int>> &getBoundaryBasisFunctions() { return boundaryBasisFunctions; }
 
+    int XspanOfValueInKnotVector(double value);
+
 protected:
     double addBoundaryValueToRhs(int position);
 
-    // Member variables
+    void XcomputeDistinctKnots();
+
+    std::vector<std::pair<double, double>> GaussPointsAndWeights(int, const double, const double);
+    void mapValuesToDomain(std::vector<double> &GaussPoints, const double left, const double right);
+
+    std::vector<double> XdistinctKnots;
     Matrix<double> stiffnessMatrix;
     std::vector<double> rightHandSide;
     Bspline* bspline_x;

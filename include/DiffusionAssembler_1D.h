@@ -17,6 +17,7 @@ public:
     // Member functions
     void assemble() override
     {
+        XcomputeDistinctKnots();
         computeStiffnessMatrixAndRightHandSide();
         computeMassMatrix();
         computeBoundary();

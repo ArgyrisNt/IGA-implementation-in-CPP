@@ -9,21 +9,20 @@ public:
     KnotVector(int newDegree, std::vector<T>& newValues);
     KnotVector(const T start, const T end, int new_degree, int numberOfElements);
 
+    ~KnotVector() {}
+
     KnotVector &operator=(const KnotVector &);
     T operator()(int position);
 
     int findSpanOfValue(const double value);
-    void computeDistinctKnots();
     void insert(int position, double value);
 
     int getSize() { return values.size(); }
     int getDegree() { return degree; }
-    std::vector<T> getDistinctKnots() { return distinctKnots; }
 
 private:
     std::vector<T> values;
     int degree;
-    std::vector<T> distinctKnots;
 };
 
 template <class T>

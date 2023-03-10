@@ -10,19 +10,25 @@ class Element
 public:
     Element(bool _isTrimmed, TrimmingCurve& _trimmingCurve) : isTrimmed(_isTrimmed), trimmingCurve(_trimmingCurve) {}
 
+    ~Element() {}
+
     void categorise();
     void computeTrimmedAndUntrimmedVertices();
-    std::vector<std::vector<std::pair<double, double>>> divideInTriangles();
-    std::vector<std::vector<std::pair<double, double>>> construct_3_triangles();
-    std::vector<std::vector<std::pair<double, double>>> construct_2_triangles();
-    std::vector<std::vector<std::pair<double, double>>> construct_1_triangle();
+    std::vector<Triangle<double>> divideInTriangles();
+    std::vector<Triangle<double>> construct_3_triangles();
+    std::vector<Triangle<double>> construct_2_triangles();
+    std::vector<Triangle<double>> construct_1_triangle();
+
+    void setVertices(std::vector<Vertex<double>>& _vertices) { vertices =_vertices; }
 
     bool isTrimmed;
-    std::vector<std::pair<double, double>> untrimmedVertices;
-    std::vector<std::pair<double, double>> trimmedVertices;
-    std::vector<std::pair<double, double>> vertices;
-    std::pair<double, double> centroid;
+
+private:
+    Vertex<double> centroid;
     TrimmingCurve trimmingCurve;
+    std::vector<Vertex<double>> vertices;
+    std::vector<Vertex<double>> trimmedVertices;
+    std::vector<Vertex<double>> untrimmedVertices;
 };
 
 #include "..\src\Element.cpp"

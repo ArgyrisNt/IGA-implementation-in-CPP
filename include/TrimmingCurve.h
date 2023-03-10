@@ -3,23 +3,26 @@
 
 #include <iostream>
 #include <vector>
+#include "..\include\Utilities.h"
 
 class TrimmingCurve
 {
 public:
     TrimmingCurve() {}
-    TrimmingCurve(std::pair<double, double> &_center, double _radius) : center(_center), radius(_radius) {}
-    TrimmingCurve(std::pair<double, double> &&_center, double _radius) : center(_center), radius(_radius) {}
+    TrimmingCurve(Vertex<double> &_center, double _radius) : center(_center), radius(_radius) {}
+    TrimmingCurve(Vertex<double> &&_center, double _radius) : center(_center), radius(_radius) {}
+
+    ~TrimmingCurve() {}
 
     void plot();
-    double projectionOfPoint(std::pair<double, double>& point);
-    std::pair<double, double> evaluate(double t);
-    std::pair<double, double> evaluateDerivative(double t);
-    bool isPointOutside(std::pair<double, double> &point);
+    double projectionOfPoint(Vertex<double>& point);
+    Vertex<double> evaluate(double t);
+    Vertex<double> evaluateDerivative(double t);
+    bool isPointOutside(Vertex<double> &point);
     double find_s_given_t(double t, double minimum, double maximum);
     double find_t_given_s(double s, double minimum, double maximum);
 
-    std::pair<double, double> center;
+    Vertex<double> center;
     double radius;
 };
 

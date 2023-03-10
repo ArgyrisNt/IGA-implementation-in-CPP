@@ -1,6 +1,24 @@
 #include <iostream>
 #include "..\include\Assembler.h"
 
+void Assembler::XcomputeDistinctKnots()
+{
+	XdistinctKnots = {};
+	double currentValue, previousValue = -100.0;
+	KnotVector<double> knotVector = bspline_x->getKnotvector();
+	for (int i = bspline_x->getDegree(); i < knotVector.getSize() - bspline_x->getDegree(); i++)
+	{
+		currentValue = knotVector(i);
+		if (currentValue != previousValue)
+			XdistinctKnots.push_back(knotVector(i));
+		previousValue = knotVector(i);
+	}
+}
+
+int Assembler::XspanOfValueInKnotVector(double value)
+{
+	return bspline_x->getKnotvector().findSpanOfValue(value);
+}
 
 void Assembler::applyBoundaryEllimination()
 {
@@ -95,4 +113,57 @@ void Assembler::enforceBoundaryConditions(std::string& mode)
 		std::cout << "Invalid method for enforcing boundary conditions." << std::endl;
 		throw std::invalid_argument("Invalid method");
 	}
+}
+
+void Assembler::mapValuesToDomain(std::vector<double> &GaussPoints, const double left, const double right)
+{
+	for (int i = 0; i < GaussPoints.size(); i++)
+	{
+		GaussPoints[i] = ((left * (1 - GaussPoints[i]) + right * (1 + GaussPoints[i])) / 2);
+	}
+}
+
+std::vector<std::pair<double, double>> Assembler::GaussPointsAndWeights(int numberOfPoints, const double left, const double right)
+{
+	assert(numberOfPoints > 0);
+	if (numberOfPoints > 5) numberOfPoints = 5;
+	std::vector<double> GaussPoints, GaussWeights;
+
+	// Compute Gauss points in interval [0,1]
+	switch (numberOfPoints)
+	{
+	case 1:
+		GaussPoints = {0.0};
+		GaussWeights = {2.0};
+		break;
+	case 2:
+		GaussPoints = {-0.57735, 0.57735};
+		GaussWeights = {1.0, 1.0};
+		break;
+	case 3:
+		GaussPoints = {0.0, -0.774597, 0.774597};
+		GaussWeights = {0.888889, 0.555556, 0.555556};
+		break;
+	case 4:
+		GaussPoints = {-0.861136, -0.339981, 0.339981, 0.861136};
+		GaussWeights = {0.347855, 0.652145, 0.652145, 0.347855};
+		break;
+	case 5:
+		GaussPoints = {-0.90618, -0.538469, 0.0, 0.538469, 0.90618};
+		GaussWeights = {0.236927, 0.478629, 0.568889, 0.478629, 0.236927};
+		break;
+	default:
+		std::cout << "Invalid dimension. Valid dimensions are 1,2,3,4,5." << std::endl;
+		throw std::invalid_argument("Invalid dimension");
+		break;
+	}
+	mapValuesToDomain(GaussPoints, left, right);
+
+	std::vector<std::pair<double, double>> GaussPointsAndWeights;
+	for (int i = 0; i < GaussPoints.size(); i++)
+	{
+		GaussPointsAndWeights.push_back(std::make_pair(GaussPoints[i], GaussWeights[i]));
+	}
+
+	return GaussPointsAndWeights;
 }

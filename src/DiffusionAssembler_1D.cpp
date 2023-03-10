@@ -4,17 +4,17 @@
 double DiffusionAssembler_1D::computeMassIntegral(int element, int basisFunction, int trialFunction)
 {
 	double v = 0.0;
-	std::pair<std::vector<double>, std::vector<double>> gauss = bspline_x->GaussPointsAndWeights(bspline_x->getDegree() + 3, bspline_x->getKnotvector().getDistinctKnots()[element], bspline_x->getKnotvector().getDistinctKnots()[element + 1]);
-	for (int g1 = 0; g1 < gauss.first.size(); g1++)
+	std::vector<std::pair<double,double>> gauss = GaussPointsAndWeights(bspline_x->getDegree() + 3, XdistinctKnots[element], XdistinctKnots[element + 1]);
+	for (int g1 = 0; g1 < gauss.size(); g1++)
 	{
-		std::pair<std::vector<double>, std::vector<double>> eval = bspline_x->evaluateAtPoint(gauss.first[g1]);
-		Matrix<double> J = Jacobian(gauss.first[g1], eval.second);
+		std::pair<std::vector<double>, std::vector<double>> eval = bspline_x->evaluateAtPoint(gauss[g1].first);
+		Matrix<double> J = Jacobian(gauss[g1].first, eval.second);
 		double detJ = sqrt(pow(J(0, 0), 2) + pow(J(0, 1), 2));
 
 		double bi_0 = eval.first[basisFunction];
 		double bj_0 = eval.first[trialFunction];
 
-		double wvol = gauss.second[g1] * fabs(detJ);
+		double wvol = gauss[g1].second * fabs(detJ);
 
 		v += (bi_0 * bj_0) * wvol;
 	}
@@ -25,10 +25,10 @@ void DiffusionAssembler_1D::computeMassMatrix()
 {
     // Assemble mass matrix
 	Matrix<double> M(getNumberOfBasisFunctions(), getNumberOfBasisFunctions());
-	int N = bspline_x->getKnotvector().getDistinctKnots().size() - 1; // Number of elements
+	int N = XdistinctKnots.size() - 1; // Number of elements
 	for (int ie1 = 0; ie1 < N; ie1++)
 	{
-		int i_span_1 = bspline_x->getKnotvector().findSpanOfValue(bspline_x->getKnotvector().getDistinctKnots()[ie1]);
+		int i_span_1 = XspanOfValueInKnotVector(XdistinctKnots[ie1]);
 		for (int il_1 = 0; il_1 < bspline_x->getDegree() + 1; il_1++)
 		{
 			int i1 = i_span_1 - bspline_x->getDegree() + il_1;
@@ -60,10 +60,10 @@ std::vector<double> DiffusionAssembler_1D::applyInitialCondition(double (*func)(
 {
 	std::vector<double> sol;
 	std::vector<double> linspaced;
-	double start = bspline_x->getKnotvector()(0);
-	double end = bspline_x->getKnotvector()(bspline_x->getKnotvector().getSize() - 1);
-	double delta = (end - start) / (bspline_x->getNumberOfBasisFunctions() - 1);
-	for (int i = 0; i < bspline_x->getNumberOfBasisFunctions() - 1; i++)
+	double start = XdistinctKnots[0];
+	double end = XdistinctKnots[XdistinctKnots.size() - 1];
+	double delta = (end - start) / (getNumberOfBasisFunctions() - 1);
+	for (int i = 0; i < getNumberOfBasisFunctions() - 1; i++)
 	{
 		linspaced.push_back(start + delta * i);
 	}
