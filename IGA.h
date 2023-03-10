@@ -2,8 +2,7 @@
 // Utilities
 #include "include\Matrix.h"
 #include "include\Bspline.h"
-//#include "include\KnotVector.h"
-// Assemblers
+//  Assemblers
 #include "include\Assembler.h"
 #include "include\Assembler_1D.h"
 #include "include\Assembler_2D.h"
@@ -16,7 +15,6 @@
 // Utilities
 #include "src\Matrix.cpp"
 #include "src\Bspline.cpp"
-//#include "src\KnotVector.cpp"
 // Assemblers
 #include "src\Assembler.cpp"
 #include "src\Assembler_1D.cpp"

@@ -30,6 +30,8 @@ public:
     std::vector<std::pair<int, int>> &getBoundaryBasisFunctions() { return boundaryBasisFunctions; }
 
 protected:
+    double addBoundaryValueToRhs(int position);
+
     // Member variables
     Matrix<double> stiffnessMatrix;
     std::vector<double> rightHandSide;

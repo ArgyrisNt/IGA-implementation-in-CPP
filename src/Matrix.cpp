@@ -26,9 +26,6 @@ Matrix<T>::Matrix(int rows, int columns, T value)
 	for (int i = 0; i < numberOfRows; i++)
 	{
 		values[i] = new T[numberOfColumns];
-	}
-	for (int i = 0; i < numberOfRows; i++)
-	{
 		for (int j = 0; j < numberOfColumns; j++)
 		{
 			values[i][j] = value;
@@ -60,9 +57,9 @@ Matrix<T> &Matrix<T>::operator=(Matrix matrix)
 template <class T>
 Matrix<T> Matrix<T>::operator+(Matrix matrix)
 {
-	Matrix<T> result(numberOfRows, numberOfColumns);
 	assert(matrix.getNumberOfRows() == getNumberOfRows());
 	assert(matrix.getNumberOfColumns() == getNumberOfColumns());
+	Matrix<T> result(numberOfRows, numberOfColumns);
 	for (int i = 0; i < getNumberOfRows(); i++)
 	{
 		for (int j = 0; j < getNumberOfColumns(); j++)
@@ -77,9 +74,9 @@ Matrix<T> Matrix<T>::operator+(Matrix matrix)
 template <class T>
 Matrix<T> Matrix<T>::operator-(Matrix &matrix)
 {
-	Matrix<T> result(numberOfRows, numberOfColumns);
 	assert(matrix.getNumberOfRows() == getNumberOfRows());
 	assert(matrix.getNumberOfColumns() == getNumberOfColumns());
+	Matrix<T> result(numberOfRows, numberOfColumns);
 	for (int i = 0; i < getNumberOfRows(); i++)
 	{
 		for (int j = 0; j < getNumberOfColumns(); j++)
@@ -158,7 +155,7 @@ void Matrix<T>::setValue(int row, int column, T value)
 template <typename T>
 double norm(std::vector<T> &v)
 {
-	double result = 0;
+	double result = 0.0;
 	for (size_t i = 0; i < v.size(); i++)
 	{
 		result += v[i] * v[i];

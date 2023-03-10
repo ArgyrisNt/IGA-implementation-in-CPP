@@ -36,7 +36,8 @@ int main()
     // - - - - - Assempler info - - - - -
     double src = 3.0;
     BoundCond _bc("Dirichlet", "Dirichlet", "Dirichlet", "Dirichlet", 0.0, 0.0, 0.0, 0.0); // left-right-top-bottom
-    Assembler_2D ass2(src, _bc, surface);
+    TrimmingCurve trimmingCurve(std::make_pair(0.0, 0.0), 0.0);
+    Assembler_2D ass2(src, _bc, surface, trimmingCurve);
     ass2.assemble();
 
     // - - - - - Enforce boundary conditions - - - - -

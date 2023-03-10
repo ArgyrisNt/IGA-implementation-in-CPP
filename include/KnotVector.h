@@ -13,17 +13,29 @@ public:
     T operator()(int position);
 
     int findSpanOfValue(const double value);
-    void computeDistinctKnots(); // compute discrete knots
+    void computeDistinctKnots();
     void insert(int position, double value);
 
     int getSize() { return values.size(); }
     int getDegree() { return degree; }
-
-    std::vector<double> distinctKnots;
+    std::vector<T> getDistinctKnots() { return distinctKnots; }
 
 private:
     std::vector<T> values;
     int degree;
+    std::vector<T> distinctKnots;
 };
+
+template <class T>
+inline std::ostream &operator<<(std::ostream &os, KnotVector<T>& knotVector)
+{
+    for (int i = 0; i < knotVector.getSize(); i++)
+    {
+        os << knotVector(i) << " ";
+    }
+    std::cout << std::endl;
+
+    return os;
+}
 
 #include "..\src\KnotVector.cpp"

@@ -20,9 +20,9 @@ KnotVector<T>::KnotVector(int newDegree, std::vector<T> &newValues)
 }
 
 template<class T>
-KnotVector<T>::KnotVector(const T start, const T end, int new_degree, int numberOfElements)
+KnotVector<T>::KnotVector(const T start, const T end, int newDegree, int numberOfElements)
 {
-    degree = new_degree;
+    degree = newDegree;
     for (int i = 0; i < degree; i++)
     {
         values.push_back(start);
@@ -58,40 +58,26 @@ T KnotVector<T>::operator()(int position)
 template <class T>
 int KnotVector<T>::findSpanOfValue(const double value)
 {
-    int index = -1;
-    if (value == values[values.size() - 1])
+    bool isLastKnot = (value == values[values.size() - 1]);
+    if (isLastKnot) return (values.size() - degree - 2);
+    for (int index = 0; index < values.size() - 1; index++)
     {
-        return (values.size() - degree - 2);
+        if (value >= values[index] && value < values[index + 1]) return index;
     }
-    for (int i = 0; i < values.size() - 1; i++)
-    {
-        double start = values[i];
-        double end = values[i + 1];
-        if (value >= start && value < end)
-        {
-            index = i;
-            break;
-        }
-    }
-    if (index == -1)
-    {
-        std::cout << "Error: Value " << value << " is not in vector." << std::endl;
-        throw std::invalid_argument("Value does not appear in vector");
-    }
-
-    return index;
+    std::cout << "Error: Value " << value << " is not in vector." << std::endl;
+    throw std::invalid_argument("Value does not appear in vector");
 }
 
 template <class T>
 void KnotVector<T>::computeDistinctKnots()
 {
     distinctKnots = {};
+    double currentValue, previousValue = -100.0;
     for (int i = degree; i < getSize() - degree; i++)
     {
-        if (!std::count(distinctKnots.begin(), distinctKnots.end(), values[i]))
-        {
-            distinctKnots.push_back(values[i]);
-        }
+        currentValue = values[i];
+        if (currentValue != previousValue) distinctKnots.push_back(values[i]);
+        previousValue = values[i];
     }
 }
 

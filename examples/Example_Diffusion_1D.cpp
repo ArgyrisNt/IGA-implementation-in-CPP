@@ -35,6 +35,7 @@ int main()
     int numberOfElements = 200;
     std::vector<double> weights{};
     KnotVector<double> knotVector(start, end, degree, numberOfElements);
+
     std::vector<std::vector<double>> controlPoints;
     Bspline bspline_x(degree, knotVector, weights);
     for (int i = 0; i < numberOfElements + degree; i++)

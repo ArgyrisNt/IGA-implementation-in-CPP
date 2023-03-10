@@ -21,6 +21,45 @@ Solver Solver::Gradient(name6);
 std::string name7 = "ConjugateGradient";
 Solver Solver::ConjugateGradient(name7);
 
+std::vector<double> &Solver::solve(Matrix<double> &A, std::vector<double> &b, int numberOfIterations, double omega)
+{
+    if (mode == "LU")
+    {
+        LUsolve(A, b);
+    }
+    else if (mode == "QR")
+    {
+        QRsolve(A, b);
+    }
+    else if (mode == "GaussSeidel")
+    {
+        solution = A.GaussSeidel_iterator(b, numberOfIterations);
+    }
+    else if (mode == "Jacobi")
+    {
+        solution = A.Jacobi_iterator(b, numberOfIterations);
+    }
+    else if (mode == "SOR")
+    {
+        solution = A.SOR_iterator(b, numberOfIterations, omega);
+    }
+    else if (mode == "Gradient")
+    {
+        solution = A.gradient_iterator(b, numberOfIterations);
+    }
+    else if (mode == "ConjugateGradient")
+    {
+        solution = A.conjugate_gradient_iterator(b, numberOfIterations);
+    }
+    else
+    {
+        std::cout << "Invalid solving method" << std::endl;
+        throw std::invalid_argument("Invalid method");
+    }
+
+    return solution;
+}
+
 void Solver::LUsolve(Matrix<double> &A, std::vector<double> &b)
 {
     std::vector<Matrix<double>> LU = A.LU_factorization();
