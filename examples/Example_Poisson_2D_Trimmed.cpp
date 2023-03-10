@@ -26,7 +26,7 @@ int main()
     // - - - - - Assempler info - - - - -
     double src = 3.0;
     BoundCond _bc("Dirichlet", "Neumann", "Dirichlet", "Neumann", 0.0, 0.0, 0.0, 0.0); // left-right-top-bottom
-    TrimmingCurve trimmingCurve(std::make_pair(1.0,0.0), 0.2/*std::make_pair(1.8,0.5), 1.0*/);
+    TrimmingCurve trimmingCurve(Vertex<double>(1.0,0.0), 0.2/*std::make_pair(1.8,0.5), 1.0*/);
     trimmingCurve.plot();
     Assembler_2D ass2(src, _bc, surface, trimmingCurve);
     ass2.assemble();
@@ -42,7 +42,7 @@ int main()
     std::cout << poisson.getSolution();
 
     // - - - - - Write solution data - - - - - 
-    poisson.plotSolution(400); // resolution = 500
+    poisson.plotSolution(100); // resolution = 500
 
     return 0;
 }

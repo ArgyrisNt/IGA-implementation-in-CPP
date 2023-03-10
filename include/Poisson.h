@@ -15,7 +15,7 @@ public:
 
     // Member functions
     virtual void expandSolutionOnBoundary();
-    virtual void plotSolution(std::string filename1, std::string filename2);
+    virtual void plotSolution(int resolution);
 
     // Member setter functions
     void setSolution(std::vector<double> &newSolution) { solution = newSolution; }

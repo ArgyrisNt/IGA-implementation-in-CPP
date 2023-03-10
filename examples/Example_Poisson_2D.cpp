@@ -36,7 +36,7 @@ int main()
     // - - - - - Assempler info - - - - -
     double src = 3.0;
     BoundCond _bc("Dirichlet", "Dirichlet", "Dirichlet", "Dirichlet", 0.0, 0.0, 0.0, 0.0); // left-right-top-bottom
-    TrimmingCurve trimmingCurve(std::make_pair(0.0, 0.0), 0.0);
+    TrimmingCurve trimmingCurve(Vertex<double>(0.0, 0.0), 0.0);
     Assembler_2D ass2(src, _bc, surface, trimmingCurve);
     ass2.assemble();
 

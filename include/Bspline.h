@@ -1,6 +1,7 @@
 #pragma once
 
 #include "..\include\KnotVector.h"
+#include "..\include\Utilities.h"
 #include <iostream>
 #include <vector>
 
@@ -14,8 +15,8 @@ public:
 
 	Bspline& operator=(const Bspline&);
 
-	std::pair<std::vector<double>, std::vector<double>> GaussPointsAndWeights(int, const double, const double); 
 	std::pair<std::vector<double>, std::vector<double>> evaluateAtPoint(const double value, bool all = false); // all basis functions if all = true
+	
 	void plot(int resolution);
 
 	void setWeights(std::vector<double> new_weights);
@@ -27,10 +28,9 @@ public:
 	std::vector<double>& getWeights() { return weights; }
 
 private:
+	std::vector<double> initializeBasisFunctions(double value);
 	void basisFunctionsOfDegree(int level, double value, std::vector<double> &values, std::vector<double>& derivatives);
 	void computeActiveBasisFunctions(double value, std::vector<double> &values, std::vector<double> &derivatives);
-	std::vector<double> initializeBasisFunctions(double value);
-	void mapValuesToDomain(std::vector<double> &GaussPoints, const double left, const double right);
 
 	KnotVector<double> knotVector;
 	std::vector<double> weights;
@@ -66,19 +66,21 @@ public:
 
 	BsplineSurface &operator=(const BsplineSurface &);
 
-	Bspline &getBspline_x() { return bspline_x; }
-	Bspline &getBspline_y() { return bspline_y; }
-	std::vector<std::vector<double>> &getControlPoints() { return controlPoints; };
+	Vertex<double> evaluateAtPoint(Vertex<double> &&point);
+	
+	void plot(int resolution);
+
+	void knotInsertion(KnotVector<double> &vector, std::vector<std::vector<double>> &points, double newKnot);
+	void uniformRefine_x();
+	void uniformRefine_y();
 
 	void setControlPoints(std::vector<std::vector<double>> &new_controlPoints) { controlPoints = new_controlPoints; }
 	void setBspline_x(Bspline &new_bspline_x) { bspline_x = new_bspline_x; }
 	void setBspline_y(Bspline &new_bspline_y) { bspline_y = new_bspline_y; }
 
-	std::pair<double, double> evaluateAtPoint(std::pair<double, double>&& point);
-	void plot(int resolution);
-	void uniformRefine_x();
-	void uniformRefine_y();
-	void knotInsertion(KnotVector<double> &vector, std::vector<std::vector<double>> &points, double newKnot);
+	Bspline &getBspline_x() { return bspline_x; }
+	Bspline &getBspline_y() { return bspline_y; }
+	std::vector<std::vector<double>> &getControlPoints() { return controlPoints; };
 
 private:
 	std::vector<std::vector<double>> pointsOfParametricCurve(int direction, int level); // direction = 0 for x

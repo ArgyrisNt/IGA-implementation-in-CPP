@@ -66,7 +66,8 @@ int main()
     Poisson<DiffusionAssembler_1D> diffusion(ass, Solver::GaussSeidel);
     std::vector<double> init_sol = ass.applyInitialCondition(init_cond);
     diffusion.setSolution(init_sol);
-    diffusion.plotSolution("curve.dat", "0sol.dat");
+    int resolution = 100;
+    diffusion.plotSolution(resolution);
 
     // - - - - - Solve - - - - - 
     for (int t = 0; t < numSteps; t++)
@@ -75,7 +76,7 @@ int main()
         std::vector<double> b = ass.nextStep(diffusion.getSolution()); // build next rhs
         diffusion.setSolution(diffusion.getSolver()->solve(ass.getSystemMatrix(), b));
         diffusion.expandSolutionOnBoundary();
-        diffusion.plotSolution("curve.dat", std::to_string(t + 1) + "sol.dat");
+        diffusion.plotSolution(resolution);
     }
 
     return 0;

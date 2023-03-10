@@ -12,37 +12,37 @@ void TrimmingCurve::plot()
 	double u = 0.0;
 	while (u <= 2 * 3.14159265)
 	{
-        std::pair<double, double> point = evaluate(u);
-        plotTrimmedCurve << point.first << " " << point.second << "\n";
+        Vertex<double> point = evaluate(u);
+        plotTrimmedCurve << point.x << " " << point.y << "\n";
 		u += 0.01;
 	}
 	plotTrimmedCurve.close();
 }
 
-std::pair<double, double> TrimmingCurve::evaluate(double t)
+Vertex<double> TrimmingCurve::evaluate(double t)
 {
     if (t < 0.0 || t >= 2.0 * 3.14159265)
         throw std::invalid_argument("Invalid parameter value");
-    return std::make_pair(center.first + radius * cos(t), center.second + radius * sin(t));
+    return Vertex<double>(center.x + radius * cos(t), center.y + radius * sin(t));
 }
 
-std::pair<double, double> TrimmingCurve::evaluateDerivative(double t)
+Vertex<double> TrimmingCurve::evaluateDerivative(double t)
 {
     if (t < 0.0 || t >= 2.0 * 3.14159265)
         throw std::invalid_argument("Invalid parameter value");
-    return std::make_pair(-radius * sin(t), radius * cos(t));
+    return Vertex<double>(-radius * sin(t), radius * cos(t));
 }
 
-double TrimmingCurve::projectionOfPoint(std::pair<double, double>& point)
+double TrimmingCurve::projectionOfPoint(Vertex<double> &point)
 {
     std::vector<double> possible_projs;
     double u = 0.0;
     while (u <= 2 * 3.14159265)
     {
-        std::pair<double, double> tangent_vec = evaluateDerivative(u);
-        std::pair<double, double> di = std::make_pair(point.first - evaluate(u).first, point.second - evaluate(u).second);
-        double dot = tangent_vec.first * di.first + tangent_vec.second * di.second;
-        double d = sqrt(di.first * di.first + di.second * di.second);
+        Vertex<double> tangent_vec = evaluateDerivative(u);
+        Vertex<double> di(point.x - evaluate(u).x, point.y - evaluate(u).y);
+        double dot = tangent_vec.x * di.x + tangent_vec.y * di.y;
+        double d = sqrt(di.x * di.x + di.y * di.y);
         if (dot <= 1e-3 && dot >= -1e-3)
         {
             possible_projs.push_back(d);
@@ -60,18 +60,18 @@ double TrimmingCurve::projectionOfPoint(std::pair<double, double>& point)
     return min;
 }
 
-bool TrimmingCurve::isPointOutside(std::pair<double, double>& point)
+bool TrimmingCurve::isPointOutside(Vertex<double> &point)
 {
     std::vector<double> possible_projs;
-    std::vector<std::pair<double, double>> possible_tangents;
-    std::vector<std::pair<double, double>> possible_dis;
+    std::vector<Vertex<double>> possible_tangents;
+    std::vector<Vertex<double>> possible_dis;
     double u = 0.0;
     while (u <= 2 * 3.14159265)
     {
-        std::pair<double, double> tangent_vec = evaluateDerivative(u);
-        std::pair<double, double> di = std::make_pair(point.first - evaluate(u).first, point.second - evaluate(u).second);
-        double dot = tangent_vec.first * di.first + tangent_vec.second * di.second;
-        double d = sqrt(di.first * di.first + di.second * di.second);
+        Vertex<double> tangent_vec = evaluateDerivative(u);
+        Vertex<double> di(point.x - evaluate(u).x, point.y - evaluate(u).y);
+        double dot = tangent_vec.x * di.x + tangent_vec.y * di.y;
+        double d = sqrt(di.x * di.x + di.y * di.y);
         if (dot <= 1e-3 && dot >= -1e-3)
         {
             possible_projs.push_back(d);
@@ -88,8 +88,8 @@ bool TrimmingCurve::isPointOutside(std::pair<double, double>& point)
             min = i;
     }
 
-    std::vector<double> v1{possible_dis[min].first, possible_dis[min].second, 0.0};
-    std::vector<double> v2{possible_tangents[min].first, possible_tangents[min].second, 0.0};
+    std::vector<double> v1{possible_dis[min].x, possible_dis[min].y, 0.0};
+    std::vector<double> v2{possible_tangents[min].x, possible_tangents[min].y, 0.0};
     double w1 = v1[1] * v2[2] - v1[2] * v2[1];
     double w2 = v1[2] * v2[0] - v1[0] * v2[2];
     double w3 = v1[0] * v2[1] - v1[1] * v2[0];
@@ -104,12 +104,12 @@ double TrimmingCurve::find_s_given_t(double t, double minimum, double maximum)
     double u = 0.0;
     while (u <= 2 * 3.14159265)
     {
-        std::pair<double, double> point = evaluate(u);
-        if (fabs(point.second - t) < 1e-3)
+        Vertex<double> point = evaluate(u);
+        if (fabs(point.y - t) < 1e-3)
         {
-            if (point.first >= minimum && point.first <= maximum)
+            if (point.x >= minimum && point.x <= maximum)
             {
-                s = point.first;
+                s = point.x;
                 break;
             }
         }
@@ -124,12 +124,12 @@ double TrimmingCurve::find_t_given_s(double s, double minimum, double maximum)
     double u = 0.0;
     while (u <= 2 * 3.14159265)
     {
-        std::pair<double, double> point = evaluate(u);
-        if (fabs(point.first - s) < 1e-3)
+        Vertex<double> point = evaluate(u);
+        if (fabs(point.x - s) < 1e-3)
         {
-            if (point.second >= minimum && point.second <= maximum)
+            if (point.y >= minimum && point.y <= maximum)
             {
-                t = point.second;
+                t = point.y;
                 break;
             }
         }

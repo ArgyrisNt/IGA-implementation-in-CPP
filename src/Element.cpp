@@ -3,10 +3,10 @@
 
 void Element::categorise()
 {
-    centroid = std::make_pair((vertices[0].first + vertices[3].first) / 2.0, (vertices[0].second + vertices[3].second) / 2.0);
+    centroid = Vertex<double>((vertices[0].x + vertices[3].x) / 2.0, (vertices[0].y + vertices[3].y) / 2.0);
     double di = trimmingCurve.projectionOfPoint(centroid);
-    double r_in = sqrt(std::pow(vertices[3].first - centroid.first, 2));
-    double r_out = sqrt(std::pow(vertices[3].first - centroid.first, 2) + std::pow(vertices[3].second - centroid.second, 2));
+    double r_in = sqrt(std::pow(vertices[3].x - centroid.x, 2));
+    double r_out = sqrt(std::pow(vertices[3].x - centroid.x, 2) + std::pow(vertices[3].y - centroid.y, 2));
     computeTrimmedAndUntrimmedVertices();
     if (di < r_in) isTrimmed = true;
     else if (di > r_out) isTrimmed = false;
@@ -29,10 +29,10 @@ void Element::computeTrimmedAndUntrimmedVertices()
     else untrimmedVertices.push_back(vertices[3]);
 }
 
-std::vector<std::vector<std::pair<double, double>>> Element::divideInTriangles()
+std::vector<Triangle<double>> Element::divideInTriangles()
 {
     int amount = trimmedVertices.size();
-    std::vector<std::vector<std::pair<double, double>>> triangles;
+    std::vector<Triangle<double>> triangles;
     switch (amount)
     {
     case 1:
@@ -51,133 +51,133 @@ std::vector<std::vector<std::pair<double, double>>> Element::divideInTriangles()
     return triangles;
 }
 
-std::vector<std::vector<std::pair<double, double>>> Element::construct_3_triangles()
+std::vector<Triangle<double>> Element::construct_3_triangles()
 {
-    double min_x = vertices[0].first;
-    double max_x = vertices[3].first;
-    double min_y = vertices[0].second;
-    double max_y = vertices[3].second;
-    std::pair<double, double> diagonal, vertex3, vertex4;
+    double min_x = vertices[0].x;
+    double max_x = vertices[3].x;
+    double min_y = vertices[0].y;
+    double max_y = vertices[3].y;
+    Vertex<double> diagonal, vertex3, vertex4;
 
-    bool XcoordinateOfFirstAppearsTwice = (untrimmedVertices[0].first == untrimmedVertices[1].first || untrimmedVertices[0].first == untrimmedVertices[2].first);
-    bool YcoordinateOfFirstAppearsTwice = (untrimmedVertices[0].second == untrimmedVertices[1].second || untrimmedVertices[0].second == untrimmedVertices[2].second);
-    bool XcoordinateOfSecondAppearsTwice = (untrimmedVertices[1].first == untrimmedVertices[0].first || untrimmedVertices[1].first == untrimmedVertices[2].first);
-    bool YcoordinateOfSecondAppearsTwice = (untrimmedVertices[1].second == untrimmedVertices[0].second || untrimmedVertices[1].second == untrimmedVertices[2].second);
+    bool XcoordinateOfFirstAppearsTwice = (untrimmedVertices[0].x == untrimmedVertices[1].x || untrimmedVertices[0].x == untrimmedVertices[2].x);
+    bool YcoordinateOfFirstAppearsTwice = (untrimmedVertices[0].y == untrimmedVertices[1].y || untrimmedVertices[0].y == untrimmedVertices[2].y);
+    bool XcoordinateOfSecondAppearsTwice = (untrimmedVertices[1].x == untrimmedVertices[0].x || untrimmedVertices[1].x == untrimmedVertices[2].x);
+    bool YcoordinateOfSecondAppearsTwice = (untrimmedVertices[1].y == untrimmedVertices[0].y || untrimmedVertices[1].y == untrimmedVertices[2].y);
     if (XcoordinateOfFirstAppearsTwice && YcoordinateOfFirstAppearsTwice) diagonal = untrimmedVertices[0];
     else if (XcoordinateOfSecondAppearsTwice && YcoordinateOfSecondAppearsTwice) diagonal = untrimmedVertices[1];
     else diagonal = untrimmedVertices[2];
 
     for (int i = 0; i < 3; i++)
     {
-        bool hasCommonYwithDiagonal = (untrimmedVertices[i].second == diagonal.second && untrimmedVertices[i] != diagonal);
-        bool hasCommonXwithDiagonal = (untrimmedVertices[i].first == diagonal.first && untrimmedVertices[i] != diagonal);
+        bool hasCommonYwithDiagonal = (untrimmedVertices[i].y == diagonal.y && !almostEqual(untrimmedVertices[i], diagonal));
+        bool hasCommonXwithDiagonal = (untrimmedVertices[i].x == diagonal.x && !almostEqual(untrimmedVertices[i], diagonal));
         if (hasCommonYwithDiagonal) vertex3 = untrimmedVertices[i];
         if (hasCommonXwithDiagonal) vertex4 = untrimmedVertices[i];
     }
 
-    std::pair<double, double> vertex1, vertex2;
+    Vertex<double> vertex1, vertex2;
 
-    if (diagonal.first == min_x)
+    if (diagonal.x == min_x)
     {
         double s2 = max_x;
         double t = trimmingCurve.find_t_given_s(s2, min_y, max_y);
-        vertex1 = std::make_pair(s2, t);
+        vertex1.set(s2, t);
 
-        if (diagonal.second == min_y)
+        if (diagonal.y == min_y)
         {
             double t1 = max_y;
             double s = trimmingCurve.find_s_given_t(t1, min_x, max_x);
-            vertex2 = std::make_pair(s, t1);
+            vertex2.set(s, t1);
         }
-        else if (diagonal.second == max_y)
+        else if (diagonal.y == max_y)
         {
             double t1 = min_y;
             double s = trimmingCurve.find_s_given_t(t1, min_x, max_x);
-            vertex2 = std::make_pair(s, t1);
+            vertex2.set(s, t1);
         }
     }
-    else if (diagonal.first == max_x)
+    else if (diagonal.x == max_x)
     {
         double s2 = min_x;
         double t = trimmingCurve.find_t_given_s(s2, min_y, max_y);
-        vertex1 = std::make_pair(s2, t);
+        vertex1.set(s2, t);
 
-        if (diagonal.second == min_y)
+        if (diagonal.y == min_y)
         {
             double t1 = max_y;
             double s = trimmingCurve.find_s_given_t(t1, min_x, max_x);
-            vertex2 = std::make_pair(s, t1);
+            vertex2.set(s, t1);
         }
-        else if (diagonal.second == max_y)
+        else if (diagonal.y == max_y)
         {
             double t1 = min_y;
             double s = trimmingCurve.find_s_given_t(t1, min_x, max_x);
-            vertex2 = std::make_pair(s, t1);
+            vertex2.set(s, t1);
         }
     }
 
-    std::vector<std::pair<double, double>> triangle1{vertex1, diagonal, vertex3};
-    std::vector<std::pair<double, double>> triangle2{vertex1, diagonal, vertex2};
-    std::vector<std::pair<double, double>> triangle3{vertex2, diagonal, vertex4};
+    Triangle<double> triangle1{vertex1, diagonal, vertex3};
+    Triangle<double> triangle2{vertex1, diagonal, vertex2};
+    Triangle<double> triangle3{vertex2, diagonal, vertex4};
 
-    return std::vector<std::vector<std::pair<double, double>>>{triangle1, triangle2, triangle3};
+    return std::vector<Triangle<double>>{triangle1, triangle2, triangle3};
 }
 
-std::vector<std::vector<std::pair<double, double>>> Element::construct_2_triangles()
+std::vector<Triangle<double>> Element::construct_2_triangles()
 {
-    double min_x = vertices[0].first;
-    double max_x = vertices[3].first;
-    double min_y = vertices[0].second;
-    double max_y = vertices[3].second;
-    std::pair<double, double> vertex1, vertex2, vertex3;
-    if (untrimmedVertices[0].first == untrimmedVertices[1].first)
+    double min_x = vertices[0].x;
+    double max_x = vertices[3].x;
+    double min_y = vertices[0].y;
+    double max_y = vertices[3].y;
+    Vertex<double> vertex1, vertex2, vertex3;
+    if (untrimmedVertices[0].x == untrimmedVertices[1].x)
     {
-        if (untrimmedVertices[0].second > untrimmedVertices[1].second) vertex3 = untrimmedVertices[0];
+        if (untrimmedVertices[0].y > untrimmedVertices[1].y) vertex3 = untrimmedVertices[0];
         else vertex3 = untrimmedVertices[1];
 
         double t1 = max_y;
         double s = trimmingCurve.find_s_given_t(t1, min_x, max_x);
-        vertex1 = std::make_pair(s, t1);
+        vertex1.set(s, t1);
 
         t1 = min_y;
         s = trimmingCurve.find_s_given_t(t1, min_x, max_x);
-        vertex2 = std::make_pair(s, t1);
+        vertex2.set(s, t1);
     }
-    else if (untrimmedVertices[0].second == untrimmedVertices[1].second)
+    else if (untrimmedVertices[0].y == untrimmedVertices[1].y)
     {
-        if (untrimmedVertices[0].first > untrimmedVertices[1].first) vertex3 = untrimmedVertices[0];
+        if (untrimmedVertices[0].x > untrimmedVertices[1].x) vertex3 = untrimmedVertices[0];
         else vertex3 = untrimmedVertices[1];
         double s1 = max_x;
         double t = trimmingCurve.find_t_given_s(s1, min_y, max_y);
-        vertex1 = std::make_pair(s1, t);
+        vertex1.set(s1, t);
 
         s1 = min_x;
         t = trimmingCurve.find_t_given_s(s1, min_y, max_y);
-        vertex2 = std::make_pair(s1, t);
+        vertex2.set(s1, t);
     }
 
-    std::vector<std::pair<double, double>> triangle1{vertex1, vertex3, vertex2};
-    std::vector<std::pair<double, double>> triangle2{vertex2, untrimmedVertices[0], untrimmedVertices[1]};
+    Triangle<double> triangle1(vertex1, vertex3, vertex2);
+    Triangle<double> triangle2(vertex2, untrimmedVertices[0], untrimmedVertices[1]);
 
-    return std::vector<std::vector<std::pair<double, double>>>{triangle1, triangle2};
+    return std::vector<Triangle<double>>{triangle1, triangle2};
 }
 
-std::vector<std::vector<std::pair<double, double>>> Element::construct_1_triangle()
+std::vector<Triangle<double>> Element::construct_1_triangle()
 {
-    double min_x = vertices[0].first;
-    double max_x = vertices[3].first;
-    double min_y = vertices[0].second;
-    double max_y = vertices[3].second;
+    double min_x = vertices[0].x;
+    double max_x = vertices[3].x;
+    double min_y = vertices[0].y;
+    double max_y = vertices[3].y;
 
-    double t1 = untrimmedVertices[0].second;
+    double t1 = untrimmedVertices[0].y;
     double s = trimmingCurve.find_s_given_t(t1, min_x, max_x);
-    std::pair<double, double> vertex1 = std::make_pair(s, t1);
+    Vertex<double> vertex1(s, t1);
 
-    double s2 = untrimmedVertices[0].first;
+    double s2 = untrimmedVertices[0].x;
     double t = trimmingCurve.find_t_given_s(s2, min_y, max_y);
-    std::pair<double, double> vertex2 = std::make_pair(s2, t);
+    Vertex<double> vertex2(s2, t);
 
-    std::vector<std::pair<double, double>> triangle1{vertex1, untrimmedVertices[0], vertex2};
+    Triangle<double> triangle1(vertex1, untrimmedVertices[0], vertex2);
 
-    return std::vector<std::vector<std::pair<double, double>>>{triangle1};
+    return std::vector<Triangle<double>>{triangle1};
 }

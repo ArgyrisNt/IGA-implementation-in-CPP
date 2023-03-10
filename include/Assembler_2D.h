@@ -14,37 +14,39 @@ public:
 
     virtual ~Assembler_2D() {}
 
-    void assemble() override
-    {
-        computeTrimmedElements();
-        computeStiffnessMatrixAndRighHandSide();
-        computeBoundary();
-    }
+    void assemble() override;
+
+    int YspanOfValueInKnotVector(double value);
+    
+    void writeParameterSpaceToFile(std::string filename);
 
     Bspline& getBspline_y() { return *bspline_y; }
     std::vector<std::vector<double>>& getControlPoints() { return controlPoints; }
     const int getNumberOfBasisFunctions() const { return numberOfBasisFunctions; }
 
-    std::vector<std::vector<std::pair<double, double>>> trimmed_triangles;
+    std::vector<Triangle<double>> trimmed_triangles;
     TrimmingCurve trimmingCurve;
 
 protected:
     std::vector<double> createTensorProduct(std::vector<double> &, std::vector<double> &);
     std::vector<int> computeActiveControlPoints(double g1, double g2);
     Matrix<double> Jacobian(double, double, std::pair<std::vector<double>, std::vector<double>> &, std::pair<std::vector<double>, std::vector<double>> &);
-    
-    std::pair<std::vector<double>, std::vector<double>> GaussPointsAndWeightsTria(double a, double b);
 
-    void computeTrimmedElements();
-    void computeBoundary();
+    std::vector<std::pair<double, double>> GaussPointsAndWeightsTria(double a, double b);
+
     bool basisFunctionHasNotAlreadyMarked(int id);
 
-    void computeStiffnessMatrixAndRighHandSide();
-    void computeTriangleStiffnessMatrixAndRightHandSide(std::vector<std::pair<double, double>> &triangle, int elementX, int elementY, Matrix<double> &A, std::vector<double> &b);
-    void computeQuadStiffnessMatrixAndRightHandSide(int elementX, int elementY, Matrix<double> &A, std::vector<double>& b);
-    double computeStiffnessIntegral(std::pair<std::vector<double>, std::vector<double>> &gauss_x, int il_1, int jl_1, std::pair<std::vector<double>, std::vector<double>> &gauss_y, int il_2, int jl_2);
-    double computeRightHandSideIntegral(std::pair<std::vector<double>, std::vector<double>> &gauss_x, int il_1, std::pair<std::vector<double>, std::vector<double>> &gauss_y, int il_2);
+    void YcomputeDistinctKnots();
+    void computeBoundary();
+    void computeTrimmedElements();
 
+    void computeStiffnessMatrixAndRighHandSide();
+    void computeTriangleStiffnessMatrixAndRightHandSide(Triangle<double> &triangle, int elementX, int elementY, Matrix<double> &A, std::vector<double> &b);
+    void computeQuadStiffnessMatrixAndRightHandSide(int elementX, int elementY, Matrix<double> &A, std::vector<double>& b);
+    double computeStiffnessIntegral(std::vector<std::pair<double, double>> &gauss_x, int il_1, int jl_1, std::vector<std::pair<double, double>> &gauss_y, int il_2, int jl_2);
+    double computeRightHandSideIntegral(std::vector<std::pair<double,double>> &gauss_x, int il_1, std::vector<std::pair<double, double>> &gauss_y, int il_2);
+
+    std::vector<double> YdistinctKnots;
     Bspline *bspline_y;
     std::vector<std::vector<double>> controlPoints;
     const int numberOfBasisFunctions;

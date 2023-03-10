@@ -47,53 +47,6 @@ void Bspline::setWeights(std::vector<double> new_weights)
 	weights = new_weights;
 }
 
-void Bspline::mapValuesToDomain(std::vector<double>& GaussPoints, const double left, const double right)
-{
-	for (int i = 0; i < GaussPoints.size(); i++)
-	{
-		GaussPoints[i] = ((left * (1 - GaussPoints[i]) + right * (1 + GaussPoints[i])) / 2);
-	}
-}
-
-std::pair<std::vector<double>, std::vector<double>> Bspline::GaussPointsAndWeights(int numberOfPoints, const double left, const double right)
-{
-	assert(numberOfPoints > 0);
-	if (numberOfPoints > 5) numberOfPoints = 5;
-	std::vector<double> GaussPoints, GaussWeights;
-
-	// Compute Gauss points in interval [0,1]
-	switch (numberOfPoints)
-	{
-	case 1:
-		GaussPoints = {0.0};
-		GaussWeights = {2.0};
-		break;
-	case 2:
-		GaussPoints = {-0.57735, 0.57735};
-		GaussWeights = {1.0, 1.0};
-		break;
-	case 3:
-		GaussPoints = {0.0, -0.774597, 0.774597};
-		GaussWeights = {0.888889, 0.555556, 0.555556};
-		break;
-	case 4:
-		GaussPoints = {-0.861136, -0.339981, 0.339981, 0.861136};
-		GaussWeights = {0.347855, 0.652145, 0.652145, 0.347855};
-		break;
-	case 5:
-		GaussPoints = {-0.90618, -0.538469, 0.0, 0.538469, 0.90618};
-		GaussWeights = {0.236927, 0.478629, 0.568889, 0.478629, 0.236927};
-		break;
-	default:
-		std::cout << "Invalid dimension. Valid dimensions are 1,2,3,4,5." << std::endl;
-		throw std::invalid_argument("Invalid dimension");
-		break;
-	}
-	mapValuesToDomain(GaussPoints, left, right);
-
-	return std::make_pair(GaussPoints, GaussWeights);
-}
-
 void Bspline::basisFunctionsOfDegree(int level, double value, std::vector<double> &valuesOfBasisFunctions, std::vector<double>& derivativesOfBasisFunctions)
 {
 	std::vector<double> oldValuesOfBasisFunctions = valuesOfBasisFunctions;
@@ -254,12 +207,12 @@ BsplineSurface &BsplineSurface::operator=(const BsplineSurface &old)
 	return *this;
 }
 
-std::pair<double, double> BsplineSurface::evaluateAtPoint(std::pair<double, double> &&point)
+Vertex<double> BsplineSurface::evaluateAtPoint(Vertex<double> &&point)
 {
-	int span_i = getBspline_x().getKnotvector().findSpanOfValue(point.first);
-	std::vector<double> x_ValuesOfbasisFunctions = getBspline_x().evaluateAtPoint(point.first).first;
-	int span_j = getBspline_y().getKnotvector().findSpanOfValue(point.second);
-	std::vector<double> y_ValuesOfbasisFunctions = getBspline_y().evaluateAtPoint(point.second).first;
+	int span_i = getBspline_x().getKnotvector().findSpanOfValue(point.x);
+	std::vector<double> x_ValuesOfbasisFunctions = getBspline_x().evaluateAtPoint(point.x).first;
+	int span_j = getBspline_y().getKnotvector().findSpanOfValue(point.y);
+	std::vector<double> y_ValuesOfbasisFunctions = getBspline_y().evaluateAtPoint(point.y).first;
 
 	double coordinate_x = 0.0, coordinate_y = 0.0;
 	for (int ii = 0; ii < x_ValuesOfbasisFunctions.size(); ii++)
@@ -274,7 +227,7 @@ std::pair<double, double> BsplineSurface::evaluateAtPoint(std::pair<double, doub
 		}
 	}
 
-	return std::make_pair(coordinate_x, coordinate_y);
+	return Vertex<double>(coordinate_x, coordinate_y);
 }
 
 void BsplineSurface::plot(int resolution)
@@ -295,8 +248,8 @@ void BsplineSurface::plot(int resolution)
 		{
 			double currentStep_i = firstKnot_x + (double)(i) * ((lastKnot_x - firstKnot_x) / ((double)(resolution)));
 			double currentStep_j = firstKnot_y + (double)(j) * ((lastKnot_y - firstKnot_y) / ((double)(resolution)));
-			std::pair<double, double> coordinates = evaluateAtPoint(std::make_pair(currentStep_i, currentStep_j));
-			plotSurface << coordinates.first << " " << coordinates.second << "\n";
+			Vertex<double> coordinates = evaluateAtPoint(Vertex<double>(currentStep_i, currentStep_j));
+			plotSurface << coordinates.x << " " << coordinates.y << "\n";
 		}
 	}
 }
@@ -399,7 +352,6 @@ void BsplineSurface::uniformRefine_x()
 	}
 
 	std::vector<double> new_weights(new_knotvector.getSize() - bspline_x.getDegree() - 1, 1.0);
-	new_knotvector.computeDistinctKnots();
 	Bspline new_bspline(bspline_x.getDegree(), new_knotvector, new_weights);
 	(*this).setBspline_x(new_bspline);
 	(*this).setControlPoints(controlPoints);
@@ -425,7 +377,6 @@ void BsplineSurface::uniformRefine_y()
 	}
 
 	std::vector<double> new_weights(new_knotvector.getSize() - bspline_y.getDegree() - 1, 1.0);
-	new_knotvector.computeDistinctKnots();
 	Bspline new_bspline(bspline_y.getDegree(), new_knotvector, new_weights);
 	(*this).setBspline_y(new_bspline);
 	(*this).setControlPoints(controlPoints);

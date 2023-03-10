@@ -46,27 +46,22 @@ void Poisson<T>::expandSolutionOnBoundary()
 }
 
 template <class T>
-void Poisson<T>::plotSolution(std::string filename1, std::string filename2)
+void Poisson<T>::plotSolution(int resolution)
 {
     // Create B-spline curve
     double left_limit_x = assembler->getBspline_x().getKnotvector()(0);
     double right_limit_x = assembler->getBspline_x().getKnotvector()(assembler->getBspline_x().getKnotvector().getSize() - 1);
 
-    //std::string filename1("curve.dat");
-    std::ofstream my_file1(filename1);
+    std::string filename("solution.dat");
+    std::ofstream my_file(filename);
 
-    //std::string filename2("solution.dat");
-    std::ofstream my_file2(filename2);
+    my_file << "variables= " << "\"x\"" << "," << "\"y\"" << "\n";
+    my_file << "zone t= " << "\"1\"" << ",i=" << resolution + 1 << ",j=" << resolution + 1 << "\n";
 
-    my_file1 << "variables= " << "\"x\"" << "," << "\"y\"" << "\n";
-    my_file1 << "zone t= " << "\"1\"" << ",i=" << 101 << ",j=" << 101 << "\n";
-    my_file2 << "variables= " << "\"x\"" << "," << "\"y\"" << "\n";
-    my_file2 << "zone t= " << "\"1\"" << ",i=" << 101 << ",j=" << 101 << "\n";
-
-    for (int i = (int) (left_limit_x); i <= 100; i++)
+    for (int i = (int)(left_limit_x); i <= resolution; i++)
     {
-        double i_step = left_limit_x + (double)(i) * ((right_limit_x - left_limit_x) / 100.0);
-        int span = assembler->getBspline_x().getKnotvector().findSpanOfValue(i_step);
+        double i_step = left_limit_x + (double)(i) * ((right_limit_x - left_limit_x) / ((double) (resolution)));
+        int span = assembler->XspanOfValueInKnotVector(i_step);
         std::vector<double> bVal = assembler->getBspline_x().evaluateAtPoint(i_step).first;
 
         double coord_x = 0.0, coord_y = 0.0, coord_z = 0.0;
@@ -76,9 +71,7 @@ void Poisson<T>::plotSolution(std::string filename1, std::string filename2)
             coord_y += bVal[kk] * assembler->getControlPoints()[span - assembler->getBspline_x().getDegree() + kk][1];
             coord_z += bVal[kk] * solution[span - assembler->getBspline_x().getDegree() + kk]; // interpolation
         }
-        my_file1 << coord_x << " " << coord_y << "\n";
-        my_file2 << coord_x << " " << coord_z << "\n";
+        my_file << coord_x << " " << coord_z << "\n";
     }
-    my_file1.close();
-    my_file2.close();
+    my_file.close();
 }
