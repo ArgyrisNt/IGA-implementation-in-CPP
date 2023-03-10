@@ -4,7 +4,8 @@
 
 void Assembler::applyBoundaryEllimination()
 {
-	Matrix<double> newStiffnessMatrix(stiffnessMatrix.getNumberOfRows() - boundaryBasisFunctions.size(), stiffnessMatrix.getNumberOfColumns() - boundaryBasisFunctions.size());
+	int newDimension = stiffnessMatrix.getNumberOfRows() - boundaryBasisFunctions.size();
+	Matrix<double> newStiffnessMatrix(newDimension, newDimension);
 	std::vector<double> newRightHandSide;
 	int i = 0;
 	for (int ii = 0; ii < stiffnessMatrix.getNumberOfRows(); ii++)
@@ -27,6 +28,26 @@ void Assembler::applyBoundaryEllimination()
 	rightHandSide = newRightHandSide;
 }
 
+double Assembler::addBoundaryValueToRhs(int position)
+{
+	if (boundaryBasisFunctions[position].second == 1)
+	{
+		return boundaryConditions->getWestValue();
+	}
+	else if (boundaryBasisFunctions[position].second == 2)
+	{
+		return boundaryConditions->getEastValue();
+	}
+	else if (boundaryBasisFunctions[position].second == 3)
+	{
+		return boundaryConditions->getNorthValue();
+	}
+	else if (boundaryBasisFunctions[position].second == 4)
+	{
+		return boundaryConditions->getSouthValue();
+	}
+}
+
 void Assembler::applyBoundaryMultipliers()
 {
 	int new_dim = stiffnessMatrix.getNumberOfRows() + boundaryBasisFunctions.size();
@@ -37,22 +58,7 @@ void Assembler::applyBoundaryMultipliers()
 	{
 		newStiffnessMatrix.setValue(cnt2, (*it).first + boundaryBasisFunctions.size(), 1.0);
 		newStiffnessMatrix.setValue((*it).first + boundaryBasisFunctions.size(), cnt2, 1.0);
-		if (boundaryBasisFunctions[cnt2].second == 1)
-		{
-			newRightHandSide.push_back(boundaryConditions->getWestValue());
-		}
-		else if (boundaryBasisFunctions[cnt2].second == 2)
-		{
-			newRightHandSide.push_back(boundaryConditions->getEastValue());
-		}
-		else if (boundaryBasisFunctions[cnt2].second == 3)
-		{
-			newRightHandSide.push_back(boundaryConditions->getNorthValue());
-		}
-		else if (boundaryBasisFunctions[cnt2].second == 4)
-		{
-			newRightHandSide.push_back(boundaryConditions->getSouthValue());
-		}
+		newRightHandSide.push_back(addBoundaryValueToRhs(cnt2));		
 		cnt2++;
 	}
 

@@ -4,16 +4,10 @@
 template <class T>
 void Poisson<T>::expandSolutionOnBoundary()
 {
-    std::vector<double> final_sol;
+    std::vector<double> newSolution;
     if (assembler->getBoundaryMode() == "Multipliers")
     {
-	    for (int i = 0; i < solution.size(); i++)
-	    {
-            if (i >= assembler->getBoundaryBasisFunctions().size())
-            {
-                final_sol.push_back(solution[i]);
-		    }
-	    }
+        solution.erase(solution.begin(), solution.begin() + assembler->getBoundaryBasisFunctions().size());
     }
     else
     {
@@ -26,29 +20,29 @@ void Poisson<T>::expandSolutionOnBoundary()
                 int position = it - assembler->getBoundaryBasisFunctions().begin();
                 if (assembler->getBoundaryBasisFunctions()[position].second == 1)
                 {
-				    final_sol.push_back(assembler->getBoundaryConditions().getWestValue());
-			    }
+                    newSolution.push_back(assembler->getBoundaryConditions().getWestValue());
+                }
                 else if (assembler->getBoundaryBasisFunctions()[position].second == 2)
                 {
-                    final_sol.push_back(assembler->getBoundaryConditions().getEastValue());
+                    newSolution.push_back(assembler->getBoundaryConditions().getEastValue());
                 }
                 else if (assembler->getBoundaryBasisFunctions()[position].second == 3)
                 {
-                    final_sol.push_back(assembler->getBoundaryConditions().getSouthValue());
+                    newSolution.push_back(assembler->getBoundaryConditions().getSouthValue());
                 }
                 else if (assembler->getBoundaryBasisFunctions()[position].second == 4)
                 {
-                    final_sol.push_back(assembler->getBoundaryConditions().getNorthValue());
+                    newSolution.push_back(assembler->getBoundaryConditions().getNorthValue());
                 }							
 		    }
 		    else
 		    {
-			    final_sol.push_back(solution[j]);
-			    j++;
+                newSolution.push_back(solution[j]);
+                j++;
 		    }
 	    }
+        solution = newSolution;
     }
-    solution = final_sol;
 }
 
 template <class T>

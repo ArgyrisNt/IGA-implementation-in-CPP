@@ -17,9 +17,8 @@ public:
     // Member functions
     void assemble() override
     {
-        computeStiffnessMatrix();
+        computeStiffnessMatrixAndRightHandSide();
         computeMassMatrix();
-        computeRightHandSide();
         computeBoundary();
         systemMatrix = massMatrix + stiffnessMatrix * (coefficient * Timestep);
         for (int i = 0; i < rightHandSide.size(); i++)
@@ -40,6 +39,8 @@ public:
 private:
     // Member local functions
     void computeMassMatrix();
+    double computeMassIntegral(int element, int basisFunction, int trialFunction);
+
 
     // Member variables
     Matrix<double> massMatrix;

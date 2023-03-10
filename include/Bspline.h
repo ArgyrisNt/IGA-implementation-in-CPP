@@ -7,33 +7,26 @@
 class Bspline
 {
 public:
-	// Constructors
 	Bspline(int newDegree, KnotVector<double>& knewKnotVector, std::vector<double> &newWeights);
-	Bspline(const Bspline&); // copy constructor
+	Bspline(const Bspline&);
 
-	// Destructor
 	~Bspline();
 
-	// Overload operator
 	Bspline& operator=(const Bspline&);
 
-	// Member functions
-	std::pair<std::vector<double>, std::vector<double>> GaussPointsAndWeights(int, const double, const double); // compute Gauss points and their weigths
-	std::pair<std::vector<double>, std::vector<double>> evaluateAtPoint(const double value, bool all = false); // eval all active basis functions at x (all basis functions if all=true)
+	std::pair<std::vector<double>, std::vector<double>> GaussPointsAndWeights(int, const double, const double); 
+	std::pair<std::vector<double>, std::vector<double>> evaluateAtPoint(const double value, bool all = false); // all basis functions if all = true
 	void plot(int resolution);
 
-	// Member setter functions
 	void setWeights(std::vector<double> new_weights);
 	void setKnotvector(KnotVector<double>& newKnotVector) { knotVector = newKnotVector; }
 
-	// Member getter functions
 	KnotVector<double>& getKnotvector() { return knotVector; };
 	const int getDegree() const { return degree; }
 	const int getNumberOfBasisFunctions() const { return numberOfBasisFunctions; }
 	std::vector<double>& getWeights() { return weights; }
 
 private:
-	// Member local functions
 	void basisFunctionsOfDegree(int level, double value, std::vector<double> &values, std::vector<double>& derivatives);
 	void computeActiveBasisFunctions(double value, std::vector<double> &values, std::vector<double> &derivatives);
 	std::vector<double> initializeBasisFunctions(double value);
@@ -52,11 +45,13 @@ public:
 
 	~BsplineCurve() {}
 
+	std::pair<double, double> evaluateAtPoint(double point);
 	void plot(int resolution);
 
 	Bspline &getBspline_x() { return bspline_x; }
 	std::vector<std::vector<double>> &getControlPoints() { return controlPoints; };
 
+private:
 	Bspline bspline_x;
 	std::vector<std::vector<double>> controlPoints;
 };
@@ -79,14 +74,15 @@ public:
 	void setBspline_x(Bspline &new_bspline_x) { bspline_x = new_bspline_x; }
 	void setBspline_y(Bspline &new_bspline_y) { bspline_y = new_bspline_y; }
 
+	std::pair<double, double> evaluateAtPoint(std::pair<double, double>&& point);
 	void plot(int resolution);
 	void uniformRefine_x();
 	void uniformRefine_y();
-	static void knotInsertion(KnotVector<double> &vector, std::vector<std::vector<double>> &points, double newKnot);
-	static void refineParametricCurve(KnotVector<double> &vector, std::vector<std::vector<double>> &points);
+	void knotInsertion(KnotVector<double> &vector, std::vector<std::vector<double>> &points, double newKnot);
 
 private:
 	std::vector<std::vector<double>> pointsOfParametricCurve(int direction, int level); // direction = 0 for x
+	void refineParametricCurve(KnotVector<double> &vector, std::vector<std::vector<double>> &points);
 
 	Bspline bspline_x;
 	Bspline bspline_y;

@@ -6,7 +6,7 @@ Example Poisson 1D (Dirichlet boundary conditions)
 <img src="pics/sol_1D.png" height="200" width="200" >
 
 
-Example Poisson 2D (mixed boundary conditions)
+Example Poisson 2D (Dirichlet boundary conditions)
 
 <img src="pics/sol_2D.png" height="200" width="200" >
 
@@ -22,7 +22,3 @@ Example Poisson 2D on Trimmed domain (mixed boundary conditions)
 
 <img src="pics/sol_2D_trimmed.png" height="200" width="200" >
 
-
-Inheritance diagram
-
-<img src="pics/Inheritance_diagram.png" height="200" width="600" >

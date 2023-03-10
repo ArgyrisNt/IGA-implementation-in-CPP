@@ -16,4 +16,6 @@ public:
 
     // Member function
 	void plotSolution(int resolution);
+    void writeParameterSpaceToFile(std::string filename);
+    void writeTrimmedTrianglesToFile(std::string filename);
 };
