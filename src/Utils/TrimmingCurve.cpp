@@ -137,3 +137,8 @@ double TrimmingCurve::find_t_given_s(double s, double minimum, double maximum)
     }
     return t;
 }
+
+bool TrimmingCurve::isCartesianPointInside(double x, double y)
+{
+    return (std::pow(x - center.x, 2) + std::pow(y - center.y, 2)) < std::pow(radius, 2);
+}

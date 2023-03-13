@@ -1,33 +1,40 @@
 #include <iostream>
 #include "..\include\Poisson_2D.h"
 
+std::vector<double> Poisson_2D::Ylinspace(int resolution)
+{
+	std::vector<double> steps;
+	double left_limit_y = assembler->getBspline_y().getKnotvector()(0);
+	double right_limit_y = assembler->getBspline_y().getKnotvector()(assembler->getBspline_y().getKnotvector().getSize() - 1);
+	for (int i = (int)(left_limit_y); i <= resolution; i++)
+	{
+		double i_step = left_limit_y + (double)(i) * ((right_limit_y - left_limit_y) / ((double)(resolution)));
+		steps.push_back(i_step);
+	}
+	return steps;
+}
+
 void Poisson_2D::plotSolution(int resolution)
 {
 	// Create B-spline surface
-	double left_limit_x = assembler->getBspline_x().getKnotvector()(0);
-	double right_limit_x = assembler->getBspline_x().getKnotvector()(assembler->getBspline_x().getKnotvector().getSize() - 1);
-	double left_limit_y = assembler->getBspline_y().getKnotvector()(0);
-	double right_limit_y = assembler->getBspline_y().getKnotvector()(assembler->getBspline_y().getKnotvector().getSize() - 1);
+	std::vector<double> i_steps = Xlinspace(resolution);
+	std::vector<double> j_steps = Ylinspace(resolution);
 
 	std::string filename2("solution.dat");
     std::ofstream my_file2(filename2);
     my_file2 << "variables= " << "\"x\"" << "," << "\"y\"" << "," << "\"sol\"" << "\n";
     my_file2 << "zone t= " << "\"1\"" << ",i=" << resolution+1 << ",j=" << resolution+1 << "\n";
 
-	for (int i = (int)(left_limit_x); i <= resolution; i++)
+	for (int i = 0; i < i_steps.size(); i++)
 	{
-		for (int j = (int)(left_limit_x); j <= resolution; j++)
+		for (int j = 0; j < j_steps.size(); j++)
 		{
-			double i_step = left_limit_x + (double)(i) * ((right_limit_x - left_limit_x) / ((double) (resolution)));
-			double j_step = left_limit_y + (double)(j) * ((right_limit_y - left_limit_y) / ((double) (resolution)));
+			if (assembler->trimmingCurve.isCartesianPointInside(i_steps[i], j_steps[j])) continue;
 
-			bool isInsideTrimmingCurve = (std::pow(i_step - assembler->trimmingCurve.center.x, 2) + std::pow(j_step - assembler->trimmingCurve.center.y, 2)) < std::pow(assembler->trimmingCurve.radius, 2);
-			if (isInsideTrimmingCurve) continue;
-
-			int span_i = assembler->getBspline_x().getKnotvector().findSpanOfValue(i_step);
-			std::vector<double> bVal_i = assembler->getBspline_x().evaluateAtPoint(i_step).first;
-			int span_j = assembler->getBspline_y().getKnotvector().findSpanOfValue(j_step);
-			std::vector<double> bVal_j = assembler->getBspline_y().evaluateAtPoint(j_step).first;
+			int span_i = assembler->XspanOfValueInKnotVector(i_steps[i]);
+			std::vector<double> bVal_i = assembler->getBspline_x().evaluateAtPoint(i_steps[i]).first;
+			int span_j = assembler->YspanOfValueInKnotVector(j_steps[j]);
+			std::vector<double> bVal_j = assembler->getBspline_y().evaluateAtPoint(j_steps[j]).first;
 
 			double coord_x = 0.0, coord_y = 0.0, coord_z = 0.0;
 			for (int kkx = 0; kkx < bVal_i.size(); kkx++)

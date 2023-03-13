@@ -2,7 +2,8 @@
 
 #include <iostream>
 #include <string>
-#include "..\IGA.h"
+#include "..\include\DiffusionAssembler_1D.h"
+#include "..\include\Poisson.h"
 
 double init_cond(double val)
 {
@@ -34,16 +35,16 @@ int main()
     int degree = 3;
     int numberOfElements = 200;
     std::vector<double> weights{};
-    KnotVector<double> knotVector(start, end, degree, numberOfElements);
+    KnotVector<double> knotVector(start, end, degree, numberOfElements, weights);
 
     std::vector<std::vector<double>> controlPoints;
-    Bspline bspline_x(degree, knotVector, weights);
     for (int i = 0; i < numberOfElements + degree; i++)
     {
         controlPoints.push_back({(1.0 / (numberOfElements + degree - 1)) * (double)(i), 0.0});
         weights.push_back(1.0);
     }
-    bspline_x.setWeights(weights);
+    knotVector.setWeights(weights);
+    Bspline bspline_x(knotVector);
 
     // - - - - - B-spline curve - - - - -
     BsplineCurve curve(bspline_x, controlPoints);
@@ -67,16 +68,16 @@ int main()
     std::vector<double> init_sol = ass.applyInitialCondition(init_cond);
     diffusion.setSolution(init_sol);
     int resolution = 100;
-    diffusion.plotSolution(resolution);
+    diffusion.plotSolution(resolution, "0solution.dat");
 
     // - - - - - Solve - - - - - 
     for (int t = 0; t < numSteps; t++)
     {
         std::cout << std::endl << "---------------- " << t + 1 << " step ----------------";
         std::vector<double> b = ass.nextStep(diffusion.getSolution()); // build next rhs
-        diffusion.setSolution(diffusion.getSolver()->solve(ass.getSystemMatrix(), b));
-        diffusion.expandSolutionOnBoundary();
-        diffusion.plotSolution(resolution);
+        diffusion.updateRhs(b);
+        diffusion.setSolution(diffusion.getSolver()->solve());
+        diffusion.plotSolution(resolution, std::to_string(t + 1) + "solution.dat");
     }
 
     return 0;

@@ -1,3 +1,6 @@
+#ifndef H_KNOTVECTOR
+#define H_KNOTVECTOR
+
 #include <iostream>
 #include <vector>
 
@@ -6,23 +9,30 @@ class KnotVector
 {
 public:
     KnotVector();
-    KnotVector(int newDegree, std::vector<T>& newValues);
-    KnotVector(const T start, const T end, int new_degree, int numberOfElements);
+    KnotVector(int newDegree, std::vector<T> &newKnots, std::vector<T> &newWeights);
+    KnotVector(const T start, const T end, int new_degree, int numberOfElements, std::vector<T> &newWeights);
 
     ~KnotVector() {}
 
     KnotVector &operator=(const KnotVector &);
     T operator()(int position);
 
+    void computeDistinctKnots();
     int findSpanOfValue(const double value);
     void insert(int position, double value);
 
-    int getSize() { return values.size(); }
-    int getDegree() { return degree; }
+    int getSize();
+    int getDegree();
+    std::vector<T> getWeights();
+    std::vector<T> getDistinctKnots();
+
+    void setWeights(std::vector<double>& new_weights);
 
 private:
-    std::vector<T> values;
+    std::vector<T> knots;
+    std::vector<T> weights;
     int degree;
+    std::vector<T> distinctKnots;
 };
 
 template <class T>
@@ -38,3 +48,5 @@ inline std::ostream &operator<<(std::ostream &os, KnotVector<T>& knotVector)
 }
 
 #include "..\src\KnotVector.cpp"
+
+#endif

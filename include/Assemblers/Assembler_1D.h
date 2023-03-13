@@ -1,13 +1,16 @@
-#pragma once
+#ifndef H_ASSEMBLER_1D
+#define H_ASSEMBLER_1D
 
 #include <iostream>
 #include "..\include\Assembler.h"
+#include "..\include\BsplineCurve.h"
 
-class Assembler_1D : public Assembler
+class Assembler_1D : public AssemblerBoundary
 {
 public:
     Assembler_1D(double sourceFunction, BoundCond &boundaryConditions, BsplineCurve &curve)
-        : Assembler(sourceFunction, boundaryConditions, curve.getBspline_x()), numberOfBasisFunctions(curve.getBspline_x().getNumberOfBasisFunctions()), controlPoints(curve.getControlPoints()) {}
+        : AssemblerBoundary(sourceFunction, boundaryConditions, curve.getBspline_x()),
+        controlPoints(curve.getControlPoints()) {}
 
     virtual ~Assembler_1D() {}
 
@@ -15,8 +18,8 @@ public:
 
     Matrix<double> Jacobian(double, std::vector<double> &);
 
-    const int getNumberOfBasisFunctions() const { return numberOfBasisFunctions; }
-    std::vector<std::vector<double>> &getControlPoints() { return controlPoints; }
+    const int getNumberOfBasisFunctions();
+    std::vector<std::vector<double>> &getControlPoints();
 
 protected:
     void computeBoundary();
@@ -24,6 +27,9 @@ protected:
     double computeStiffnessIntegral(int element, int basisFunction, int trialFunction);
     double computeRightHandSideIntegral(int element, int basisFunction);
 
-    const int numberOfBasisFunctions;
     std::vector<std::vector<double>> controlPoints;
 };
+
+#include "..\src\Assembler_1D.cpp"
+
+#endif

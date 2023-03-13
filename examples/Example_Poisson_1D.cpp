@@ -1,16 +1,18 @@
 // Solve Poisson 1D problem on a Nurbs circular line
 
 #include <iostream>
-#include "..\IGA.h"
+#include "..\include\Assembler_1D.h"
+#include "..\include\Poisson.h"
+#include "..\include\BsplineCurve.h"
 
 int main()
 {   
 	// - - - - - B-spline basis on x-direction - - - - - 
 	int degree = 2;
 	std::vector<double> values{ 0.0,0.0,0.0,0.5,1.0,1.0,1.0 };
-	KnotVector<double> knotVector(degree, values);
 	std::vector<double> weights{ 1.0, 1.0, 1.0, 1.0 };
-	Bspline bspline_x(degree, knotVector, weights);
+	KnotVector<double> knotVector(degree, values, weights);
+	Bspline bspline_x(knotVector);
 	//int resolution = 100;
 	//bspline_x.plot(resolution);
 
@@ -30,12 +32,12 @@ int main()
 
 	// - - - - - Poisson info - - - - -
 	Poisson<Assembler_1D> poisson(assembler, Solver::Jacobi);
-	poisson.setSolution(poisson.getSolver()->solve(assembler.getStiffnessMatrix(), assembler.getRightHandSide()));
-	poisson.expandSolutionOnBoundary();
+	poisson.setSolution(poisson.getSolver()->solve());
+	std::cout << "Solution is: " << std::endl;
 	std::cout << poisson.getSolution();
 
 	// - - - - - Write solution data - - - - -
-	poisson.plotSolution(100);
+	poisson.plotSolution(100, "solution.dat");
 
 	return 0;
 }
