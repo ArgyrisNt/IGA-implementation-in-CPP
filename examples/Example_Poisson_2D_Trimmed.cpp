@@ -1,16 +1,17 @@
 // Solve Poisson 2D problem on a Bspline trimmed square domain
 
 #include <iostream>
-#include "..\IGA.h"
+#include "..\include\Assembler_2D.h"
+#include "..\include\Poisson_2D.h"
 
 int main()
 {   
     // - - - - - B-spline basis on x-direction - - - - - 
     int x_degree = 2;
     std::vector<double> x_values{ 0.0,0.0,0.0,1.0,1.0,1.0 };
-    KnotVector<double> knotVector(x_degree, x_values);
-    std::vector<double> x_weights{ 1.0,1.0,1.0 };
-    Bspline bspline_x(x_degree, knotVector, x_weights);
+    std::vector<double> x_weights{1.0, 1.0, 1.0};
+    KnotVector<double> knotVector(x_degree, x_values, x_weights);
+    Bspline bspline_x(knotVector);
 
     // - - - - - B-spline basis on y-direction - - - - - 
     Bspline bspline_y(bspline_x);
@@ -37,8 +38,7 @@ int main()
 
     // - - - - - Poisson info - - - - -
     Poisson_2D poisson(ass2, Solver::GaussSeidel);
-    poisson.setSolution(poisson.getSolver()->solve(ass2.getStiffnessMatrix(), ass2.getRightHandSide()));
-    poisson.expandSolutionOnBoundary();
+    poisson.setSolution(poisson.getSolver()->solve());
     std::cout << poisson.getSolution();
 
     // - - - - - Write solution data - - - - - 

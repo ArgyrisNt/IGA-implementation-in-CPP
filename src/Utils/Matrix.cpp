@@ -236,203 +236,6 @@ Matrix<T> Matrix<T>::inverse()
 }
 
 template <class T>
-std::vector<T> Matrix<T>::Jacobi_iterator(std::vector<T> rightHandSide, int numberOfIterations)
-{
-	double threshold = 1e-7;
-	assert(getNumberOfRows() == rightHandSide.size());
-	assert(getNumberOfColumns() == rightHandSide.size());
-	std::cout << "\nSolving with Jacobi iterative method. . ." << "\n";
-	size_t n = getNumberOfRows();
-	std::vector<T> solution(n, 0.0), residual(n), estimation(n);
-	int iteration = 0;
-	for (iteration = 0; iteration <= numberOfIterations; iteration++)
-	{
-		std::vector<T> c(n);
-		for (size_t i = 0; i < n; i++)
-		{
-			c[i] = rightHandSide[i];
-			for (size_t j = 0; j < n; j++)
-			{
-				if (j != i)	c[i] -= values[i][j] * solution[j];
-			}
-		}
-		for (size_t i = 0; i < n; i++)
-		{
-			solution[i] = c[i] / values[i][i];
-		}
-		estimation = (*this) * solution;
-		for (size_t k = 0; k < solution.size(); k++)
-		{
-			residual[k] = rightHandSide[k] - estimation[k];
-		}
-		if (norm(residual) < threshold)
-		{
-			break;
-		}
-	}
-
-	std::cout << iteration << " iterations\n";
-	return solution;
-}
-
-template <class T>
-std::vector<T> Matrix<T>::GaussSeidel_iterator(std::vector<T> rightHandSide, int numberOfIterations)
-{
-	double threshold = 1e-7;
-	assert(getNumberOfRows() == rightHandSide.size());
-	assert(getNumberOfColumns() == rightHandSide.size());
-	std::cout << "\nSolving with Gauss Seidel iterative method. . ." << "\n";
-	size_t n = getNumberOfRows();
-	std::vector<T> solution(n, 0.0), y(n), residual(n), estimation(n);
-	int iteration = 0;
-	for (iteration = 0; iteration <= numberOfIterations; iteration++)
-	{
-		for (size_t i = 0; i < n; i++)
-		{
-			y[i] = rightHandSide[i] / values[i][i];
-			for (size_t j = 0; j < n; j++)
-			{
-				if (j != i)
-				{
-					y[i] -= (values[i][j] / values[i][i]) * solution[j];
-					solution[i] = y[i];
-				}
-			}
-		}
-		estimation = (*this) * solution;
-		for (size_t k = 0; k < solution.size(); k++)
-		{
-			residual[k] = rightHandSide[k] - estimation[k];
-		}
-		if (norm(residual) < threshold)
-		{
-			break;
-		}
-	}
-
-	std::cout << iteration << " iterations\n";
-	return solution;
-}
-
-template <class T>
-std::vector<T> Matrix<T>::SOR_iterator(std::vector<T> rightHandSide, int numberOfIterations, double omega)
-{
-	double threshold = 1e-7;
-	assert(getNumberOfRows() == rightHandSide.size());
-	assert(getNumberOfColumns() == rightHandSide.size());
-	std::cout << "\nSolving with SOR iterative method. . ." << "\n";
-	size_t n = getNumberOfRows();
-	std::vector<T> solution(n, 0.25), residual(n), estimation(n);
-	for (size_t i = 0; i < solution.size(); i++)
-	{
-		if ((i == 0) || (i == solution.size() - 1)) solution[i] = 0.5;
-	}
-	int iteration = 0;
-	for (iteration = 0; iteration <= numberOfIterations; iteration++)
-	{
-		for (size_t i = 0; i < n; i++)
-		{
-			double sigma = 0;
-			for (size_t j = 0; j < n; j++)
-			{
-				if (j != i) sigma += values[i][j] * solution[j];
-			}
-			solution[i] = (1 - omega) * solution[i] + (omega / values[i][i]) * (rightHandSide[i] - sigma);
-		}
-		estimation = (*this) * solution;
-		for (size_t k = 0; k < solution.size(); k++)
-		{
-			residual[k] = rightHandSide[k] - estimation[k];
-		}
-		if (norm(residual) < threshold)
-		{
-			break;
-		}
-	}
-
-	std::cout << iteration << " iterations\n";
-	return solution;
-}
-
-template <class T>
-std::vector<T> Matrix<T>::gradient_iterator(std::vector<T> rightHandSide, int numberOfIterations)
-{
-	std::cout << "\nSolving with Gradient iterative method. . ." << "\n";
-	size_t n = getNumberOfRows();
-	std::vector<T> solution(n, 0.0), residual(n);
-	double nominator = 0.0;
-	double denominator = 0.0;
-	int iteration = 0;
-	for (iteration = 0; iteration < numberOfIterations; iteration++)
-	{
-		for (size_t i = 0; i < solution.size(); i++)
-		{
-			residual[i] = rightHandSide[i] - ((*this) * solution)[i];
-		}
-		for (size_t i = 0; i < solution.size(); i++)
-		{
-			nominator += residual[i] * residual[i];
-			denominator += residual[i] * ((*this) * residual)[i];
-		}		
-		for (size_t i = 0; i < solution.size(); i++)
-		{
-			solution[i] = solution[i] + (nominator / denominator) * residual[i];
-		}
-		if (norm(residual) < 1e-7)
-		{
-			break;
-		}
-	}
-
-	std::cout << iteration << " iterations\n";
-	return solution;
-}
-
-template <typename T>
-std::vector<T> Matrix<T>::conjugate_gradient_iterator(std::vector<T> &rightHandSide, int numberOfIterations)
-{
-	std::cout << "\nSolving with Conjugate Gradient iterative method. . ." << "\n";
-	size_t n = getNumberOfRows();
-	std::vector<T> solution(n, 0.0), residual(n), t(n);
-	double nominator = 0, denominator = 0, nom = 0, denom = 0;
-	int iteration = 0;
-	for (iteration = 0; iteration < numberOfIterations; iteration++)
-	{
-		for (size_t i = 0; i < solution.size(); i++)
-		{
-			residual[i] = rightHandSide[i] - ((*this) * solution)[i];
-		}
-		if (iteration == 0) t = residual;
-		for (size_t i = 0; i < solution.size(); i++)
-		{
-			nominator += residual[i] * residual[i];
-			denominator += t[i] * ((*this) * t)[i];
-		}
-		for (size_t i = 0; i < solution.size(); i++)
-		{
-			solution[i] = solution[i] + (nominator / denominator) * t[i];
-			residual[i] = residual[i] - (nominator / denominator) * ((*this) * t)[i];
-		}
-		for (size_t i = 0; i < solution.size(); i++)
-		{
-			nom += residual[i] * ((*this) * t)[i];
-			denom += t[i] * ((*this) * t)[i];
-		}
-		for (size_t i = 0; i < solution.size(); i++)
-		{
-			t[i] = residual[i] - (nom / denom) * t[i];
-		}
-		if (norm(residual) < 1e-7)
-		{
-			break;
-		}
-	}
-
-	std::cout << iteration << " iterations\n";
-	return solution;
-}
-
-template <class T>
 std::vector<Matrix<T>> Matrix<T>::LU_factorization()
 {
 	assert(getNumberOfRows() == getNumberOfColumns());
@@ -478,7 +281,7 @@ std::vector<Matrix<T>> Matrix<T>::LU_factorization()
 }
 
 template <class T>
-std::vector<T> Matrix<T>::forward_Euler(std::vector<T> rightHandSide)
+std::vector<T> Matrix<T>::forward_Euler(std::vector<T>& rightHandSide)
 {
 	size_t n = getNumberOfRows();
 	std::vector<T> solution(n);
@@ -499,7 +302,7 @@ std::vector<T> Matrix<T>::forward_Euler(std::vector<T> rightHandSide)
 }
 
 template <class T>
-std::vector<T> Matrix<T>::backward_Euler(std::vector<T> rightHandSide)
+std::vector<T> Matrix<T>::backward_Euler(std::vector<T>& rightHandSide)
 {
 	int n = getNumberOfRows();
 	std::vector<T> solution(n);
