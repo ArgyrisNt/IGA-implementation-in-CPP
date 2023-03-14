@@ -82,11 +82,11 @@ void mapValuesToDomain(std::vector<double> &GaussPoints, const double left, cons
     }
 }
 
+
 std::vector<std::pair<double, double>> GaussPointsAndWeightsQuad(int numberOfPoints, const double left, const double right)
 {
     assert(numberOfPoints > 0);
-    if (numberOfPoints > 5)
-        numberOfPoints = 5;
+    if (numberOfPoints > 5) numberOfPoints = 5;
     std::vector<double> GaussPoints, GaussWeights;
 
     // Compute Gauss points in interval [0,1]

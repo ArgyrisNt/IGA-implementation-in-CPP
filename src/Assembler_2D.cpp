@@ -231,14 +231,14 @@ double Assembler_2D::computeStiffnessIntegral(int il_1, int jl_1, int il_2, int 
 			Matrix<double> J = Jacobian(indices, dNxNy, NxdNy);
 
 			double bi_0 = eval_1.first[il_1] * eval_2.first[il_2];
-			double bi_x = (1.0 / J.determinant()) * (J(1, 1) * eval_1.second[il_1] * eval_2.first[il_2] - J(1, 0) * eval_1.first[il_1] * eval_2.second[il_2]);
-			double bi_y = (1.0 / J.determinant()) * (-J(0, 1) * eval_1.second[il_1] * eval_2.first[il_2] + J(0, 0) * eval_1.first[il_1] * eval_2.second[il_2]);
-			double bj_x = (1.0 / J.determinant()) * (J(1, 1) * eval_1.second[jl_1] * eval_2.first[jl_2] - J(1, 0) * eval_1.first[jl_1] * eval_2.second[jl_2]);
-			double bj_y = (1.0 / J.determinant()) * (-J(0, 1) * eval_1.second[jl_1] * eval_2.first[jl_2] + J(0, 0) * eval_1.first[jl_1] * eval_2.second[jl_2]);
+			double bi_x = (J(1, 1) * eval_1.second[il_1] * eval_2.first[il_2] - J(1, 0) * eval_1.first[il_1] * eval_2.second[il_2]);
+			double bi_y = (-J(0, 1) * eval_1.second[il_1] * eval_2.first[il_2] + J(0, 0) * eval_1.first[il_1] * eval_2.second[il_2]);
+			double bj_x = (J(1, 1) * eval_1.second[jl_1] * eval_2.first[jl_2] - J(1, 0) * eval_1.first[jl_1] * eval_2.second[jl_2]);
+			double bj_y = (-J(0, 1) * eval_1.second[jl_1] * eval_2.first[jl_2] + J(0, 0) * eval_1.first[jl_1] * eval_2.second[jl_2]);
 
 			double wvol = XGaussPointsAndWeights[g1].second * YGaussPointsAndWeights[g2].second * fabs(J.determinant());
 
-			v += (bi_x * bj_x + bi_y * bj_y) * wvol;
+			v += (bi_x * bj_x + bi_y * bj_y) * wvol / std::pow(J.determinant(),2);
 		}
 	}
 
@@ -270,24 +270,29 @@ double Assembler_2D::computeRightHandSideIntegral(int il_1, int il_2)
 	return v;
 }
 
-void Assembler_2D::computeBoundary()
+int Assembler_2D::identifyBoundarySideOfBasisFunction(int i)
 {
 	int N = bspline_y->getNumberOfBasisFunctions();
+
+	bool isDirichletOnWestBoundary = ((i >= 0 && i <= N - 1) && (boundaryConditions->getWestType() == "Dirichlet"));
+	bool isDirichletOnSouthBoundary = ((i % N == 0) && (boundaryConditions->getSouthType() == "Dirichlet"));
+	bool isDirichletOnNorthBoundary = ((i % N == N - 1) && (boundaryConditions->getNorthType() == "Dirichlet"));
+	bool isDirichletOnEastBoundary = ((i >= getNumberOfBasisFunctions() - N) && (boundaryConditions->getEastType() == "Dirichlet"));
+
+	if (isDirichletOnWestBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions, i)) return 1;
+	else if (isDirichletOnSouthBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions, i)) return 4;
+	else if (isDirichletOnNorthBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions, i)) return 3;
+	else if (isDirichletOnEastBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions, i)) return 2;
+
+	return 0;
+}
+
+void Assembler_2D::computeBoundary()
+{
 	for (int i = 0; i < getNumberOfBasisFunctions(); i++)
 	{
-		bool isDirichletOnWestBoundary = ((i >= 0 && i <= N - 1) && (boundaryConditions->getWestType() == "Dirichlet"));
-		bool isDirichletOnSouthBoundary = ((i % N == 0) && (boundaryConditions->getSouthType() == "Dirichlet"));
-		bool isDirichletOnNorthBoundary = ((i % N == N - 1) && (boundaryConditions->getNorthType() == "Dirichlet"));
-		bool isDirichletOnEastBoundary = ((i >= getNumberOfBasisFunctions() - N) && (boundaryConditions->getEastType() == "Dirichlet"));
-
-		if (isDirichletOnWestBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions,i)) 
-			boundaryBasisFunctions.push_back(std::make_pair(i, 1));
-		else if (isDirichletOnSouthBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions,i)) 
-			boundaryBasisFunctions.push_back(std::make_pair(i, 4));
-		else if (isDirichletOnNorthBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions,i)) 
-			boundaryBasisFunctions.push_back(std::make_pair(i, 3));
-		else if (isDirichletOnEastBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions,i)) 
-			boundaryBasisFunctions.push_back(std::make_pair(i, 2));
+		int side = identifyBoundarySideOfBasisFunction(i);
+		if (side) boundaryBasisFunctions.push_back(std::make_pair(i, side));
 	}
 }
 

@@ -35,6 +35,7 @@ protected:
     Matrix<double> Jacobian(std::vector<int> indices, std::vector<double> &dNxNy, std::vector<double> &NxdNy);
 
     void computeBoundary();
+    int identifyBoundarySideOfBasisFunction(int i);
     void computeTrimmedElements();
 
     void computeStiffnessMatrixAndRighHandSide();
