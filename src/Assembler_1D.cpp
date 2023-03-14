@@ -92,13 +92,11 @@ double Assembler_1D::computeRightHandSideIntegral(int element, int basisFunction
 		std::pair<std::vector<double>, std::vector<double>> eval = bspline_x->evaluateAtPoint(XGaussPointsAndWeights[g1].first);
 
 		Matrix<double> J = Jacobian(XGaussPointsAndWeights[g1].first, eval.second);
-
 		double detJ = sqrt(pow(J(0, 0), 2) + pow(J(0, 1), 2));
 
 		double bi_0 = eval.first[basisFunction];
 
 		double wvol = XGaussPointsAndWeights[g1].second * fabs(detJ);
-
 		v += bi_0 * sourceFunction * wvol;
 	}
 

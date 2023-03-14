@@ -32,7 +32,8 @@ public:
     std::vector<std::vector<double>> &getControlPoints();
 
 private:
-    std::vector<std::vector<double>> pointsOfParametricCurve(int direction, int level); // direction = 0 for x
+    std::vector<std::vector<double>> XparametricCurvePoints(int level);
+    std::vector<std::vector<double>> YparametricCurvePoints(int level);
     void refineParametricCurve(KnotVector<double> &vector, std::vector<std::vector<double>> &points);
 
     Bspline bspline_x;

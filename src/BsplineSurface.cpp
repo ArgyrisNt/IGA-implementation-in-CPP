@@ -80,7 +80,7 @@ void BsplineSurface::uniformRefine_x()
 	for (int j = 0; j < bspline_y.getNumberOfBasisFunctions(); j++)
 	{
 		new_knotvector = bspline_x.getKnotvector();
-		controlPoints_x = pointsOfParametricCurve(0, j);
+		controlPoints_x = XparametricCurvePoints(j);
 		refineParametricCurve(new_knotvector, controlPoints_x);
 		all_new_controlPoints.push_back(controlPoints_x);
 	}
@@ -110,7 +110,7 @@ void BsplineSurface::uniformRefine_y()
 	for (int j = 0; j < bspline_x.getNumberOfBasisFunctions(); j++)
 	{
 		new_knotvector = bspline_y.getKnotvector();
-		controlPoints_y = pointsOfParametricCurve(1, j);
+		controlPoints_y = YparametricCurvePoints(j);
 		refineParametricCurve(new_knotvector, controlPoints_y);
 		all_new_controlPoints.push_back(controlPoints_y);
 	}
@@ -129,33 +129,28 @@ void BsplineSurface::uniformRefine_y()
 	(*this).setControlPoints(controlPoints);
 }
 
-std::vector<std::vector<double>> BsplineSurface::pointsOfParametricCurve(int direction, int level)
+std::vector<std::vector<double>> BsplineSurface::XparametricCurvePoints(int level)
 {
-	std::vector<std::vector<double>> controlPointsOnDirection; 
-	switch (direction)
+	std::vector<std::vector<double>> XcontrolPointsOnDirection; 
+	for (int i = 0; i < controlPoints.size(); i++)
 	{
-	case 0: // x
-		for (int i = 0; i < controlPoints.size(); i++)
-		{
-			if (i == 0 || (i % bspline_y.getNumberOfBasisFunctions()) == 0)
-				controlPointsOnDirection.push_back(controlPoints[i + level]);
-		}
-		break;
-	case 1: // y
-		for (int i = 0; i < controlPoints.size(); i++)
-		{
-			if (i >= 0 && (i < bspline_y.getNumberOfBasisFunctions()))
-				controlPointsOnDirection.push_back(controlPoints[i + level * bspline_y.getNumberOfBasisFunctions()]);
-		}
-		break;
-	default:
-		std::cout << "Invalid dimension. Valid directions are 0,1" << std::endl;
-		throw std::invalid_argument("Invalid direction");
-		break;
+		if (i == 0 || (i % bspline_y.getNumberOfBasisFunctions()) == 0)
+			XcontrolPointsOnDirection.push_back(controlPoints[i + level]);
 	}
-
-	return controlPointsOnDirection;
+	return XcontrolPointsOnDirection;
 }
+
+std::vector<std::vector<double>> BsplineSurface::YparametricCurvePoints(int level)
+{
+	std::vector<std::vector<double>> YcontrolPointsOnDirection;
+	for (int i = 0; i < controlPoints.size(); i++)
+	{
+		if (i >= 0 && (i < bspline_y.getNumberOfBasisFunctions()))
+			YcontrolPointsOnDirection.push_back(controlPoints[i + level * bspline_y.getNumberOfBasisFunctions()]);
+	}
+	return YcontrolPointsOnDirection;
+}
+
 
 void BsplineSurface::refineParametricCurve(KnotVector<double> &vector, std::vector<std::vector<double>> &points)
 {
