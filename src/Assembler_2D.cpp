@@ -6,6 +6,11 @@ Bspline &Assembler_2D::getBspline_y()
 	return bsplineEntity.getBspline_y();
 }
 
+Bspline &Assembler_2D::getBspline_x()
+{
+	return bsplineEntity.getBspline_x();
+}
+
 std::vector<std::vector<double>> &Assembler_2D::getControlPoints()
 {
 	return bsplineEntity.getControlPoints();

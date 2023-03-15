@@ -21,8 +21,8 @@ public:
     void writeParameterSpaceToFile(std::string filename);
     void writeTrimmedTrianglesToFile(std::string filename);
 
-
-    Bspline& getBspline_y();
+    Bspline &getBspline_x();
+    Bspline &getBspline_y();
     std::vector<std::vector<double>>& getControlPoints();
     const int getNumberOfBasisFunctions();
     double getDistinctKnotY(int position);

@@ -19,13 +19,13 @@ int main()
     KnotVector<double> y_knotVector(y_degree, y_values, y_weights);
     Bspline bspline_y(y_knotVector);
 
-    // - - - - - Assempler info - - - - -
+    // - - - - - B-spline surface - - - - -
     std::vector<std::vector<double>> controlPoints{ {0.0, 0.0}, {0.0, 4.0}, {4.0, 8.0}, {8.0, 8.0},
                                               {2.0, 0.0}, {2.0, 3.0}, {5.0, 6.0}, {8.0, 6.0},
                                               {4.0, 0.0}, {4.0, 2.0}, {6.0, 4.0}, {8.0, 4.0} };
 
-    // - - - - - B-spline surface - - - - -
-    BsplineSurface surface(bspline_x, bspline_y, controlPoints);
+    TrimmingCurve trimmingCurve(Vertex<double>(0.0, 0.0), 0.0);
+    BsplineSurface surface(bspline_x, bspline_y, controlPoints, trimmingCurve);
 
     int numberOfRefinements = 3;
     for (int i = 0; i < numberOfRefinements; i++)
