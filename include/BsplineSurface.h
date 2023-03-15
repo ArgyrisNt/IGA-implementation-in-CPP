@@ -1,16 +1,17 @@
 #ifndef H_BSPLINESURFACE
 #define H_BSPLINESURFACE
 
-#include "..\include\Bspline.h"
+#include "..\include\Bspline_2D.h"
+#include "..\include\TrimmingCurve.h"
 #include <iostream>
 #include <vector>
 
-class BsplineSurface
+class BsplineSurface : public Bspline_2D
 {
 public:
     BsplineSurface(const Bspline &new_bspline_x, const Bspline &new_bspline_y, std::vector<std::vector<double>> &new_controlPoints, 
                     TrimmingCurve& _trimmingCurve)
-        : bspline_x(new_bspline_x), bspline_y(new_bspline_y), controlPoints(new_controlPoints), trimmingCurve(_trimmingCurve) {}
+        : Bspline_2D(new_bspline_x, new_bspline_y), controlPoints(new_controlPoints), trimmingCurve(_trimmingCurve) {}
 
     ~BsplineSurface() {}
 
@@ -26,11 +27,7 @@ public:
     void uniformRefine_y();
 
     void setControlPoints(std::vector<std::vector<double>> &new_controlPoints);
-    void setBspline_x(Bspline &new_bspline_x);
-    void setBspline_y(Bspline &new_bspline_y);
 
-    Bspline &getBspline_x();
-    Bspline &getBspline_y();
     std::vector<std::vector<double>> &getControlPoints();
 
     TrimmingCurve trimmingCurve;
@@ -40,8 +37,6 @@ private:
     std::vector<std::vector<double>> YparametricCurvePoints(int level);
     void refineParametricCurve(KnotVector<double> &vector, std::vector<std::vector<double>> &points);
 
-    Bspline bspline_x;
-    Bspline bspline_y;
     std::vector<std::vector<double>> controlPoints;
 };
 

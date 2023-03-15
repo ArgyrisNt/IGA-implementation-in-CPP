@@ -21,7 +21,7 @@ public:
     Matrix<double> &getStiffnessMatrix();
     Matrix<double> &getSystemMatrix();
     std::vector<double> &getRightHandSide();
-    Bspline &getBspline_x();
+    Bspline &getBsplineEntity();
     double getDistinctKnotX(int position);
     std::vector<double> getDistinctKnotsX();
 

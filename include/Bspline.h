@@ -26,6 +26,7 @@ public:
 	int getDegree();
 	BasisFunctions getBasisFunctions();
 	int getNumberOfBasisFunctions();
+	Bspline &getBspline_x() { return *this; }
 
 	void setKnotvector(KnotVector<double> &newKnotVector);
 

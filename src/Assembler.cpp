@@ -20,21 +20,21 @@ std::vector<double> &Assembler<T>::getRightHandSide()
 }
 
 template <class T>
-Bspline &Assembler<T>::getBspline_x()
+Bspline &Assembler<T>::getBsplineEntity()
 {
-	return bsplineEntity.getBspline_x();
+	return bsplineEntity;
 }
 
 template <class T>
 double Assembler<T>::getDistinctKnotX(int position)
 {
-	return bsplineEntity.getBspline_x().getKnotvector().getDistinctKnots()[position];
+	return bsplineEntity.getKnotvector().getDistinctKnots()[position];
 }
 
 template <class T>
 std::vector<double> Assembler<T>::getDistinctKnotsX()
 {
-	return bsplineEntity.getBspline_x().getKnotvector().getDistinctKnots();
+	return bsplineEntity.getKnotvector().getDistinctKnots();
 }
 
 
@@ -42,7 +42,7 @@ std::vector<double> Assembler<T>::getDistinctKnotsX()
 template <class T>
 int Assembler<T>::XspanOfValueInKnotVector(double value)
 {
-	return bsplineEntity.getBspline_x().findSpanOfValue(value);
+	return bsplineEntity.findSpanOfValue(value);
 }
 
 
