@@ -14,7 +14,8 @@ public:
     ~BsplineCurve() {}
 
     std::pair<double, double> evaluateAtPoint(double point);
-    void plot(int resolution);
+    void plot2D(int resolution, std::string filename);
+    void plot3D(int resolution, std::vector<double> &zCoordinate, std::string filename);
 
     Bspline &getBspline_x();
     std::vector<std::vector<double>> &getControlPoints();

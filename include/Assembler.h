@@ -6,11 +6,13 @@
 #include "..\include\BoundCond.h"
 #include "..\include\Bspline.h"
 
+template <class T>
 class Assembler
 {
 public:
     Assembler() {}
-    Assembler(double newSourceFunction, Bspline &bspline) : sourceFunction(newSourceFunction), bspline_x(&bspline) {}
+    Assembler(double newSourceFunction, BoundCond &newBoundaryConditions, T &bspline)
+        : sourceFunction(newSourceFunction), bsplineEntity(bspline), boundaryConditions(&newBoundaryConditions) {}
 
     virtual ~Assembler() {}
 
@@ -25,22 +27,6 @@ public:
 
     int XspanOfValueInKnotVector(double value);
 
-protected:
-    std::vector<std::pair<double, double>> XGaussPointsAndWeights;
-
-    Matrix<double> stiffnessMatrix;
-    Matrix<double> systemMatrix;
-    std::vector<double> rightHandSide;
-    Bspline *bspline_x;
-    double sourceFunction;
-};
-
-class AssemblerBoundary : public Assembler
-{
-public:
-    AssemblerBoundary(double newSourceFunction, BoundCond &newBoundaryConditions, Bspline &bspline) 
-        : boundaryConditions(&newBoundaryConditions), Assembler(newSourceFunction, bspline) {}
-
     void applyBoundaryEllimination();
     void applyBoundaryMultipliers();
     void enforceBoundaryConditions(std::string &);
@@ -49,6 +35,15 @@ public:
     BoundCond *boundaryConditions;
     std::string boundaryMode;
     std::vector<std::pair<int, int>> boundaryBasisFunctions;
+
+protected:
+    std::vector<std::pair<double, double>> XGaussPointsAndWeights;
+
+    Matrix<double> stiffnessMatrix;
+    Matrix<double> systemMatrix;
+    std::vector<double> rightHandSide;
+    T bsplineEntity;
+    double sourceFunction;
 };
 
 #include "..\src\Assembler.cpp"

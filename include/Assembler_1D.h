@@ -5,12 +5,11 @@
 #include "..\include\Assembler.h"
 #include "..\include\BsplineCurve.h"
 
-class Assembler_1D : public AssemblerBoundary
+class Assembler_1D : public Assembler<BsplineCurve>
 {
 public:
-    Assembler_1D(double sourceFunction, BoundCond &boundaryConditions, BsplineCurve &curve)
-        : AssemblerBoundary(sourceFunction, boundaryConditions, curve.getBspline_x()),
-        controlPoints(curve.getControlPoints()) {}
+    Assembler_1D(double sourceFunction, BoundCond &boundaryConditions, BsplineCurve &_curve)
+        : Assembler<BsplineCurve>(sourceFunction, boundaryConditions, _curve) {}
 
     virtual ~Assembler_1D() {}
 
@@ -26,8 +25,6 @@ protected:
     void computeStiffnessMatrixAndRightHandSide();
     double computeStiffnessIntegral(int element, int basisFunction, int trialFunction);
     double computeRightHandSideIntegral(int element, int basisFunction);
-
-    std::vector<std::vector<double>> controlPoints;
 };
 
 #include "..\src\Assembler_1D.cpp"

@@ -8,13 +8,7 @@
 class Solver
 {
 public:
-    static Solver LU;
-    static Solver QR;
-    static Solver GaussSeidel;
-    static Solver Jacobi;
-    static Solver SOR;
-    static Solver Gradient;
-    static Solver ConjugateGradient;
+    static Solver LU, QR, GaussSeidel, Jacobi, SOR, Gradient, ConjugateGradient;
 
     Solver(const std::string& name) : mode(name) {}
 

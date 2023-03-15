@@ -74,7 +74,8 @@ bool IDHasNotAlreadyBeingMarked(std::vector<T> &vec, int id)
     return it == vec.end();
 }
 
-void mapValuesToDomain(std::vector<double> &GaussPoints, const double left, const double right)
+template <class T>
+void mapValuesToDomain(std::vector<T> &GaussPoints, const T left, const T right)
 {
     for (int i = 0; i < GaussPoints.size(); i++)
     {
@@ -82,6 +83,16 @@ void mapValuesToDomain(std::vector<double> &GaussPoints, const double left, cons
     }
 }
 
+template <class T>
+std::ostream &operator<<(std::ostream &os, std::vector<T> &vec)
+{
+    for (auto value : vec)
+    {
+        os << value << std::endl;
+    }
+
+    return os;
+}
 
 std::vector<std::pair<double, double>> GaussPointsAndWeightsQuad(int numberOfPoints, const double left, const double right)
 {

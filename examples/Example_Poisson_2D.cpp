@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "..\include\Assembler_2D.h"
-#include "..\include\Poisson_2D.h"
+#include "..\include\Poisson.h"
 #include "..\include\BsplineSurface.h"
 
 int main()
@@ -25,10 +25,8 @@ int main()
     std::vector<std::vector<double>> controlPoints{ {0.0, 0.0}, {0.0, 4.0}, {4.0, 8.0}, {8.0, 8.0},
                                                     {2.0, 0.0}, {2.0, 3.0}, {5.0, 6.0}, {8.0, 6.0},
                                                     {4.0, 0.0}, {4.0, 2.0}, {6.0, 4.0}, {8.0, 4.0} };
-    // std::vector<std::vector<double>> controlPoints{ {0.0, 0.0}, {0.0, 2.0}, {0.0, 4.0},
-    //                                                 {2.0, 0.0}, {2.0, 2.0}, {2.0, 4.0},
-    //                                                 {4.0, 0.0}, {4.0, 2.0}, {4.0, 4.0} };
-    BsplineSurface surface(bspline_x, bspline_y, controlPoints);
+    TrimmingCurve trimmingCurve(Vertex<double>(0.0, 0.0), 0.0);
+    BsplineSurface surface(bspline_x, bspline_y, controlPoints, trimmingCurve);
     for (int i = 0; i < 1; i++)
     {
         surface.uniformRefine_x();
@@ -38,8 +36,7 @@ int main()
     // - - - - - Assempler info - - - - -
     double src = 3.0;
     BoundCond _bc("Dirichlet", "Dirichlet", "Dirichlet", "Dirichlet", 0.0, 0.0, 0.0, 0.0); // left-right-top-bottom
-    TrimmingCurve trimmingCurve(Vertex<double>(0.0, 0.0), 0.0);
-    Assembler_2D ass2(src, _bc, surface, trimmingCurve);
+    Assembler_2D ass2(src, _bc, surface);
     ass2.assemble();
 
     // - - - - - Enforce boundary conditions - - - - -
@@ -47,12 +44,14 @@ int main()
     ass2.enforceBoundaryConditions(mode);
 
     // - - - - - Poisson info - - - - -
-    Poisson_2D poisson(ass2, Solver::SOR);
+    Poisson<Assembler_2D> poisson(ass2, Solver::SOR);
     poisson.setSolution(poisson.getSolver()->solve(50));
     std::cout << poisson.getSolution();
 
     // - - - - - Write solution data - - - - - 
-    poisson.plotSolution(100); // resolution = 100
+    int resolution = 100;
+    //surface.plot2D(resolution, "surface.dat");
+    surface.plot3D(resolution, poisson.getSolution(), "solution.dat");
 
     return 0;
 }

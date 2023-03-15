@@ -1,46 +1,54 @@
 #include <iostream>
 #include "..\include\Assembler.h"
 
-Matrix<double> &Assembler::getStiffnessMatrix() 
+template <class T>
+Matrix<double> &Assembler<T>::getStiffnessMatrix()
 { 
 	return stiffnessMatrix; 
 }
 
-Matrix<double> &Assembler::getSystemMatrix()
+template <class T>
+Matrix<double> &Assembler<T>::getSystemMatrix()
 { 
 	return systemMatrix;
 }
 
-std::vector<double> &Assembler::getRightHandSide()
+template <class T>
+std::vector<double> &Assembler<T>::getRightHandSide()
 {
 	return rightHandSide;
 }
 
-Bspline &Assembler::getBspline_x()
+template <class T>
+Bspline &Assembler<T>::getBspline_x()
 {
-	return *bspline_x;
+	return bsplineEntity.getBspline_x();
 }
 
-double Assembler::getDistinctKnotX(int position)
+template <class T>
+double Assembler<T>::getDistinctKnotX(int position)
 {
-	return bspline_x->getKnotvector().getDistinctKnots()[position];
+	return bsplineEntity.getBspline_x().getKnotvector().getDistinctKnots()[position];
 }
 
-std::vector<double> Assembler::getDistinctKnotsX()
+template <class T>
+std::vector<double> Assembler<T>::getDistinctKnotsX()
 {
-	return bspline_x->getKnotvector().getDistinctKnots();
-}
-
-
-
-int Assembler::XspanOfValueInKnotVector(double value)
-{
-	return bspline_x->findSpanOfValue(value);
+	return bsplineEntity.getBspline_x().getKnotvector().getDistinctKnots();
 }
 
 
 
-void AssemblerBoundary::enforceBoundaryConditions(std::string &mode)
+template <class T>
+int Assembler<T>::XspanOfValueInKnotVector(double value)
+{
+	return bsplineEntity.getBspline_x().findSpanOfValue(value);
+}
+
+
+
+template <class T>
+void Assembler<T>::enforceBoundaryConditions(std::string &mode)
 {
 	boundaryMode = mode;
 	if (mode == "Ellimination")
@@ -58,7 +66,8 @@ void AssemblerBoundary::enforceBoundaryConditions(std::string &mode)
 	}
 }
 
-void AssemblerBoundary::applyBoundaryEllimination()
+template <class T>
+void Assembler<T>::applyBoundaryEllimination()
 {
 	int newDimension = systemMatrix.getNumberOfRows() - boundaryBasisFunctions.size();
 	Matrix<double> newSystemMatrix(newDimension, newDimension);
@@ -86,7 +95,8 @@ void AssemblerBoundary::applyBoundaryEllimination()
 	rightHandSide = newRightHandSide;
 }
 
-void AssemblerBoundary::applyBoundaryMultipliers()
+template <class T>
+void Assembler<T>::applyBoundaryMultipliers()
 {
 	int new_dim = systemMatrix.getNumberOfRows() + boundaryBasisFunctions.size();
 	Matrix<double> newSystemMatrix(new_dim, new_dim);
@@ -117,7 +127,8 @@ void AssemblerBoundary::applyBoundaryMultipliers()
 	rightHandSide = newRightHandSide;
 }
 
-double AssemblerBoundary::addBoundaryValueToRhs(int position)
+template <class T>
+double Assembler<T>::addBoundaryValueToRhs(int position)
 {
 	if (boundaryBasisFunctions[position].second == 1)
 	{

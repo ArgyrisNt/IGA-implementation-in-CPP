@@ -37,7 +37,8 @@ int main()
 	std::cout << poisson.getSolution();
 
 	// - - - - - Write solution data - - - - -
-	poisson.plotSolution(100, "solution.dat");
+	int resolution = 100;
+	curve.plot3D(resolution, poisson.getSolution(), "solution.dat");
 
 	return 0;
 }

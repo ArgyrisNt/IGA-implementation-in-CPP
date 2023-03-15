@@ -20,6 +20,7 @@ public:
     void computeDistinctKnots();
     int findSpanOfValue(const double value);
     void insert(int position, double value);
+    std::vector<T> linspace(int resolution);
 
     int getSize();
     int getDegree();

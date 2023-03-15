@@ -16,7 +16,7 @@ int main()
     std::vector<std::vector<double>> controlPoints{{2.0, 0.0}, {2.0, 1.0}, {1.0, 1.0}, {0.0, 1.0}, {0.0, 0.0}};
     BsplineCurve curve(bspline_x, controlPoints);
     int resolution = 100;
-    curve.plot(resolution);
+    curve.plot2D(resolution, "curve.dat");
 
     return 0;
 }
