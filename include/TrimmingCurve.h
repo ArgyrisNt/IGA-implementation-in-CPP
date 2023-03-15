@@ -14,15 +14,17 @@ public:
 
     ~TrimmingCurve() {}
 
-    void plot();
-    double projectionOfPoint(Vertex<double>& point);
     Vertex<double> evaluate(double t);
     Vertex<double> evaluateDerivative(double t);
-    bool isPointOutside(Vertex<double> &point);
+
     double find_s_given_t(double t, double minimum, double maximum);
     double find_t_given_s(double s, double minimum, double maximum);
+
+    double projectionOfPoint(Vertex<double>& point);
+    bool isPointOutside(Vertex<double> &point);
     bool isCartesianPointInside(double x, double y);
 
+    void plot();
 
     Vertex<double> center;
     double radius;

@@ -6,12 +6,11 @@
 #include "..\include\Element.h"
 #include "..\include\BsplineSurface.h"
 
-class Assembler_2D : public AssemblerBoundary
+class Assembler_2D : public Assembler<BsplineSurface>
 {
 public:
-    Assembler_2D(double src, BoundCond &bcinfo, BsplineSurface &surface, TrimmingCurve& _trimmingCurve)
-        : AssemblerBoundary(src, bcinfo, surface.getBspline_x()), bspline_y(&surface.getBspline_y()),
-        controlPoints(surface.getControlPoints()), trimmingCurve(_trimmingCurve) {}
+    Assembler_2D(double src, BoundCond &bcinfo, BsplineSurface &_surface)
+        : Assembler<BsplineSurface>(src, bcinfo, _surface) {}
 
     virtual ~Assembler_2D() {}
 
@@ -19,16 +18,18 @@ public:
 
     int YspanOfValueInKnotVector(double value);
     
-    void writeParameterSpaceToFile(std::string& filename);
+    void writeParameterSpaceToFile(std::string filename);
+    void writeTrimmedTrianglesToFile(std::string filename);
+
 
     Bspline& getBspline_y();
     std::vector<std::vector<double>>& getControlPoints();
     const int getNumberOfBasisFunctions();
     double getDistinctKnotY(int position);
     std::vector<double> getDistinctKnotsY();
+    TrimmingCurve &getTrimmingCurve();
 
     std::vector<Triangle<double>> trimmed_triangles;
-    TrimmingCurve trimmingCurve;
 
 protected:
     std::vector<int> computeActiveControlPoints(double g1, double g2);
@@ -45,9 +46,6 @@ protected:
     double computeRightHandSideIntegral(int il_1, int il_2);
 
     std::vector<std::pair<double, double>> YGaussPointsAndWeights;
-
-    Bspline *bspline_y;
-    std::vector<std::vector<double>> controlPoints;
     std::vector<Element> elements;
 };
 

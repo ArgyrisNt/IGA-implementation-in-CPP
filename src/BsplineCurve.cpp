@@ -33,21 +33,45 @@ std::pair<double, double> BsplineCurve::evaluateAtPoint(double point)
 
 
 
-void BsplineCurve::plot(int resolution)
+void BsplineCurve::plot2D(int resolution, std::string filename)
 {
-	double firstKnot = bspline_x.getKnotvector()(0);
-	double lastKnot = bspline_x.getKnotvector()(bspline_x.getKnotvector().getSize() - 1);
+	std::vector<double> steps = bspline_x.getKnotvector().linspace(resolution);
 
-	std::string filename("curve.dat");
 	std::ofstream plotCurve(filename);
 	plotCurve << "variables= " << "\"x\"" << "," << "\"y\"" << "\n";
-   	plotCurve << "zone t= " << "\"1\"" << ",i=" << resolution << ",j=" << resolution << "\n";
+   	plotCurve << "zone t= " << "\"1\"" << ",i=" << resolution + 1 << ",j=" << resolution + 1 << "\n";
 
-	for (int i = (int)(firstKnot); i < resolution; i++)
+	for (int i = 0; i < steps.size(); i++)
 	{
-		double currentStep = firstKnot + (double)(i) * ((lastKnot - firstKnot) / ((double) (resolution - 1)));
-		std::pair<double,double> coordinates = evaluateAtPoint(currentStep);
+		int span = bspline_x.findSpanOfValue(steps[i]);
+		std::vector<double> bVal = bspline_x.evaluateAtPoint(steps[i]).first;
+
+		std::pair<double, double> coordinates = evaluateAtPoint(steps[i]);
 		plotCurve << coordinates.first << " " << coordinates.second << "\n";
+	}
+	plotCurve.close();
+}
+
+void BsplineCurve::plot3D(int resolution, std::vector<double> &zCoordinate, std::string filename)
+{
+	std::vector<double> steps = bspline_x.getKnotvector().linspace(resolution);
+
+	std::ofstream plotCurve(filename);
+	plotCurve << "variables= " << "\"x\"" << "," << "\"y\"" << "\n";
+   	plotCurve << "zone t= " << "\"1\"" << ",i=" << resolution + 1 << ",j=" << resolution + 1 << "\n";
+
+	for (int i = 0; i < steps.size(); i++)
+	{
+		int span = bspline_x.findSpanOfValue(steps[i]);
+		std::vector<double> bVal = bspline_x.evaluateAtPoint(steps[i]).first;
+
+		double coord_x = 0.0, coord_z = 0.0;
+		for (int kk = 0; kk < bVal.size(); kk++)
+		{
+			coord_x += bVal[kk] * controlPoints[span - bspline_x.getDegree() + kk][0];
+			coord_z += bVal[kk] * zCoordinate[span - bspline_x.getDegree() + kk];
+		}
+		plotCurve << coord_x << " " << coord_z << "\n";
 	}
 	plotCurve.close();
 }

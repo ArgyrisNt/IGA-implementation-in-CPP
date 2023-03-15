@@ -68,7 +68,7 @@ int main()
     std::vector<double> init_sol = ass.applyInitialCondition(init_cond);
     diffusion.setSolution(init_sol);
     int resolution = 100;
-    diffusion.plotSolution(resolution, "0solution.dat");
+    curve.plot3D(resolution, diffusion.getSolution(), "0solution.dat");
 
     // - - - - - Solve - - - - - 
     for (int t = 0; t < numSteps; t++)
@@ -77,7 +77,7 @@ int main()
         std::vector<double> b = ass.nextStep(diffusion.getSolution()); // build next rhs
         diffusion.updateRhs(b);
         diffusion.setSolution(diffusion.getSolver()->solve());
-        diffusion.plotSolution(resolution, std::to_string(t + 1) + "solution.dat");
+        curve.plot3D(resolution, diffusion.getSolution(), std::to_string(t + 1) + "solution.dat");
     }
 
     return 0;

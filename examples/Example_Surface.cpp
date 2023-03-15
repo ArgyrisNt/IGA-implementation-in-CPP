@@ -35,7 +35,7 @@ int main()
     }
 
     int resolution = 100;
-    surface.plot(resolution);
+    surface.plot2D(resolution, "surface.dat");
 
     return 0;
 }

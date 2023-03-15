@@ -118,6 +118,20 @@ void KnotVector<T>::insert(int position, double value)
 }
 
 template <class T>
+std::vector<T> KnotVector<T>::linspace(int resolution)
+{
+    std::vector<T> steps;
+    T start = knots[0];
+    T end = knots[knots.size() - 1];
+    for (int i = (int)(start); i <= resolution; i++)
+    {
+        T i_step = start + (T)(i) * ((end - start) / ((T)(resolution)));
+        steps.push_back(i_step);
+    }
+    return steps;
+}
+
+template <class T>
 void KnotVector<T>::setWeights(std::vector<double>& new_weights)
 {
     for (auto weight : new_weights)
