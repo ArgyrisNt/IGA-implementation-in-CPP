@@ -2,6 +2,11 @@
 #include <cmath>
 #include "..\include\Assembler_1D.h"
 
+Bspline &Assembler_1D::getBspline_x()
+{
+	return bsplineEntity.getBspline(0);
+}
+
 std::vector<std::vector<double>> &Assembler_1D::getControlPoints()
 {
 	 return bsplineEntity.getControlPoints(); 
@@ -9,20 +14,20 @@ std::vector<std::vector<double>> &Assembler_1D::getControlPoints()
 
 const int Assembler_1D::getNumberOfBasisFunctions()
 {
-	return getBsplineEntity().getNumberOfBasisFunctions();
+	return getBspline_x().getNumberOfBasisFunctions();
 }
 
 
 
 Matrix<double> Assembler_1D::Jacobian(double g1, std::vector<double> &Nx)
 {
-	int span_g1 = XspanOfValueInKnotVector(g1);
+	int span_g1 = spanOfValueInKnotVector(g1, 0);
 	double temp1 = 0.0, temp2 = 0.0;
 	Matrix<double> Jacobian(1, 2);
 	for (int kk = 0; kk < Nx.size(); kk++)
 	{
-		Jacobian.setValue(0, 0, Jacobian(0, 0) + Nx[kk] * getControlPoints()[span_g1 - getBsplineEntity().getDegree() + kk][0]);
-		Jacobian.setValue(0, 1, Jacobian(0, 1) + Nx[kk] * getControlPoints()[span_g1 - getBsplineEntity().getDegree() + kk][1]);
+		Jacobian.setValue(0, 0, Jacobian(0, 0) + Nx[kk] * getControlPoints()[span_g1 - getBspline_x().getDegree() + kk][0]);
+		Jacobian.setValue(0, 1, Jacobian(0, 1) + Nx[kk] * getControlPoints()[span_g1 - getBspline_x().getDegree() + kk][1]);
 	}
 
 	return Jacobian;
@@ -41,18 +46,18 @@ void Assembler_1D::computeStiffnessMatrixAndRightHandSide()
 {
 	Matrix<double> A(getNumberOfBasisFunctions(), getNumberOfBasisFunctions());
 	std::vector<double> b(getNumberOfBasisFunctions(), 0.0);
-	int N = getDistinctKnotsX().size() - 1; // Number of elements
+	int N = getDistinctKnots(0).size() - 1; // Number of elements
 	for (int ie1 = 0; ie1 < N; ie1++)
 	{
-		int i_span_1 = XspanOfValueInKnotVector(getDistinctKnotX(ie1));
-		for (int il_1 = 0; il_1 < getBsplineEntity().getDegree() + 1; il_1++)
+		int i_span_1 = spanOfValueInKnotVector(getDistinctKnots(0)[ie1], 0);
+		for (int il_1 = 0; il_1 < getBspline_x().getDegree() + 1; il_1++)
 		{
-			int i1 = i_span_1 - getBsplineEntity().getDegree() + il_1;
+			int i1 = i_span_1 - getBspline_x().getDegree() + il_1;
 			b[i1] += computeRightHandSideIntegral(ie1, il_1);
 
-			for (int jl_1 = 0; jl_1 < getBsplineEntity().getDegree() + 1; jl_1++)
+			for (int jl_1 = 0; jl_1 < getBspline_x().getDegree() + 1; jl_1++)
 			{
-				int j1 = i_span_1 - getBsplineEntity().getDegree() + jl_1;
+				int j1 = i_span_1 - getBspline_x().getDegree() + jl_1;
 				double newValue = A(i1, j1) + computeStiffnessIntegral(ie1, il_1, jl_1);
 				A.setValue(i1, j1, newValue);
 			}
@@ -65,10 +70,10 @@ void Assembler_1D::computeStiffnessMatrixAndRightHandSide()
 double Assembler_1D::computeStiffnessIntegral(int element, int basisFunction, int trialFunction)
 {
 	double v = 0.0;
-	XGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBsplineEntity().getDegree() + 3, getDistinctKnotX(element), getDistinctKnotX(element + 1));
+	XGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBspline_x().getDegree() + 3, getDistinctKnots(0)[element], getDistinctKnots(0)[element + 1]);
 	for (int g1 = 0; g1 < XGaussPointsAndWeights.size(); g1++)
 	{
-		std::vector<double> gradVal = getBsplineEntity().evaluateAtPoint(XGaussPointsAndWeights[g1].first).second;
+		std::vector<double> gradVal = getBspline_x().evaluateAtPoint(XGaussPointsAndWeights[g1].first).second;
 		Matrix<double> J = Jacobian(XGaussPointsAndWeights[g1].first, gradVal);
 		double detJ = sqrt(pow(J(0, 0), 2) + pow(J(0, 1), 2));
 
@@ -86,10 +91,10 @@ double Assembler_1D::computeStiffnessIntegral(int element, int basisFunction, in
 double Assembler_1D::computeRightHandSideIntegral(int element, int basisFunction)
 {
 	double v = 0.0;
-	XGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBsplineEntity().getDegree() + 3, getDistinctKnotX(element), getDistinctKnotX(element + 1));
+	XGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBspline_x().getDegree() + 3, getDistinctKnots(0)[element], getDistinctKnots(0)[element + 1]);
 	for (int g1 = 0; g1 < XGaussPointsAndWeights.size(); g1++)
 	{
-		std::pair<std::vector<double>, std::vector<double>> eval = getBsplineEntity().evaluateAtPoint(XGaussPointsAndWeights[g1].first);
+		std::pair<std::vector<double>, std::vector<double>> eval = getBspline_x().evaluateAtPoint(XGaussPointsAndWeights[g1].first);
 
 		Matrix<double> J = Jacobian(XGaussPointsAndWeights[g1].first, eval.second);
 		double detJ = sqrt(pow(J(0, 0), 2) + pow(J(0, 1), 2));
@@ -107,8 +112,8 @@ void Assembler_1D::computeBoundary()
 {
 	for (int i = 0; i < getNumberOfBasisFunctions(); i++)
 	{
-		bool isDirichletOnWestBoundary = ((i == 0) && (boundaryConditions->getWestType() == "Dirichlet"));
-		bool isDirichletOnEastBoundary = ((i == getNumberOfBasisFunctions() - 1) && (boundaryConditions->getEastType() == "Dirichlet"));
+		bool isDirichletOnWestBoundary = ((i == 0) && (boundaryConditions->west.first == "Dirichlet"));
+		bool isDirichletOnEastBoundary = ((i == getNumberOfBasisFunctions() - 1) && (boundaryConditions->east.first == "Dirichlet"));
 		if (isDirichletOnWestBoundary) boundaryBasisFunctions.push_back(std::make_pair(i, 1));
 		else if (isDirichletOnEastBoundary) boundaryBasisFunctions.push_back(std::make_pair(i, 2));
 	}

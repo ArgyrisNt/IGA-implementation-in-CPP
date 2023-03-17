@@ -28,19 +28,19 @@ void Poisson<T>::expandSolutionOnBoundary()
                 int position = it - assembler->boundaryBasisFunctions.begin();
                 if (assembler->boundaryBasisFunctions[position].second == 1)
                 {
-                    newSolution.push_back(assembler->boundaryConditions->getWestValue());
+                    newSolution.push_back(assembler->boundaryConditions->west.second);
                 }
                 else if (assembler->boundaryBasisFunctions[position].second == 2)
                 {
-                    newSolution.push_back(assembler->boundaryConditions->getEastValue());
+                    newSolution.push_back(assembler->boundaryConditions->east.second);
                 }
                 else if (assembler->boundaryBasisFunctions[position].second == 3)
                 {
-                    newSolution.push_back(assembler->boundaryConditions->getSouthValue());
+                    newSolution.push_back(assembler->boundaryConditions->south.second);
                 }
                 else if (assembler->boundaryBasisFunctions[position].second == 4)
                 {
-                    newSolution.push_back(assembler->boundaryConditions->getNorthValue());
+                    newSolution.push_back(assembler->boundaryConditions->north.second);
                 }							
 		    }
 		    else
@@ -56,7 +56,7 @@ void Poisson<T>::expandSolutionOnBoundary()
 
 
 template <class T>
-Solver *Poisson<T>::getSolver()
+Solver* Poisson<T>::getSolver()
 {
     return solver;
 }
@@ -68,7 +68,7 @@ std::vector<double> &Poisson<T>::getSolution()
 }
 
 template <class T>
-T *Poisson<T>::getAssembler()
+T* Poisson<T>::getAssembler()
 {
     return assembler;
 }

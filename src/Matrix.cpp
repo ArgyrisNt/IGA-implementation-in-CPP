@@ -45,7 +45,7 @@ template <class T>
 Matrix<T>::~Matrix() {}
 
 template <class T>
-Matrix<T> &Matrix<T>::operator=(Matrix matrix)
+Matrix<T> &Matrix<T>::operator=(const Matrix& matrix)
 {
 	numberOfRows = matrix.numberOfRows;
 	numberOfColumns = matrix.numberOfColumns;
@@ -55,7 +55,7 @@ Matrix<T> &Matrix<T>::operator=(Matrix matrix)
 }
 
 template <class T>
-Matrix<T> Matrix<T>::operator+(Matrix matrix)
+Matrix<T> Matrix<T>::operator+(Matrix& matrix)
 {
 	assert(matrix.getNumberOfRows() == getNumberOfRows());
 	assert(matrix.getNumberOfColumns() == getNumberOfColumns());
@@ -68,6 +68,13 @@ Matrix<T> Matrix<T>::operator+(Matrix matrix)
 		}
 	}
 
+	return result;
+}
+
+template <class T>
+Matrix<T> Matrix<T>::operator+(Matrix&& matrix)
+{
+	Matrix<T> result = (*this) + matrix;
 	return result;
 }
 
@@ -152,22 +159,11 @@ void Matrix<T>::setValue(int row, int column, T value)
 	values[row][column] = value;
 }
 
-template <typename T>
-double norm(std::vector<T> &v)
-{
-	double result = 0.0;
-	for (size_t i = 0; i < v.size(); i++)
-	{
-		result += v[i] * v[i];
-	}
-	result = sqrt(result);
-
-	return result;
-}
-
 template <class T>
 T Matrix<T>::determinant()
 {
+	assert(getNumberOfRows() == getNumberOfColumns());
+	int n = getNumberOfRows();
 	switch (getNumberOfRows())
 	{
 	case 1:

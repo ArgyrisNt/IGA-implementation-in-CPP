@@ -25,7 +25,7 @@ int main()
                                               {4.0, 0.0}, {4.0, 2.0}, {6.0, 4.0}, {8.0, 4.0} };
 
     TrimmingCurve trimmingCurve(Vertex<double>(0.0, 0.0), 0.0);
-    BsplineSurface surface(bspline_x, bspline_y, controlPoints, trimmingCurve);
+    BsplineSurface surface(std::vector<Bspline>{bspline_x, bspline_y}, controlPoints, trimmingCurve);
 
     int numberOfRefinements = 3;
     for (int i = 0; i < numberOfRefinements; i++)

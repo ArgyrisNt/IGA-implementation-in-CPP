@@ -13,22 +13,21 @@ public:
 	Bspline(KnotVector<double>& knewKnotVector);
 	Bspline(const Bspline&);
 
-	~Bspline();
+	~Bspline() {}
 
 	Bspline& operator=(const Bspline&);
-	
-	void plot(int resolution);
 
-	int findSpanOfValue(double point);
-	std::pair<std::vector<double>, std::vector<double>> evaluateAtPoint(double point);
+	int findSpanOfValue(const double point);
+	std::pair<std::vector<double>, std::vector<double>> evaluateAtPoint(const double point);
 
 	KnotVector<double>& getKnotvector();
+	BasisFunctions &getBasisFunctions();
 	int getDegree();
-	BasisFunctions getBasisFunctions();
 	int getNumberOfBasisFunctions();
-	Bspline &getBspline_x() { return *this; }
 
 	void setKnotvector(KnotVector<double> &newKnotVector);
+
+	void plot2D(const int resolution, std::string filename);
 
 private:
 	KnotVector<double> knotVector;

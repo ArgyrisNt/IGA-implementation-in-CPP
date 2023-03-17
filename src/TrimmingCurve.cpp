@@ -3,6 +3,7 @@
 #include "math.h"
 #include "..\include\TrimmingCurve.h"
 
+
 void TrimmingCurve::plot()
 {
 	std::string filename("trimming_curve.dat");
@@ -21,15 +22,13 @@ void TrimmingCurve::plot()
 
 Vertex<double> TrimmingCurve::evaluate(double t)
 {
-    if (t < 0.0 || t >= 2.0 * 3.14159265)
-        throw std::invalid_argument("Invalid parameter value");
+    assert(t >= 0.0 && t < 2.0 * 3.14159265);
     return Vertex<double>(center.x + radius * cos(t), center.y + radius * sin(t));
 }
 
 Vertex<double> TrimmingCurve::evaluateDerivative(double t)
 {
-    if (t < 0.0 || t >= 2.0 * 3.14159265)
-        throw std::invalid_argument("Invalid parameter value");
+    assert(t >= 0.0 && t < 2.0 * 3.14159265);
     return Vertex<double>(-radius * sin(t), radius * cos(t));
 }
 

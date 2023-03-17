@@ -8,8 +8,8 @@
 class DiffusionAssembler_1D : public Assembler_1D
 {
 public:
-    DiffusionAssembler_1D(double newSourceFunction, BoundCond &boundaryConditions, BsplineCurve &curve, 
-            double newCoefficient, double delta)
+    DiffusionAssembler_1D(const double newSourceFunction, BoundCond &boundaryConditions, BsplineCurve &curve, 
+            const double newCoefficient, const double delta)
         : Assembler_1D(newSourceFunction, boundaryConditions, curve), coefficient(newCoefficient), Timestep(delta) {}
 
     virtual ~DiffusionAssembler_1D() {}

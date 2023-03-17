@@ -1,13 +1,6 @@
 #include <iostream>
 #include "..\include\BasisFunctions.h"
 
-void BasisFunctions::setKnotVector(KnotVector<double> &newKnotVector)
-{
-    knotVector = newKnotVector;
-    numberOfBasisFunctions = knotVector.getSize() - knotVector.getDegree() - 1;
-    values = {};
-    derivatives = {};
-}
 
 std::pair<std::vector<double>, std::vector<double>> BasisFunctions::evaluateAtPoint(const double value, bool allBasisFunctions)
 {
@@ -26,7 +19,7 @@ std::pair<std::vector<double>, std::vector<double>> BasisFunctions::evaluateAtPo
     return std::make_pair(values, derivatives);
 }
 
-void BasisFunctions::basisFunctionsOfDegree(int level, double value)
+void BasisFunctions::basisFunctionsOfDegree(const int level, const double value)
 {
     std::vector<double> oldValues = values;
     for (int j = 0; j < numberOfBasisFunctions; j++)
@@ -34,11 +27,11 @@ void BasisFunctions::basisFunctionsOfDegree(int level, double value)
         double firstCoefficient = 0.0, secondCoefficient = 0.0;
 
         double denominator = knotVector(j + level) - knotVector(j);
-        if (denominator != 0.0)
+        if (!almostEqual(denominator, 0.0))
             firstCoefficient = (value - knotVector(j)) / denominator;
 
         denominator = knotVector(j + level + 1) - knotVector(j + 1);
-        if (denominator != 0.0)
+        if (!almostEqual(denominator, 0.0))
             secondCoefficient = (knotVector(j + level + 1) - value) / denominator;
 
         if (j == knotVector.getSize() - knotVector.getDegree() - 2)
@@ -49,17 +42,17 @@ void BasisFunctions::basisFunctionsOfDegree(int level, double value)
         if (level == knotVector.getDegree())
         {
             denominator = knotVector(j + level) - knotVector(j);
-            if (denominator != 0.0)
+            if (!almostEqual(denominator, 0.0))
                 firstCoefficient = oldValues[j] / (knotVector(j + level) - knotVector(j));
             denominator = knotVector(j + level + 1) - knotVector(j + 1);
-            if (denominator != 0.0)
+            if (!almostEqual(denominator, 0.0))
                 secondCoefficient = oldValues[j + 1] / (knotVector(j + level + 1) - knotVector(j + 1));
             derivatives[j] = knotVector.getDegree() * (firstCoefficient - secondCoefficient);
         }
     }
 }
 
-void BasisFunctions::computeActiveBasisFunctions(double value)
+void BasisFunctions::computeActiveBasisFunctions(const double value)
 {
     // if value in [ui,ui+1), then active functions are Ni-p,...,Ni
     std::vector<double> activeValues;
@@ -87,7 +80,7 @@ void BasisFunctions::computeActiveBasisFunctions(double value)
     derivatives = activeNurbsDerivatives;
 }
 
-void BasisFunctions::initializeBasisFunctions(double value)
+void BasisFunctions::initializeBasisFunctions(const double value)
 {
     values = {};
     derivatives = {};
@@ -100,7 +93,7 @@ void BasisFunctions::initializeBasisFunctions(double value)
             valuesOfBasisFunctions[j] = 1.0;
     }
 
-    bool isLastKnot = (value == knotVector(knotVector.getSize() - 1));
+    bool isLastKnot = almostEqual(value, knotVector(knotVector.getSize() - 1));
     if (isLastKnot)
         valuesOfBasisFunctions[numberOfBasisFunctions - 1] = 1.0;
 

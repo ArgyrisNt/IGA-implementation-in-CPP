@@ -24,16 +24,16 @@ void DiffusionAssembler_1D::computeMassMatrix()
 {
 	// Assemble mass matrix
 	Matrix<double> M(getNumberOfBasisFunctions(), getNumberOfBasisFunctions());
-	int N = getDistinctKnotsX().size() - 1; // Number of elements
+	int N = getDistinctKnots(0).size() - 1; // Number of elements
 	for (int ie1 = 0; ie1 < N; ie1++)
 	{
-		int i_span_1 = XspanOfValueInKnotVector(getDistinctKnotX(ie1));
-		for (int il_1 = 0; il_1 < getBsplineEntity().getDegree() + 1; il_1++)
+		int i_span_1 = spanOfValueInKnotVector(getDistinctKnots(0)[ie1], 0);
+		for (int il_1 = 0; il_1 < getBspline_x().getDegree() + 1; il_1++)
 		{
-			int i1 = i_span_1 - getBsplineEntity().getDegree() + il_1;
-			for (int jl_1 = 0; jl_1 < getBsplineEntity().getDegree() + 1; jl_1++)
+			int i1 = i_span_1 - getBspline_x().getDegree() + il_1;
+			for (int jl_1 = 0; jl_1 < getBspline_x().getDegree() + 1; jl_1++)
 			{
-				int j1 = i_span_1 - getBsplineEntity().getDegree() + jl_1;
+				int j1 = i_span_1 - getBspline_x().getDegree() + jl_1;
 
 				double newValue = M(i1, j1) + computeMassIntegral(ie1, il_1, jl_1);
 				M.setValue(i1, j1, newValue);
@@ -46,10 +46,10 @@ void DiffusionAssembler_1D::computeMassMatrix()
 double DiffusionAssembler_1D::computeMassIntegral(int element, int basisFunction, int trialFunction)
 {
 	double v = 0.0;
-	std::vector<std::pair<double, double>> gauss = GaussPointsAndWeightsQuad(getBsplineEntity().getDegree() + 3, getDistinctKnotX(element), getDistinctKnotX(element + 1));
+	std::vector<std::pair<double, double>> gauss = GaussPointsAndWeightsQuad(getBspline_x().getDegree() + 3, getDistinctKnots(0)[element], getDistinctKnots(0)[element + 1]);
 	for (int g1 = 0; g1 < gauss.size(); g1++)
 	{
-		std::pair<std::vector<double>, std::vector<double>> eval = getBsplineEntity().evaluateAtPoint(gauss[g1].first);
+		std::pair<std::vector<double>, std::vector<double>> eval = getBspline_x().evaluateAtPoint(gauss[g1].first);
 		Matrix<double> J = Jacobian(gauss[g1].first, eval.second);
 		double detJ = sqrt(pow(J(0, 0), 2) + pow(J(0, 1), 2));
 
@@ -79,8 +79,8 @@ std::vector<double> DiffusionAssembler_1D::applyInitialCondition(double (*func)(
 {
 	std::vector<double> sol;
 	std::vector<double> linspaced;
-	double start = getDistinctKnotX(0);
-	double end = getDistinctKnotX(getDistinctKnotsX().size() - 1);
+	double start = getDistinctKnots(0)[0];
+	double end = getDistinctKnots(0)[getDistinctKnots(0).size() - 1];
 	double delta = (end - start) / (getNumberOfBasisFunctions() - 1);
 	for (int i = 0; i < getNumberOfBasisFunctions() - 1; i++)
 	{

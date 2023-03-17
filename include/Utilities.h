@@ -16,23 +16,28 @@ public:
 
     void set(T _x, T _y) { x = _x; y = _y; }
 
+    bool operator==(Vertex<T>& vertex2)
+    {
+        return (fabs(x - vertex2.x) < 1e-7 && fabs(y - vertex2.y) < 1e-7);
+    }
+
+    bool operator!=(Vertex<T>& vertex2)
+    {
+        return !((*this) == vertex2);
+    }
+
+
     T x;
     T y;
 };
 
 template <class T>
-bool almostEqual(const Vertex<T> &vertex1, const Vertex<T> &vertex2)
-{
-    return (fabs(vertex1.x - vertex2.x) < 1e-7 && fabs(vertex1.y - vertex2.y) < 1e-7);
-}
-
-template <class T>
 class Triangle
 {
 public:
-    Triangle(Vertex<T>& _vertex1, Vertex<T>& _vertex2, Vertex<T>& _vertex3) 
+    Triangle(Vertex<T> &_vertex1, Vertex<T> &_vertex2, Vertex<T> &_vertex3)
         : vertex1(_vertex1), vertex2(_vertex2), vertex3(_vertex3) {}
-    
+
     ~Triangle() {}
 
     Vertex<T> vertex1;
@@ -67,8 +72,7 @@ std::vector<T> createTensorProduct(std::vector<T> &vec1, std::vector<T> &vec2)
     return tensor_product;
 }
 
-template <class T>
-bool IDHasNotAlreadyBeingMarked(std::vector<T> &vec, int id)
+bool IDHasNotAlreadyBeingMarked(std::vector<std::pair<int, int>> &vec, int id)
 {
     auto it = std::find_if(vec.begin(), vec.end(), CompareFirst(id));
     return it == vec.end();
@@ -77,6 +81,7 @@ bool IDHasNotAlreadyBeingMarked(std::vector<T> &vec, int id)
 template <class T>
 void mapValuesToDomain(std::vector<T> &GaussPoints, const T left, const T right)
 {
+    assert(left <= right);
     for (int i = 0; i < GaussPoints.size(); i++)
     {
         GaussPoints[i] = ((left * (1 - GaussPoints[i]) + right * (1 + GaussPoints[i])) / 2);
@@ -97,9 +102,9 @@ std::ostream &operator<<(std::ostream &os, std::vector<T> &vec)
 std::vector<std::pair<double, double>> GaussPointsAndWeightsQuad(int numberOfPoints, const double left, const double right)
 {
     assert(numberOfPoints > 0);
-    if (numberOfPoints > 5) numberOfPoints = 5;
-    std::vector<double> GaussPoints, GaussWeights;
+    assert(left <= right);
 
+    std::vector<double> GaussPoints, GaussWeights;
     // Compute Gauss points in interval [0,1]
     switch (numberOfPoints)
     {
@@ -124,8 +129,8 @@ std::vector<std::pair<double, double>> GaussPointsAndWeightsQuad(int numberOfPoi
         GaussWeights = {0.236927, 0.478629, 0.568889, 0.478629, 0.236927};
         break;
     default:
-        std::cout << "Invalid dimension. Valid dimensions are 1,2,3,4,5." << std::endl;
-        throw std::invalid_argument("Invalid dimension");
+        GaussPoints = {-0.90618, -0.538469, 0.0, 0.538469, 0.90618};
+        GaussWeights = {0.236927, 0.478629, 0.568889, 0.478629, 0.236927};
         break;
     }
     mapValuesToDomain(GaussPoints, left, right);
@@ -141,6 +146,7 @@ std::vector<std::pair<double, double>> GaussPointsAndWeightsQuad(int numberOfPoi
 
 std::vector<std::pair<double, double>> GaussPointsAndWeightsTriangle(double a, double b)
 {
+    assert(a <= b);
     std::vector<double> GS_pts_temp{1.0 / 6.0, 2.0 / 3.0};
     std::vector<double> GS_wgts{1.0 / 3.0, 1.0 / 3.0};
     // Convert to interval [a,b]
@@ -157,6 +163,24 @@ std::vector<std::pair<double, double>> GaussPointsAndWeightsTriangle(double a, d
     }
 
     return GaussPointsAndWeights;
+}
+
+bool almostEqual(const double a, const double b)
+{
+    return fabs(a - b) < 1e-7;
+}
+
+template <typename T>
+T norm(std::vector<T> &v)
+{
+    T result = 0.0;
+    for (size_t i = 0; i < v.size(); i++)
+    {
+        result += v[i] * v[i];
+    }
+    result = sqrt(result);
+
+    return result;
 }
 
 #endif
