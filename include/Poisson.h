@@ -10,9 +10,9 @@ class Poisson
 public:
     Poisson(T &newAssembler, Solver &newSolver);
 
-    virtual ~Poisson() {}
+    ~Poisson() {}
 
-    virtual void expandSolutionOnBoundary();
+    void expandSolutionOnBoundary();
 
     void setSolution(std::vector<double> &&newSolution);
     void setSolution(std::vector<double> &newSolution);
@@ -25,8 +25,8 @@ public:
     
 protected:
     std::vector<double> solution;
-    T *assembler;
-    Solver *solver;
+    T* assembler;
+    Solver* solver;
 };
 
 #include "..\src\Poisson.cpp"

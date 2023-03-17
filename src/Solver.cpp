@@ -1,26 +1,13 @@
 #include "..\include\Solver.h"
 #include <cassert>
 
-std::string name1("LU");
-Solver Solver::LU(name1);
-
-std::string name2 = "QR";
-Solver Solver::QR(name2);
-
-std::string name3 = "GaussSeidel";
-Solver Solver::GaussSeidel(name3);
-
-std::string name4 = "Jacobi";
-Solver Solver::Jacobi(name4);
-
-std::string name5 = "SOR";
-Solver Solver::SOR(name5);
-
-std::string name6 = "Gradient";
-Solver Solver::Gradient(name6);
-
-std::string name7 = "ConjugateGradient";
-Solver Solver::ConjugateGradient(name7);
+Solver Solver::LU("LU");
+Solver Solver::QR("QR");
+Solver Solver::GaussSeidel("GaussSeidel");
+Solver Solver::Jacobi("Jacobi");
+Solver Solver::SOR("SOR");
+Solver Solver::Gradient("Gradient");
+Solver Solver::ConjugateGradient("ConjugateGradient");
 
 void Solver::setLeftAndRightHandSides(Matrix<double> &left, std::vector<double> &right)
 {
@@ -31,34 +18,13 @@ void Solver::setLeftAndRightHandSides(Matrix<double> &left, std::vector<double> 
 std::vector<double> Solver::solve(int numberOfIterations, double omega)
 {
     std::vector<double> solution;
-    if (mode == "LU")
-    {
-        solution = LUsolve();
-    }
-    else if (mode == "QR")
-    {
-        solution = QRsolve();
-    }
-    else if (mode == "GaussSeidel")
-    {
-        solution = GaussSeidel_iterator(numberOfIterations);
-    }
-    else if (mode == "Jacobi")
-    {
-        solution = Jacobi_iterator(numberOfIterations);
-    }
-    else if (mode == "SOR")
-    {
-        solution = SOR_iterator(numberOfIterations, omega);
-    }
-    else if (mode == "Gradient")
-    {
-        solution = gradient_iterator(numberOfIterations);
-    }
-    else if (mode == "ConjugateGradient")
-    {
-        solution = conjugate_gradient_iterator(numberOfIterations);
-    }
+    if (mode == "LU") solution = LUsolve();
+    else if (mode == "QR") solution = QRsolve();
+    else if (mode == "GaussSeidel") solution = GaussSeidel_iterator(numberOfIterations);
+    else if (mode == "Jacobi") solution = Jacobi_iterator(numberOfIterations);
+    else if (mode == "SOR") solution = SOR_iterator(numberOfIterations, omega);
+    else if (mode == "Gradient") solution = gradient_iterator(numberOfIterations);
+    else if (mode == "ConjugateGradient") solution = conjugate_gradient_iterator(numberOfIterations);
     else
     {
         std::cout << "Invalid solving method" << std::endl;

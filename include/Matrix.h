@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include "..\include\Utilities.h"
 
 template<class T>
 class Matrix
@@ -14,8 +15,9 @@ public:
 
 	~Matrix();
 
-	Matrix& operator=(Matrix);
-	Matrix operator+(Matrix);
+	Matrix& operator=(const Matrix&);
+	Matrix operator+(Matrix &);
+	Matrix operator+(Matrix &&);
 	Matrix operator-(Matrix&);
 	Matrix operator*(Matrix&);
 	Matrix operator*(const T&);

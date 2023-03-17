@@ -1,21 +1,21 @@
 #ifndef H_BSPLINECURVE
 #define H_BSPLINECURVE
 
-#include "..\include\Bspline.h"
+#include "..\include\MultiBspline.h"
 #include <iostream>
 #include <vector>
 
-class BsplineCurve : public Bspline
+class BsplineCurve : public MultiBspline
 {
 public:
-    BsplineCurve(Bspline &new_bspline_x, std::vector<std::vector<double>> &new_controlPoints)
-        : Bspline(new_bspline_x), controlPoints(new_controlPoints) {}
+    BsplineCurve(std::vector<Bspline> &&new_bspline, std::vector<std::vector<double>> &new_controlPoints)
+        : MultiBspline(new_bspline), controlPoints(new_controlPoints) {}
 
     ~BsplineCurve() {}
 
-    Vertex<double> evaluateAtPoint(double point);
-    void plot2D(int resolution, std::string filename);
-    void plot3D(int resolution, std::vector<double> &zCoordinate, std::string filename);
+    Vertex<double> evaluateAtPoint(const double point);
+    void plot2D(const int resolution, std::string filename) override;
+    void plot3D(const int resolution, std::vector<double> &zCoordinate, std::string filename);
 
     std::vector<std::vector<double>> &getControlPoints();
 

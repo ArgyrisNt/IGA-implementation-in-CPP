@@ -16,13 +16,13 @@ int KnotVector<T>::getDegree()
 }
 
 template <class T>
-std::vector<T> KnotVector<T>::getWeights()
+std::vector<T>& KnotVector<T>::getWeights()
 {
     return weights;
 }
 
 template <class T>
-std::vector<T> KnotVector<T>::getDistinctKnots()
+std::vector<T>& KnotVector<T>::getDistinctKnots()
 {
     return distinctKnots;
 }
@@ -37,7 +37,7 @@ KnotVector<T>::KnotVector()
 }
 
 template <class T>
-KnotVector<T>::KnotVector(int newDegree, std::vector<T> &newKnots, std::vector<T> &newWeights)
+KnotVector<T>::KnotVector(const int newDegree, std::vector<T> &newKnots, std::vector<T> &newWeights)
 {
     degree = newDegree;
     knots = newKnots;
@@ -46,7 +46,7 @@ KnotVector<T>::KnotVector(int newDegree, std::vector<T> &newKnots, std::vector<T
 }
 
 template <class T>
-KnotVector<T>::KnotVector(const T start, const T end, int newDegree, int numberOfElements, std::vector<T> &newWeights)
+KnotVector<T>::KnotVector(const T start, const T end, const int newDegree, const int numberOfElements, std::vector<T> &newWeights)
 {
     degree = newDegree;
     for (int i = 0; i < degree; i++)
@@ -92,16 +92,15 @@ void KnotVector<T>::computeDistinctKnots()
     for (int i = degree; i < getSize() - degree; i++)
     {
         currentValue = knots[i];
-        if (currentValue != previousValue)
-            distinctKnots.push_back(knots[i]);
+        if (!almostEqual(currentValue, previousValue)) distinctKnots.push_back(knots[i]);
         previousValue = knots[i];
     }
 }
 
 template <class T>
-int KnotVector<T>::findSpanOfValue(const double value)
+int KnotVector<T>::findSpanOfValue(const T value)
 {
-    bool isLastKnot = (value == knots[knots.size() - 1]);
+    bool isLastKnot = almostEqual(value, knots[knots.size() - 1]);
     if (isLastKnot) return (knots.size() - degree - 2);
     for (int index = 0; index < knots.size() - 1; index++)
     {
@@ -112,14 +111,16 @@ int KnotVector<T>::findSpanOfValue(const double value)
 }
 
 template <class T>
-void KnotVector<T>::insert(int position, double value)
+void KnotVector<T>::insert(const int position, const T value)
 {
+    assert(position >= 0 && position <= knots.size());
     knots.insert(knots.begin() + position, value);
 }
 
 template <class T>
-std::vector<T> KnotVector<T>::linspace(int resolution)
+std::vector<T> KnotVector<T>::linspace(const int resolution)
 {
+    assert(resolution != 0);
     std::vector<T> steps;
     T start = knots[0];
     T end = knots[knots.size() - 1];
@@ -132,16 +133,11 @@ std::vector<T> KnotVector<T>::linspace(int resolution)
 }
 
 template <class T>
-void KnotVector<T>::setWeights(std::vector<double>& new_weights)
+void KnotVector<T>::setWeights(std::vector<T>& new_weights)
 {
     for (auto weight : new_weights)
     {
-        if (weight < 0 || weight > 1)
-        {
-            std::cout << "Invalid weights. Valid weights are within [0,1]." << std::endl;
-            throw std::invalid_argument("Invalid weights");
-            break;
-        }
+        assert(weight >= 0.0 && weight <= 1.0);
     }
 
     weights = new_weights;

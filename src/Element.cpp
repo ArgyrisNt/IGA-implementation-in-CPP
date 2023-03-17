@@ -59,56 +59,56 @@ std::vector<Triangle<double>> Element::construct_3_triangles()
     double max_y = vertices[3].y;
     Vertex<double> diagonal, vertex3, vertex4;
 
-    bool XcoordinateOfFirstAppearsTwice = (untrimmedVertices[0].x == untrimmedVertices[1].x || untrimmedVertices[0].x == untrimmedVertices[2].x);
-    bool YcoordinateOfFirstAppearsTwice = (untrimmedVertices[0].y == untrimmedVertices[1].y || untrimmedVertices[0].y == untrimmedVertices[2].y);
-    bool XcoordinateOfSecondAppearsTwice = (untrimmedVertices[1].x == untrimmedVertices[0].x || untrimmedVertices[1].x == untrimmedVertices[2].x);
-    bool YcoordinateOfSecondAppearsTwice = (untrimmedVertices[1].y == untrimmedVertices[0].y || untrimmedVertices[1].y == untrimmedVertices[2].y);
-    if (XcoordinateOfFirstAppearsTwice && YcoordinateOfFirstAppearsTwice) diagonal = untrimmedVertices[0];
-    else if (XcoordinateOfSecondAppearsTwice && YcoordinateOfSecondAppearsTwice) diagonal = untrimmedVertices[1];
+    bool XcoordOfFirstAppearsTwice = (almostEqual(untrimmedVertices[0].x, untrimmedVertices[1].x) || almostEqual(untrimmedVertices[0].x, untrimmedVertices[2].x));
+    bool YcoordOfFirstAppearsTwice = (almostEqual(untrimmedVertices[0].y, untrimmedVertices[1].y) || almostEqual(untrimmedVertices[0].y, untrimmedVertices[2].y));
+    bool XcoordOfSecondAppearsTwice = (almostEqual(untrimmedVertices[1].x, untrimmedVertices[0].x) || almostEqual(untrimmedVertices[1].x, untrimmedVertices[2].x));
+    bool YcoordOfSecondAppearsTwice = (almostEqual(untrimmedVertices[1].y, untrimmedVertices[0].y) || almostEqual(untrimmedVertices[1].y, untrimmedVertices[2].y));
+    if (XcoordOfFirstAppearsTwice && YcoordOfFirstAppearsTwice) diagonal = untrimmedVertices[0];
+    else if (XcoordOfSecondAppearsTwice && YcoordOfSecondAppearsTwice) diagonal = untrimmedVertices[1];
     else diagonal = untrimmedVertices[2];
 
     for (int i = 0; i < 3; i++)
     {
-        bool hasCommonYwithDiagonal = (untrimmedVertices[i].y == diagonal.y && !almostEqual(untrimmedVertices[i], diagonal));
-        bool hasCommonXwithDiagonal = (untrimmedVertices[i].x == diagonal.x && !almostEqual(untrimmedVertices[i], diagonal));
+        bool hasCommonYwithDiagonal = (almostEqual(untrimmedVertices[i].y, diagonal.y) && untrimmedVertices[i] != diagonal);
+        bool hasCommonXwithDiagonal = (almostEqual(untrimmedVertices[i].x, diagonal.x) && untrimmedVertices[i] != diagonal);
         if (hasCommonYwithDiagonal) vertex3 = untrimmedVertices[i];
         if (hasCommonXwithDiagonal) vertex4 = untrimmedVertices[i];
     }
 
     Vertex<double> vertex1, vertex2;
 
-    if (diagonal.x == min_x)
+    if (almostEqual(diagonal.x, min_x))
     {
         double s2 = max_x;
         double t = trimmingCurve.find_t_given_s(s2, min_y, max_y);
         vertex1.set(s2, t);
 
-        if (diagonal.y == min_y)
+        if (almostEqual(diagonal.y, min_y))
         {
             double t1 = max_y;
             double s = trimmingCurve.find_s_given_t(t1, min_x, max_x);
             vertex2.set(s, t1);
         }
-        else if (diagonal.y == max_y)
+        else if (almostEqual(diagonal.y, max_y))
         {
             double t1 = min_y;
             double s = trimmingCurve.find_s_given_t(t1, min_x, max_x);
             vertex2.set(s, t1);
         }
     }
-    else if (diagonal.x == max_x)
+    else if (almostEqual(diagonal.x, max_x))
     {
         double s2 = min_x;
         double t = trimmingCurve.find_t_given_s(s2, min_y, max_y);
         vertex1.set(s2, t);
 
-        if (diagonal.y == min_y)
+        if (almostEqual(diagonal.y, min_y))
         {
             double t1 = max_y;
             double s = trimmingCurve.find_s_given_t(t1, min_x, max_x);
             vertex2.set(s, t1);
         }
-        else if (diagonal.y == max_y)
+        else if (almostEqual(diagonal.y, max_y))
         {
             double t1 = min_y;
             double s = trimmingCurve.find_s_given_t(t1, min_x, max_x);
@@ -130,7 +130,7 @@ std::vector<Triangle<double>> Element::construct_2_triangles()
     double min_y = vertices[0].y;
     double max_y = vertices[3].y;
     Vertex<double> vertex1, vertex2, vertex3;
-    if (untrimmedVertices[0].x == untrimmedVertices[1].x)
+    if (almostEqual(untrimmedVertices[0].x, untrimmedVertices[1].x))
     {
         if (untrimmedVertices[0].y > untrimmedVertices[1].y) vertex3 = untrimmedVertices[0];
         else vertex3 = untrimmedVertices[1];
@@ -143,7 +143,7 @@ std::vector<Triangle<double>> Element::construct_2_triangles()
         s = trimmingCurve.find_s_given_t(t1, min_x, max_x);
         vertex2.set(s, t1);
     }
-    else if (untrimmedVertices[0].y == untrimmedVertices[1].y)
+    else if (almostEqual(untrimmedVertices[0].y, untrimmedVertices[1].y))
     {
         if (untrimmedVertices[0].x > untrimmedVertices[1].x) vertex3 = untrimmedVertices[0];
         else vertex3 = untrimmedVertices[1];

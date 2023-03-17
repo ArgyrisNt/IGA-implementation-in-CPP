@@ -20,29 +20,24 @@ std::vector<double> &Assembler<T>::getRightHandSide()
 }
 
 template <class T>
-Bspline &Assembler<T>::getBsplineEntity()
+T &Assembler<T>::getBsplineEntity()
 {
 	return bsplineEntity;
 }
 
 template <class T>
-double Assembler<T>::getDistinctKnotX(int position)
+std::vector<double>& Assembler<T>::getDistinctKnots(const int dim)
 {
-	return bsplineEntity.getKnotvector().getDistinctKnots()[position];
-}
-
-template <class T>
-std::vector<double> Assembler<T>::getDistinctKnotsX()
-{
-	return bsplineEntity.getKnotvector().getDistinctKnots();
+	assert(dim >= 0 && dim < bsplineEntity.getDimension());
+	return bsplineEntity.getKnotvector(dim).getDistinctKnots();
 }
 
 
 
 template <class T>
-int Assembler<T>::XspanOfValueInKnotVector(double value)
+int Assembler<T>::spanOfValueInKnotVector(const double value, const int dim)
 {
-	return bsplineEntity.findSpanOfValue(value);
+	return bsplineEntity.findSpanOfValue(value, dim);
 }
 
 
@@ -132,18 +127,18 @@ double Assembler<T>::addBoundaryValueToRhs(int position)
 {
 	if (boundaryBasisFunctions[position].second == 1)
 	{
-		return boundaryConditions->getWestValue();
+		return boundaryConditions->west.second;
 	}
 	else if (boundaryBasisFunctions[position].second == 2)
 	{
-		return boundaryConditions->getEastValue();
+		return boundaryConditions->east.second;
 	}
 	else if (boundaryBasisFunctions[position].second == 3)
 	{
-		return boundaryConditions->getNorthValue();
+		return boundaryConditions->north.second;
 	}
 	else if (boundaryBasisFunctions[position].second == 4)
 	{
-		return boundaryConditions->getSouthValue();
+		return boundaryConditions->south.second;
 	}
 }

@@ -3,27 +3,17 @@
 
 Bspline &Assembler_2D::getBspline_y()
 {
-	return bsplineEntity.getBspline_y();
+	return bsplineEntity.getBspline(1);
 }
 
 Bspline &Assembler_2D::getBspline_x()
 {
-	return bsplineEntity.getBspline_x();
+	return bsplineEntity.getBspline(0);
 }
 
 std::vector<std::vector<double>> &Assembler_2D::getControlPoints()
 {
 	return bsplineEntity.getControlPoints();
-}
-
-double Assembler_2D::getDistinctKnotY(int position)
-{
-	return getBspline_y().getKnotvector().getDistinctKnots()[position];
-}
-
-std::vector<double> Assembler_2D::getDistinctKnotsY()
-{
-	return getBspline_y().getKnotvector().getDistinctKnots();
 }
 
 const int Assembler_2D::getNumberOfBasisFunctions()
@@ -38,15 +28,10 @@ TrimmingCurve &Assembler_2D::getTrimmingCurve()
 
 
 
-int Assembler_2D::YspanOfValueInKnotVector(double value)
-{
-	return getBspline_y().findSpanOfValue(value);
-}
-
 std::vector<int> Assembler_2D::computeActiveControlPoints(double g1, double g2)
 {
-	int span_g1 = XspanOfValueInKnotVector(g1);
-	int span_g2 = YspanOfValueInKnotVector(g2);
+	int span_g1 = spanOfValueInKnotVector(g1, 0);
+	int span_g2 = spanOfValueInKnotVector(g2, 1);
 	std::vector<int> index, index_x, index_y;
 	for (int kk = 0; kk < getBspline_x().getDegree() + 1; kk++)
 	{
@@ -66,7 +51,7 @@ std::vector<int> Assembler_2D::computeActiveControlPoints(double g1, double g2)
 	return index;
 }
 
-Matrix<double> Assembler_2D::Jacobian(std::vector<int> indices, std::vector<double> &dNxNy, std::vector<double> &NxdNy)
+Matrix<double> Assembler_2D::Jacobian(std::vector<int>& indices, std::vector<double> &dNxNy, std::vector<double> &NxdNy)
 {
 	std::vector<double> temp_x(2, 0.0);
 	for (int kk = 0; kk < dNxNy.size(); kk++)
@@ -103,16 +88,16 @@ void Assembler_2D::assemble()
 
 void Assembler_2D::computeTrimmedElements()
 {
-	int Nx = getDistinctKnotsX().size() - 1;
-	int Ny = getDistinctKnotsY().size() - 1;
+	int Nx = getDistinctKnots(0).size() - 1;
+	int Ny = getDistinctKnots(1).size() - 1;
 	for (int ie1 = 0; ie1 < Nx; ie1++)
 	{
 		for (int ie2 = 0; ie2 < Ny; ie2++)
 		{
-			double left_x = getDistinctKnotX(ie1);
-			double right_x = getDistinctKnotX(ie1 + 1);
-			double left_y = getDistinctKnotY(ie2);
-			double right_y = getDistinctKnotY(ie2 + 1);
+			double left_x = getDistinctKnots(0)[ie1];
+			double right_x = getDistinctKnots(0)[ie1 + 1];
+			double left_y = getDistinctKnots(1)[ie2];
+			double right_y = getDistinctKnots(1)[ie2 + 1];
 			Element element(false, getTrimmingCurve());
 			std::vector<Vertex<double>> vertices{Vertex<double>(left_x, left_y), Vertex<double>(left_x, right_y),
 												 Vertex<double>(right_x, left_y), Vertex<double>(right_x, right_y)};
@@ -126,8 +111,8 @@ void Assembler_2D::computeTrimmedElements()
 void Assembler_2D::computeStiffnessMatrixAndRighHandSide()
 {
 	// Assemble stiffness matrix
-	int Nx = getDistinctKnotsX().size() - 1;
-	int Ny = getDistinctKnotsY().size() - 1;
+	int Nx = getDistinctKnots(0).size() - 1;
+	int Ny = getDistinctKnots(1).size() - 1;
 	Matrix<double> A(getNumberOfBasisFunctions(), getNumberOfBasisFunctions());
 	std::vector<double> b(getNumberOfBasisFunctions(), 0.0);
 	stiffnessMatrix = A, rightHandSide = b;
@@ -156,10 +141,10 @@ void Assembler_2D::computeStiffnessMatrixAndRighHandSide()
 
 void Assembler_2D::computeQuadStiffnessMatrixAndRightHandSide(int elementX, int elementY)
 {
-	int spanX = XspanOfValueInKnotVector(getDistinctKnotX(elementX));
-	int spanY = YspanOfValueInKnotVector(getDistinctKnotY(elementY));
-	XGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBspline_x().getDegree() + 3, getDistinctKnotX(elementX), getDistinctKnotX(elementX + 1));
-	YGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBspline_y().getDegree() + 3, getDistinctKnotY(elementY), getDistinctKnotY(elementY + 1));
+	int spanX = spanOfValueInKnotVector(getDistinctKnots(0)[elementX], 0);
+	int spanY = spanOfValueInKnotVector(getDistinctKnots(1)[elementY], 1);
+	XGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBspline_x().getDegree() + 3, getDistinctKnots(0)[elementX], getDistinctKnots(0)[elementX + 1]);
+	YGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBspline_y().getDegree() + 3, getDistinctKnots(1)[elementY], getDistinctKnots(1)[elementY + 1]);
 	for (int il_1 = 0; il_1 < getBspline_x().getDegree() + 1; il_1++)
 	{
 		int i1 = spanX - getBspline_x().getDegree() + il_1;
@@ -189,8 +174,8 @@ void Assembler_2D::computeQuadStiffnessMatrixAndRightHandSide(int elementX, int 
 
 void Assembler_2D::computeTriangleStiffnessMatrixAndRightHandSide(Triangle<double> &triangle, int elementX, int elementY)
 {
-	int spanX = XspanOfValueInKnotVector(getDistinctKnotX(elementX));
-	int spanY = YspanOfValueInKnotVector(getDistinctKnotY(elementY));
+	int spanX = spanOfValueInKnotVector(getDistinctKnots(0)[elementX], 0);
+	int spanY = spanOfValueInKnotVector(getDistinctKnots(1)[elementY], 1);
 	trimmed_triangles.push_back(triangle);
 	double a_x = std::min({triangle.vertex1.x, triangle.vertex2.x, triangle.vertex3.x});
 	double b_x = std::max({triangle.vertex1.x, triangle.vertex2.x, triangle.vertex3.x});
@@ -284,10 +269,10 @@ int Assembler_2D::identifyBoundarySideOfBasisFunction(int i)
 {
 	int N = getBspline_y().getNumberOfBasisFunctions();
 
-	bool isDirichletOnWestBoundary = ((i >= 0 && i <= N - 1) && (boundaryConditions->getWestType() == "Dirichlet"));
-	bool isDirichletOnSouthBoundary = ((i % N == 0) && (boundaryConditions->getSouthType() == "Dirichlet"));
-	bool isDirichletOnNorthBoundary = ((i % N == N - 1) && (boundaryConditions->getNorthType() == "Dirichlet"));
-	bool isDirichletOnEastBoundary = ((i >= getNumberOfBasisFunctions() - N) && (boundaryConditions->getEastType() == "Dirichlet"));
+	bool isDirichletOnWestBoundary = ((i >= 0 && i <= N - 1) && (boundaryConditions->west.first == "Dirichlet"));
+	bool isDirichletOnSouthBoundary = ((i % N == 0) && (boundaryConditions->south.first == "Dirichlet"));
+	bool isDirichletOnNorthBoundary = ((i % N == N - 1) && (boundaryConditions->north.first == "Dirichlet"));
+	bool isDirichletOnEastBoundary = ((i >= getNumberOfBasisFunctions() - N) && (boundaryConditions->east.first == "Dirichlet"));
 
 	if (isDirichletOnWestBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions, i)) return 1;
 	else if (isDirichletOnSouthBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions, i)) return 4;
@@ -312,12 +297,12 @@ void Assembler_2D::writeParameterSpaceToFile(std::string filename)
 {
 	std::ofstream my_file(filename);
 	my_file << "variables= " << "\"x\"" << "," << "\"y\"" << "\n";
-	my_file << "zone t= " << "\"1\"" << ",i=" << getDistinctKnotsX().size() << ",j=" << getDistinctKnotsY().size() << "\n";
-	for (int j = 0; j < getDistinctKnotsY().size(); j++)
+	my_file << "zone t= " << "\"1\"" << ",i=" << getDistinctKnots(0).size() << ",j=" << getDistinctKnots(1).size() << "\n";
+	for (int j = 0; j < getDistinctKnots(1).size(); j++)
 	{
-		for (int i = 0; i < getDistinctKnotsX().size(); i++)
+		for (int i = 0; i < getDistinctKnots(0).size(); i++)
 		{
-			my_file << getDistinctKnotX(i) << " " << getDistinctKnotY(j) << "\n";
+			my_file << getDistinctKnots(0)[i] << " " << getDistinctKnots(1)[j] << "\n";
 		}
 	}
 	my_file.close();

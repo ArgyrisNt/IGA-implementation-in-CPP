@@ -14,15 +14,17 @@ int main()
 	KnotVector<double> knotVector(degree, values, weights);
 	Bspline bspline_x(knotVector);
 	//int resolution = 100;
-	//bspline_x.plot(resolution);
+	//bspline_x.plot(resolution, "basis.dat");
 
 	// - - - - - B-spline curve - - - - -
 	std::vector<std::vector<double>> controlPoints{{0.0, 0.0}, {1.0, 1.0}, {2.0, 1.0}, {3.0, 0.0}};
-	BsplineCurve curve(bspline_x, controlPoints);
+	BsplineCurve curve(std::vector<Bspline>{bspline_x}, controlPoints);
 
 	// - - - - - Assempler info - - - - -
 	double sourceFunction = 3.0;
-	BoundCond boundaryConditions("Dirichlet", "Dirichlet", 0.0, 0.0);
+	std::pair<std::string, double> west = std::make_pair("Dirichlet", 0.0);
+	std::pair<std::string, double> east = std::make_pair("Dirichlet", 0.0);
+	BoundCond boundaryConditions(west, east);
 	Assembler_1D assembler(sourceFunction, boundaryConditions, curve);
 	assembler.assemble();
 

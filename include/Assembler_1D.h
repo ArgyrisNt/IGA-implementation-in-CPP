@@ -8,10 +8,10 @@
 class Assembler_1D : public Assembler<BsplineCurve>
 {
 public:
-    Assembler_1D(double sourceFunction, BoundCond &boundaryConditions, BsplineCurve &_curve)
+    Assembler_1D(const double sourceFunction, BoundCond &boundaryConditions, BsplineCurve &_curve)
         : Assembler<BsplineCurve>(sourceFunction, boundaryConditions, _curve) {}
 
-    virtual ~Assembler_1D() {}
+    ~Assembler_1D() {}
 
     void assemble() override;
 
@@ -19,6 +19,7 @@ public:
 
     const int getNumberOfBasisFunctions();
     std::vector<std::vector<double>> &getControlPoints();
+    Bspline &getBspline_x();
 
 protected:
     void computeBoundary();

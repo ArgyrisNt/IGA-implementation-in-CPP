@@ -47,16 +47,18 @@ int main()
     Bspline bspline_x(knotVector);
 
     // - - - - - B-spline curve - - - - -
-    BsplineCurve curve(bspline_x, controlPoints);
+    BsplineCurve curve(std::vector<Bspline>{bspline_x}, controlPoints);
 
     // - - - - - Assempler info - - - - -
     double src = 0.0;
-    BoundCond _bc("Dirichlet", "Dirichlet", 0.0, 0.0);
+    std::pair<std::string, double> west = std::make_pair("Dirichlet", 0.0);
+    std::pair<std::string, double> east = std::make_pair("Dirichlet", 0.0);
+    BoundCond boundaryConditions(west, east);
     double coef = 1.0; // coefficient of diffusion problem
     double t_end = 0.05; // 1
     double numSteps = 10.0; // 200
     double Dt = t_end / numSteps; // time step
-    DiffusionAssembler_1D ass(src, _bc, curve, coef, Dt);
+    DiffusionAssembler_1D ass(src, boundaryConditions, curve, coef, Dt);
     ass.assemble();
 
     // - - - - - Enforce boundary conditions - - - - -

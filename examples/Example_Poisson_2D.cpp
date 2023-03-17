@@ -26,7 +26,7 @@ int main()
                                                     {2.0, 0.0}, {2.0, 3.0}, {5.0, 6.0}, {8.0, 6.0},
                                                     {4.0, 0.0}, {4.0, 2.0}, {6.0, 4.0}, {8.0, 4.0} };
     TrimmingCurve trimmingCurve(Vertex<double>(0.0, 0.0), 0.0);
-    BsplineSurface surface(bspline_x, bspline_y, controlPoints, trimmingCurve);
+    BsplineSurface surface(std::vector<Bspline>{bspline_x, bspline_y}, controlPoints, trimmingCurve);
     for (int i = 0; i < 1; i++)
     {
         surface.uniformRefine_x();
@@ -35,8 +35,12 @@ int main()
 
     // - - - - - Assempler info - - - - -
     double src = 3.0;
-    BoundCond _bc("Dirichlet", "Dirichlet", "Dirichlet", "Dirichlet", 0.0, 0.0, 0.0, 0.0); // left-right-top-bottom
-    Assembler_2D ass2(src, _bc, surface);
+    std::pair<std::string, double> west = std::make_pair("Dirichlet", 0.0);
+    std::pair<std::string, double> east = std::make_pair("Dirichlet", 0.0);
+    std::pair<std::string, double> north = std::make_pair("Dirichlet", 0.0);
+    std::pair<std::string, double> south = std::make_pair("Dirichlet", 0.0);
+    BoundCond boundaryConditions(west, east, north, south);
+    Assembler_2D ass2(src, boundaryConditions, surface);
     ass2.assemble();
 
     // - - - - - Enforce boundary conditions - - - - -

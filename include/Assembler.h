@@ -11,7 +11,7 @@ class Assembler
 {
 public:
     Assembler() {}
-    Assembler(double newSourceFunction, BoundCond &newBoundaryConditions, T &bspline)
+    Assembler(const double newSourceFunction, BoundCond &newBoundaryConditions, T &bspline)
         : sourceFunction(newSourceFunction), bsplineEntity(bspline), boundaryConditions(&newBoundaryConditions) {}
 
     virtual ~Assembler() {}
@@ -21,16 +21,15 @@ public:
     Matrix<double> &getStiffnessMatrix();
     Matrix<double> &getSystemMatrix();
     std::vector<double> &getRightHandSide();
-    Bspline &getBsplineEntity();
-    double getDistinctKnotX(int position);
-    std::vector<double> getDistinctKnotsX();
+    T &getBsplineEntity();
+    std::vector<double> &getDistinctKnots(const int dim);
 
-    int XspanOfValueInKnotVector(double value);
+    int spanOfValueInKnotVector(const double value, const int dim);
 
     void applyBoundaryEllimination();
     void applyBoundaryMultipliers();
     void enforceBoundaryConditions(std::string &);
-    double addBoundaryValueToRhs(int position);
+    double addBoundaryValueToRhs(const int position);
 
     BoundCond *boundaryConditions;
     std::string boundaryMode;
@@ -43,7 +42,7 @@ protected:
     Matrix<double> systemMatrix;
     std::vector<double> rightHandSide;
     T bsplineEntity;
-    double sourceFunction;
+    const double sourceFunction;
 };
 
 #include "..\src\Assembler.cpp"

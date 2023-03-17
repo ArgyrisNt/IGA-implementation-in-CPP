@@ -7,7 +7,7 @@
 Bspline::Bspline(KnotVector<double> &newKnotVector)
 {
 	knotVector = newKnotVector;
-	basisFunctions.setKnotVector(knotVector);
+	basisFunctions = BasisFunctions(knotVector);
 }
 
 Bspline::Bspline(const Bspline &bspline)
@@ -15,8 +15,6 @@ Bspline::Bspline(const Bspline &bspline)
 	knotVector = bspline.knotVector;
 	basisFunctions = bspline.basisFunctions;
 }
-
-Bspline::~Bspline() {}
 
 Bspline &Bspline::operator=(const Bspline &bspline)
 {
@@ -38,7 +36,7 @@ int Bspline::getDegree()
 	return knotVector.getDegree();
 }
 
-BasisFunctions Bspline::getBasisFunctions()
+BasisFunctions& Bspline::getBasisFunctions()
 {
 	return basisFunctions;
 }
@@ -51,24 +49,24 @@ int Bspline::getNumberOfBasisFunctions()
 void Bspline::setKnotvector(KnotVector<double> &newKnotVector)
 {
 	knotVector = newKnotVector;
-	basisFunctions.setKnotVector(knotVector);
+	basisFunctions = BasisFunctions(knotVector);
 }
 
 
 
-int Bspline::findSpanOfValue(double point)
+int Bspline::findSpanOfValue(const double point)
 {
 	return knotVector.findSpanOfValue(point);
 }
 
-std::pair<std::vector<double>, std::vector<double>> Bspline::evaluateAtPoint(double point)
+std::pair<std::vector<double>, std::vector<double>> Bspline::evaluateAtPoint(const double point)
 {
 	return basisFunctions.evaluateAtPoint(point);
 }
 
 
 
-void Bspline::plot(int resolution)
+void Bspline::plot2D(const int resolution, std::string filename)
 {
 	double firstKnot = knotVector(0);
 	double lastKnot = knotVector(knotVector.getSize()-1);
@@ -82,7 +80,6 @@ void Bspline::plot(int resolution)
 		ValuesOfBasisFunctions.push_back(values);
 	}
 
-	std::string filename("basis.dat");
 	std::ofstream plotBspline(filename);
 	plotBspline << "variables= " << "\"x\"" << "," << "\"y\"" << "\n";
 	plotBspline << "zone t= " << "\"1\"" << ",i=" << resolution * ValuesOfBasisFunctions[0].size() << ",j=" << resolution << "\n";
