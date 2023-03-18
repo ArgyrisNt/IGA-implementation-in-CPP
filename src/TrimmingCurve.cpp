@@ -32,7 +32,7 @@ Vertex<double> TrimmingCurve::evaluateDerivative(double t)
     return Vertex<double>(-radius * sin(t), radius * cos(t));
 }
 
-double TrimmingCurve::projectionOfPoint(Vertex<double> &point)
+double TrimmingCurve::projectionOfPoint(const Vertex<double> &point)
 {
     std::vector<double> possible_projs;
     double u = 0.0;
@@ -50,7 +50,7 @@ double TrimmingCurve::projectionOfPoint(Vertex<double> &point)
     }
 
     double min = possible_projs[0];
-    for (int i = 1; i < possible_projs.size(); i++)
+    for (int i = 1; i < possible_projs.size(); ++i)
     {
         if (possible_projs[i] < min)
             min = possible_projs[i];
@@ -59,7 +59,7 @@ double TrimmingCurve::projectionOfPoint(Vertex<double> &point)
     return min;
 }
 
-bool TrimmingCurve::isPointOutside(Vertex<double> &point)
+bool TrimmingCurve::isPointOutside(const Vertex<double> &point)
 {
     std::vector<double> possible_projs;
     std::vector<Vertex<double>> possible_tangents;
@@ -81,7 +81,7 @@ bool TrimmingCurve::isPointOutside(Vertex<double> &point)
     }
 
     double min = 0;
-    for (int i = 1; i < possible_projs.size(); i++)
+    for (int i = 1; i < possible_projs.size(); ++i)
     {
         if (possible_projs[i] < possible_projs[min])
             min = i;

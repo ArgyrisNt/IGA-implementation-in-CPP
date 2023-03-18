@@ -38,7 +38,7 @@ int main()
     KnotVector<double> knotVector(start, end, degree, numberOfElements, weights);
 
     std::vector<std::vector<double>> controlPoints;
-    for (int i = 0; i < numberOfElements + degree; i++)
+    for (int i = 0; i < numberOfElements + degree; ++i)
     {
         controlPoints.push_back({(1.0 / (numberOfElements + degree - 1)) * (double)(i), 0.0});
         weights.push_back(1.0);
@@ -68,17 +68,17 @@ int main()
     // - - - - - Apply and plot initial condition - - - - -
     Poisson<DiffusionAssembler_1D> diffusion(ass, Solver::GaussSeidel);
     std::vector<double> init_sol = ass.applyInitialCondition(init_cond);
-    diffusion.setSolution(init_sol);
+    diffusion.applyInitialCondition(init_sol);
     int resolution = 100;
     curve.plot3D(resolution, diffusion.getSolution(), "0solution.dat");
 
     // - - - - - Solve - - - - - 
-    for (int t = 0; t < numSteps; t++)
+    for (int t = 0; t < numSteps; ++t)
     {
         std::cout << std::endl << "---------------- " << t + 1 << " step ----------------";
         std::vector<double> b = ass.nextStep(diffusion.getSolution()); // build next rhs
         diffusion.updateRhs(b);
-        diffusion.setSolution(diffusion.getSolver()->solve());
+        diffusion.solve();
         curve.plot3D(resolution, diffusion.getSolution(), std::to_string(t + 1) + "solution.dat");
     }
 

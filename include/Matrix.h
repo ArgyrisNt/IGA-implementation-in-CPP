@@ -5,6 +5,8 @@
 #include <vector>
 #include "..\include\Utilities.h"
 
+using namespace Utils;
+
 template<class T>
 class Matrix
 {
@@ -16,34 +18,109 @@ public:
 	~Matrix();
 
 	Matrix& operator=(const Matrix&);
-	Matrix operator+(Matrix &);
-	Matrix operator+(Matrix &&);
-	Matrix operator-(Matrix&);
-	Matrix operator*(Matrix&);
-	Matrix operator*(const T&);
-	std::vector<T> operator*(std::vector<T> &);
-	T operator()(int row, int col);
+	T operator()(int row, int col) const;
 
 	void setValue(int row, int col, T val);
-
 	void print();
 
-	T determinant();
-	Matrix transpose();
-	Matrix inverse();
+	T determinant() const;
+	Matrix transpose() const;
+	Matrix inverse() const;
 	std::vector<Matrix> LU_factorization();
 	std::vector<Matrix> QR_factorization(); // with Grand Schmidt method
-	std::vector<T> forward_Euler(std::vector<T>& b);
-	std::vector<T> backward_Euler(std::vector<T>& b);
+	std::vector<T> forward_Euler(const std::vector<T>& b);
+	std::vector<T> backward_Euler(const std::vector<T>& b);
 
-	int getNumberOfRows() { return numberOfRows; }
-	int getNumberOfColumns() { return numberOfColumns; }
+	int getNumberOfRows() const { return numberOfRows; }
+	int getNumberOfColumns() const { return numberOfColumns; }
 
 private:
 	T** values;
 	int numberOfRows;
 	int numberOfColumns;
 };
+
+template <class T>
+Matrix<T> operator+(const Matrix<T> &A, const Matrix<T> &B)
+{
+	assert(A.getNumberOfRows() == B.getNumberOfRows());
+	assert(A.getNumberOfColumns() == B.getNumberOfColumns());
+	Matrix<T> result(A.getNumberOfRows(), A.getNumberOfColumns());
+	for (int i = 0; i < A.getNumberOfRows(); ++i)
+	{
+		for (int j = 0; j < A.getNumberOfColumns(); ++j)
+		{
+			result.setValue(i, j, A(i,j) + B(i,j));
+		}
+	}
+
+	return result;
+}
+
+template <class T>
+Matrix<T> operator-(const Matrix<T> &A, const Matrix<T> &B)
+{
+	assert(A.getNumberOfRows() == B.getNumberOfRows());
+	assert(A.getNumberOfColumns() == B.getNumberOfColumns());
+	Matrix<T> result(A.getNumberOfRows(), A.getNumberOfColumns());
+	for (int i = 0; i < A.getNumberOfRows(); ++i)
+	{
+		for (int j = 0; j < A.getNumberOfColumns(); ++j)
+		{
+			result.setValue(i, j, A(i,j) - B(i,j));
+		}
+	}
+	return result;
+}
+
+template <class T>
+Matrix<T> operator*(const Matrix<T> &A, const Matrix<T> &B)
+{
+	assert(B.getNumberOfRows() == A.getNumberOfColumns());
+	Matrix<T> result(A.getNumberOfRows(), B.getNumberOfColumns());
+	for (int i = 0; i < A.getNumberOfRows(); ++i)
+	{
+		for (int j = 0; j < B.getNumberOfColumns(); ++j)
+		{
+			for (int k = 0; k < A.getNumberOfColumns(); ++k)
+			{
+				result.setValue(i,j, result(i,j) + A(i,k) * B(k,j));
+			}
+		}
+	}
+	return result;
+}
+
+template <class T>
+Matrix<T> operator*(const Matrix<T> &A, const T &constant)
+{
+	Matrix<T> result(A.getNumberOfRows(), A.getNumberOfColumns());
+	for (int i = 0; i < A.getNumberOfRows(); ++i)
+	{
+		for (int j = 0; j < A.getNumberOfColumns(); ++j)
+		{
+			result.setValue(i, j, A(i,j) * constant);
+		}
+	}
+
+	return result;
+}
+
+template <class T>
+std::vector<T> operator*(const Matrix<T> &A, const std::vector<T> &vec)
+{
+	assert(vec.size() == A.getNumberOfColumns());
+	std::vector<T> result(A.getNumberOfRows());
+	for (int i = 0; i < A.getNumberOfRows(); ++i)
+	{
+		for (int j = 0; j < A.getNumberOfColumns(); ++j)
+		{
+			result[i] += A(i,j) * vec[j];
+		}
+	}
+
+	return result;
+}
 
 #include "..\src\Matrix.cpp"
 

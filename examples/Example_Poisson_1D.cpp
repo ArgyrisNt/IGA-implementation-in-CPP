@@ -14,7 +14,7 @@ int main()
 	KnotVector<double> knotVector(degree, values, weights);
 	Bspline bspline_x(knotVector);
 	//int resolution = 100;
-	//bspline_x.plot(resolution, "basis.dat");
+	//bspline_x.plot2D(resolution, "basis.dat");
 
 	// - - - - - B-spline curve - - - - -
 	std::vector<std::vector<double>> controlPoints{{0.0, 0.0}, {1.0, 1.0}, {2.0, 1.0}, {3.0, 0.0}};
@@ -33,8 +33,8 @@ int main()
 	assembler.enforceBoundaryConditions(mode);
 
 	// - - - - - Poisson info - - - - -
-	Poisson<Assembler_1D> poisson(assembler, Solver::Jacobi);
-	poisson.setSolution(poisson.getSolver()->solve());
+	Poisson<Assembler_1D> poisson(assembler, Solver::ConjugateGradient);
+	poisson.solve();
 	std::cout << "Solution is: " << std::endl;
 	std::cout << poisson.getSolution();
 

@@ -1,7 +1,6 @@
 #ifndef H_BSPLINE
 #define H_BSPLINE
 
-#include "..\include\Utilities.h"
 #include "..\include\BasisFunctions.h"
 #include <iostream>
 #include <vector>
@@ -10,7 +9,7 @@ class Bspline
 {
 public:
 	Bspline() {}
-	Bspline(KnotVector<double>& knewKnotVector);
+	Bspline(const KnotVector<double> &knewKnotVector);
 	Bspline(const Bspline&);
 
 	~Bspline() {}
@@ -25,9 +24,9 @@ public:
 	int getDegree();
 	int getNumberOfBasisFunctions();
 
-	void setKnotvector(KnotVector<double> &newKnotVector);
+	void setKnotvector(const KnotVector<double> &newKnotVector);
 
-	void plot2D(const int resolution, std::string filename);
+	void plot2D(const int resolution, const std::string &filename);
 
 private:
 	KnotVector<double> knotVector;

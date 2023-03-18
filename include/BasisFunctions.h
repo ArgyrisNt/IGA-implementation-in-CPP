@@ -9,7 +9,7 @@ class BasisFunctions
 {
 public:
     BasisFunctions() {}
-    BasisFunctions(KnotVector<double>& newKnotVector) : knotVector(newKnotVector) {}
+    BasisFunctions(const KnotVector<double>& newKnotVector) : knotVector(newKnotVector) {}
 
     // all basis functions if all = true
     std::pair<std::vector<double>, std::vector<double>> evaluateAtPoint(const double value, bool all = false);
@@ -17,6 +17,7 @@ public:
     void basisFunctionsOfDegree(const int level, const double value);
     void computeActiveBasisFunctions(const double value);
 
+private:
     int numberOfBasisFunctions;
     std::vector<double> values;
     std::vector<double> derivatives;

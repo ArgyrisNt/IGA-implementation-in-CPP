@@ -14,7 +14,7 @@ BsplineSurface &BsplineSurface::operator=(const BsplineSurface &old)
 
 
 
-void BsplineSurface::setControlPoints(std::vector<std::vector<double>> &new_controlPoints)
+void BsplineSurface::setControlPoints(const std::vector<std::vector<double>> &new_controlPoints)
 {
     controlPoints = new_controlPoints;
 }
@@ -23,6 +23,11 @@ void BsplineSurface::setControlPoints(std::vector<std::vector<double>> &new_cont
 std::vector<std::vector<double>> &BsplineSurface::getControlPoints()
 {
     return controlPoints;
+}
+
+TrimmingCurve &BsplineSurface::getTrimmingCurve()
+{
+	return trimmingCurve;
 }
 
 
@@ -35,9 +40,9 @@ Vertex<double> BsplineSurface::evaluateAtPoint(const Vertex<double> &&point)
 	std::vector<double> y_ValuesOfbasisFunctions = getBspline(1).evaluateAtPoint(point.y).first;
 
 	double coordinate_x = 0.0, coordinate_y = 0.0;
-	for (int ii = 0; ii < x_ValuesOfbasisFunctions.size(); ii++)
+	for (int ii = 0; ii < x_ValuesOfbasisFunctions.size(); ++ii)
 	{
-		for (int jj = 0; jj < y_ValuesOfbasisFunctions.size(); jj++)
+		for (int jj = 0; jj < y_ValuesOfbasisFunctions.size(); ++jj)
 		{
 			int x_index = span_i - getBspline(0).getDegree() + ii;
 			int y_index = span_j - getBspline(1).getDegree() + jj;
@@ -57,7 +62,7 @@ void BsplineSurface::uniformRefine_x()
 	std::vector<std::vector<std::vector<double>>> all_new_controlPoints;
 	std::vector<std::vector<double>> controlPoints_x;
 	KnotVector<double> new_knotvector;
-	for (int j = 0; j < getBspline(1).getNumberOfBasisFunctions(); j++)
+	for (int j = 0; j < getBspline(1).getNumberOfBasisFunctions(); ++j)
 	{
 		new_knotvector = getBspline(0).getKnotvector();
 		controlPoints_x = XparametricCurvePoints(j);
@@ -66,7 +71,7 @@ void BsplineSurface::uniformRefine_x()
 	}
 
 	controlPoints = {};
-	for (int i = 0; i < all_new_controlPoints[0].size(); i++)
+	for (int i = 0; i < all_new_controlPoints[0].size(); ++i)
 	{
 		for (auto group : all_new_controlPoints)
 		{
@@ -87,7 +92,7 @@ void BsplineSurface::uniformRefine_y()
 	std::vector<std::vector<std::vector<double>>> all_new_controlPoints;
 	std::vector<std::vector<double>> controlPoints_y;
 	KnotVector<double> new_knotvector;
-	for (int j = 0; j < getBspline(0).getNumberOfBasisFunctions(); j++)
+	for (int j = 0; j < getBspline(0).getNumberOfBasisFunctions(); ++j)
 	{
 		new_knotvector = getBspline(1).getKnotvector();
 		controlPoints_y = YparametricCurvePoints(j);
@@ -112,7 +117,7 @@ void BsplineSurface::uniformRefine_y()
 std::vector<std::vector<double>> BsplineSurface::XparametricCurvePoints(const int level)
 {
 	std::vector<std::vector<double>> XcontrolPointsOnDirection; 
-	for (int i = 0; i < controlPoints.size(); i++)
+	for (int i = 0; i < controlPoints.size(); ++i)
 	{
 		if (i == 0 || (i % getBspline(1).getNumberOfBasisFunctions()) == 0)
 			XcontrolPointsOnDirection.push_back(controlPoints[i + level]);
@@ -123,7 +128,7 @@ std::vector<std::vector<double>> BsplineSurface::XparametricCurvePoints(const in
 std::vector<std::vector<double>> BsplineSurface::YparametricCurvePoints(const int level)
 {
 	std::vector<std::vector<double>> YcontrolPointsOnDirection;
-	for (int i = 0; i < controlPoints.size(); i++)
+	for (int i = 0; i < controlPoints.size(); ++i)
 	{
 		if (i >= 0 && (i < getBspline(1).getNumberOfBasisFunctions()))
 			YcontrolPointsOnDirection.push_back(controlPoints[i + level * getBspline(1).getNumberOfBasisFunctions()]);
@@ -134,7 +139,7 @@ std::vector<std::vector<double>> BsplineSurface::YparametricCurvePoints(const in
 void BsplineSurface::refineParametricCurve(KnotVector<double> &vector, std::vector<std::vector<double>> &points)
 {
 	KnotVector<double> new_knotvector = vector;
-	for (int i = 0; i < vector.getSize() - 1; i++)
+	for (int i = 0; i < vector.getSize() - 1; ++i)
 	{
 		double a = vector(i);
 		double b = vector(i + 1);
@@ -152,7 +157,7 @@ void BsplineSurface::knotInsertion(KnotVector<double> &vector, std::vector<std::
 	new_knotvector.insert(span + 1, newKnot);
 
 	std::vector<std::vector<double>> newPoints;
-	for (int j = span - vector.getDegree() + 1; j <= span; j++)
+	for (int j = span - vector.getDegree() + 1; j <= span; ++j)
 	{
 		double alpha = (newKnot - vector(j)) / (vector(j + vector.getDegree()) - vector(j));
 		double coord_x = (1.0 - alpha) * points[j - 1][0] + alpha * points[j][0];
@@ -161,15 +166,15 @@ void BsplineSurface::knotInsertion(KnotVector<double> &vector, std::vector<std::
 	}
 
 	std::vector<std::vector<double>> FinalNewPoints;
-	for (int i = 0; i <= span - vector.getDegree(); i++)
+	for (int i = 0; i <= span - vector.getDegree(); ++i)
 	{
 		FinalNewPoints.push_back(points[i]);
 	}
-	for (int ii = 0; ii < newPoints.size(); ii++)
+	for (int ii = 0; ii < newPoints.size(); ++ii)
 	{
 		FinalNewPoints.push_back(newPoints[ii]);
 	}
-	for (int ii = span; ii < points.size(); ii++)
+	for (int ii = span; ii < points.size(); ++ii)
 	{
 		FinalNewPoints.push_back(points[ii]);
 	}
@@ -180,7 +185,7 @@ void BsplineSurface::knotInsertion(KnotVector<double> &vector, std::vector<std::
 
 
 
-void BsplineSurface::plot2D(const int resolution, std::string filename)
+void BsplineSurface::plot2D(const int resolution, const std::string &filename)
 {
 	std::vector<double> i_steps = getBspline(0).getKnotvector().linspace(resolution);
 	std::vector<double> j_steps = getBspline(1).getKnotvector().linspace(resolution);
@@ -189,9 +194,9 @@ void BsplineSurface::plot2D(const int resolution, std::string filename)
 	plotSurface << "variables= " << "\"x\"" << "," << "\"y\""<< "\n";
 	plotSurface << "zone t= "<< "\"1\"" << ",i=" << resolution + 1 << ",j=" << resolution + 1<< "\n";
 
-	for (int i = 0; i < i_steps.size(); i++)
+	for (int i = 0; i < i_steps.size(); ++i)
 	{
-		for (int j = 0; j < j_steps.size(); j++)
+		for (int j = 0; j < j_steps.size(); ++j)
 		{
 			if (trimmingCurve.isCartesianPointInside(i_steps[i], j_steps[j])) continue;
 
@@ -203,7 +208,7 @@ void BsplineSurface::plot2D(const int resolution, std::string filename)
 	plotSurface.close();
 }
 
-void BsplineSurface::plot3D(const int resolution, std::vector<double> &zCoordinate, std::string filename)
+void BsplineSurface::plot3D(const int resolution, const std::vector<double> &zCoordinate, const std::string &filename)
 {
 	std::vector<double> i_steps = getBspline(0).getKnotvector().linspace(resolution);
 	std::vector<double> j_steps = getBspline(1).getKnotvector().linspace(resolution);
@@ -212,9 +217,9 @@ void BsplineSurface::plot3D(const int resolution, std::vector<double> &zCoordina
 	plotSurface << "variables= " << "\"x\"" << "," << "\"y\"" << "," << "\"sol\"" << "\n";
     plotSurface << "zone t= " << "\"1\"" << ",i=" << resolution+1 << ",j=" << resolution+1 << "\n";
 
-	for (int i = 0; i < i_steps.size(); i++)
+	for (int i = 0; i < i_steps.size(); ++i)
 	{
-		for (int j = 0; j < j_steps.size(); j++)
+		for (int j = 0; j < j_steps.size(); ++j)
 		{
 			if (trimmingCurve.isCartesianPointInside(i_steps[i], j_steps[j])) continue;
 
@@ -224,9 +229,9 @@ void BsplineSurface::plot3D(const int resolution, std::vector<double> &zCoordina
 			std::vector<double> bVal_j = getBspline(1).evaluateAtPoint(j_steps[j]).first;
 
 			double coord_x = 0.0, coord_y = 0.0, coord_z = 0.0;
-			for (int kkx = 0; kkx < bVal_i.size(); kkx++)
+			for (int kkx = 0; kkx < bVal_i.size(); ++kkx)
 			{
-				for (int kky = 0; kky < bVal_j.size(); kky++)
+				for (int kky = 0; kky < bVal_j.size(); ++kky)
 				{
 					int i1 = span_i - getBspline(0).getDegree() + kkx;
 					int i2 = span_j - getBspline(1).getDegree() + kky;

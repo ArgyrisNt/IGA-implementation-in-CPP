@@ -1,6 +1,11 @@
 #include <iostream>
 #include "..\include\Element.h"
 
+bool Element::isTrimmed()
+{
+    return is_Trimmed;
+}
+
 void Element::categorise()
 {
     centroid = Vertex<double>((vertices[0].x + vertices[3].x) / 2.0, (vertices[0].y + vertices[3].y) / 2.0);
@@ -8,12 +13,12 @@ void Element::categorise()
     double r_in = sqrt(std::pow(vertices[3].x - centroid.x, 2));
     double r_out = sqrt(std::pow(vertices[3].x - centroid.x, 2) + std::pow(vertices[3].y - centroid.y, 2));
     computeTrimmedAndUntrimmedVertices();
-    if (di < r_in) isTrimmed = true;
-    else if (di > r_out) isTrimmed = false;
+    if (di < r_in) is_Trimmed = true;
+    else if (di > r_out) is_Trimmed = false;
     else if (di > r_in && di < r_out)
     {
-        if (trimmedVertices.size() == 0) isTrimmed = false;
-        else isTrimmed = true;
+        if (trimmedVertices.size() == 0) is_Trimmed = false;
+        else is_Trimmed = true;
     }
 }
 
@@ -32,23 +37,20 @@ void Element::computeTrimmedAndUntrimmedVertices()
 std::vector<Triangle<double>> Element::divideInTriangles()
 {
     int amount = trimmedVertices.size();
-    std::vector<Triangle<double>> triangles;
     switch (amount)
     {
     case 1:
-        triangles = construct_3_triangles();
+        return construct_3_triangles();
         break;
     case 2:
-        triangles = construct_2_triangles();
+        return construct_2_triangles();
         break;
     case 3:
-        triangles = construct_1_triangle();
+        return construct_1_triangle();
         break;
     default:
         break;
     }
-
-    return triangles;
 }
 
 std::vector<Triangle<double>> Element::construct_3_triangles()
@@ -67,7 +69,7 @@ std::vector<Triangle<double>> Element::construct_3_triangles()
     else if (XcoordOfSecondAppearsTwice && YcoordOfSecondAppearsTwice) diagonal = untrimmedVertices[1];
     else diagonal = untrimmedVertices[2];
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 3; ++i)
     {
         bool hasCommonYwithDiagonal = (almostEqual(untrimmedVertices[i].y, diagonal.y) && untrimmedVertices[i] != diagonal);
         bool hasCommonXwithDiagonal = (almostEqual(untrimmedVertices[i].x, diagonal.x) && untrimmedVertices[i] != diagonal);

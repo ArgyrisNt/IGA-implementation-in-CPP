@@ -11,7 +11,7 @@ Matrix<T>::Matrix()
 	numberOfRows = 0;
 	numberOfColumns = 0;
 	values = new T *[numberOfRows];
-	for (int i = 0; i < numberOfRows; i++)
+	for (int i = 0; i < numberOfRows; ++i)
 	{
 		values[i] = new T[numberOfColumns];
 	}
@@ -23,10 +23,10 @@ Matrix<T>::Matrix(int rows, int columns, T value)
 	numberOfRows = rows;
 	numberOfColumns = columns;
 	values = new T *[numberOfRows];
-	for (int i = 0; i < numberOfRows; i++)
+	for (int i = 0; i < numberOfRows; ++i)
 	{
 		values[i] = new T[numberOfColumns];
-		for (int j = 0; j < numberOfColumns; j++)
+		for (int j = 0; j < numberOfColumns; ++j)
 		{
 			values[i][j] = value;
 		}
@@ -44,8 +44,10 @@ Matrix<T>::Matrix(const Matrix &matrix)
 template <class T>
 Matrix<T>::~Matrix() {}
 
+
+
 template <class T>
-Matrix<T> &Matrix<T>::operator=(const Matrix& matrix)
+Matrix<T> &Matrix<T>::operator=(const Matrix &matrix)
 {
 	numberOfRows = matrix.numberOfRows;
 	numberOfColumns = matrix.numberOfColumns;
@@ -55,101 +57,14 @@ Matrix<T> &Matrix<T>::operator=(const Matrix& matrix)
 }
 
 template <class T>
-Matrix<T> Matrix<T>::operator+(Matrix& matrix)
-{
-	assert(matrix.getNumberOfRows() == getNumberOfRows());
-	assert(matrix.getNumberOfColumns() == getNumberOfColumns());
-	Matrix<T> result(numberOfRows, numberOfColumns);
-	for (int i = 0; i < getNumberOfRows(); i++)
-	{
-		for (int j = 0; j < getNumberOfColumns(); j++)
-		{
-			result.setValue(i, j, values[i][j] + matrix.values[i][j]);
-		}
-	}
-
-	return result;
-}
-
-template <class T>
-Matrix<T> Matrix<T>::operator+(Matrix&& matrix)
-{
-	Matrix<T> result = (*this) + matrix;
-	return result;
-}
-
-template <class T>
-Matrix<T> Matrix<T>::operator-(Matrix &matrix)
-{
-	assert(matrix.getNumberOfRows() == getNumberOfRows());
-	assert(matrix.getNumberOfColumns() == getNumberOfColumns());
-	Matrix<T> result(numberOfRows, numberOfColumns);
-	for (int i = 0; i < getNumberOfRows(); i++)
-	{
-		for (int j = 0; j < getNumberOfColumns(); j++)
-		{
-			result.setValue(i, j, values[i][j] - matrix.values[i][j]);
-		}
-	}
-	return result;
-}
-
-template <class T>
-Matrix<T> Matrix<T>::operator*(Matrix &matrix)
-{
-	assert(matrix.getNumberOfRows() == getNumberOfColumns());
-	Matrix result(getNumberOfRows(), matrix.getNumberOfColumns());
-	for (int i = 0; i < getNumberOfRows(); ++i)
-	{
-		for (int j = 0; j < matrix.getNumberOfColumns(); ++j)
-		{
-			for (int k = 0; k < getNumberOfColumns(); ++k)
-			{
-				result.values[i][j] += values[i][k] * matrix.values[k][j];
-			}
-		}
-	}
-	return result;
-}
-
-template <class T>
-Matrix<T> Matrix<T>::operator*(const T &constant)
-{
-	Matrix<T> result(numberOfRows, numberOfColumns);
-	for (int i = 0; i < getNumberOfRows(); i++)
-	{
-		for (int j = 0; j < getNumberOfColumns(); j++)
-		{
-			result.setValue(i, j, values[i][j] * constant);
-		}
-	}
-
-	return result;
-}
-
-template <class T>
-std::vector<T> Matrix<T>::operator*(std::vector<T> &matrixVector)
-{
-	assert(matrixVector.size() == getNumberOfColumns());
-	std::vector<T> result(getNumberOfRows(), 0.0);
-	for (int i = 0; i < getNumberOfRows(); i++)
-	{
-		for (int j = 0; j < getNumberOfColumns(); j++)
-		{
-			result[i] += values[i][j] * matrixVector[j];
-		}
-	}
-
-	return result;
-}
-
-template <class T>
-T Matrix<T>::operator()(int row, int column)
+T Matrix<T>::operator()(int row, int column) const
 {
 	assert(row < getNumberOfRows());
 	assert(column < getNumberOfColumns());
 	return values[row][column];
 }
+
+
 
 template <class T>
 void Matrix<T>::setValue(int row, int column, T value)
@@ -159,8 +74,10 @@ void Matrix<T>::setValue(int row, int column, T value)
 	values[row][column] = value;
 }
 
+
+
 template <class T>
-T Matrix<T>::determinant()
+T Matrix<T>::determinant() const
 {
 	assert(getNumberOfRows() == getNumberOfColumns());
 	int n = getNumberOfRows();
@@ -181,9 +98,9 @@ T Matrix<T>::determinant()
 template <class T>
 void Matrix<T>::print()
 {
-	for (int i = 0; i < getNumberOfRows(); i++)
+	for (int i = 0; i < getNumberOfRows(); ++i)
 	{
-		for (int j = 0; j < getNumberOfColumns(); j++)
+		for (int j = 0; j < getNumberOfColumns(); ++j)
 		{
 			std::cout << values[i][j] << " ";
 		}
@@ -192,12 +109,12 @@ void Matrix<T>::print()
 }
 
 template <class T>
-Matrix<T> Matrix<T>::transpose()
+Matrix<T> Matrix<T>::transpose() const
 {
 	Matrix result(getNumberOfRows(), getNumberOfColumns());
-	for (int i = 0; i < getNumberOfRows(); i++)
+	for (int i = 0; i < getNumberOfRows(); ++i)
 	{
-		for (int j = 0; j < getNumberOfColumns(); j++)
+		for (int j = 0; j < getNumberOfColumns(); ++j)
 		{
 			result.values[i][j] = values[j][i];
 		}
@@ -207,7 +124,7 @@ Matrix<T> Matrix<T>::transpose()
 }
 
 template <class T>
-Matrix<T> Matrix<T>::inverse()
+Matrix<T> Matrix<T>::inverse() const
 {
 	if (determinant() > -1e-7 && determinant() < 1e-7) throw std::invalid_argument("Non invertible matrix");
 
@@ -241,13 +158,13 @@ std::vector<Matrix<T>> Matrix<T>::LU_factorization()
 	Matrix U(n, n);
 
 	// Doolittle algorithm
-	for (size_t i = 0; i < n; i++)
+	for (size_t i = 0; i < n; ++i)
 	{
 		// matrix U
-		for (size_t k = i; k < n; k++)
+		for (size_t k = i; k < n; ++k)
 		{
 			T sum = 0.0;
-			for (size_t j = 0; j < i; j++)
+			for (size_t j = 0; j < i; ++j)
 			{
 				sum += L(i, j) * U(j, k);
 			}
@@ -255,13 +172,13 @@ std::vector<Matrix<T>> Matrix<T>::LU_factorization()
 		}
 
 		// matrix L
-		for (size_t k = i; k < n; k++)
+		for (size_t k = i; k < n; ++k)
 		{
 			if (i == k) L.setValue(i, i, 1);
 			else
 			{
 				T sum = 0.0;
-				for (size_t j = 0; j < i; j++)
+				for (size_t j = 0; j < i; ++j)
 				{
 					sum += L(k, j) * U(j, i);
 				}
@@ -277,17 +194,17 @@ std::vector<Matrix<T>> Matrix<T>::LU_factorization()
 }
 
 template <class T>
-std::vector<T> Matrix<T>::forward_Euler(std::vector<T>& rightHandSide)
+std::vector<T> Matrix<T>::forward_Euler(const std::vector<T> &rightHandSide)
 {
 	size_t n = getNumberOfRows();
 	std::vector<T> solution(n);
-	for (size_t j = 0; j < n; j++)
+	for (size_t j = 0; j < n; ++j)
 	{
 		solution[0] = rightHandSide[0] / values[0][0];
-		for (size_t i = 1; i < n; i++)
+		for (size_t i = 1; i < n; ++i)
 		{
 			T sum = 0;
-			for (size_t k = 0; k <= i - 1; k++)
+			for (size_t k = 0; k <= i - 1; ++k)
 			{
 				sum += values[i][k] * solution[k];
 			}
@@ -298,18 +215,18 @@ std::vector<T> Matrix<T>::forward_Euler(std::vector<T>& rightHandSide)
 }
 
 template <class T>
-std::vector<T> Matrix<T>::backward_Euler(std::vector<T>& rightHandSide)
+std::vector<T> Matrix<T>::backward_Euler(const std::vector<T> &rightHandSide)
 {
 	int n = getNumberOfRows();
 	std::vector<T> solution(n);
 
-	for (int j = 0; j < n; j++)
+	for (int j = 0; j < n; ++j)
 	{
 		solution[n - 1] = rightHandSide[n - 1] / values[n - 1][n - 1]; // OK
 		for (int i = n - 2; i >= 0; i--)
 		{
 			T sum = 0.0;
-			for (int k = i + 1; k < n; k++)
+			for (int k = i + 1; k < n; ++k)
 			{
 				sum += values[i][k] * solution[k];
 			}
@@ -331,49 +248,49 @@ std::vector<Matrix<T>> Matrix<T>::QR_factorization()
 	int counter = 0;
 	Matrix ATranspose = transpose();
 	Matrix QTranspose = Q.transpose();
-	for (int j = 0; j < n; j++)
+	for (int j = 0; j < n; ++j)
 	{
 		std::vector<T> e;
 		std::vector<T> a;
-		for (int column = 0; column < n; column++)
+		for (int column = 0; column < n; ++column)
 		{
 			a.push_back(ATranspose.values[j][column]);
 		}
 		std::vector<T> u(a);
 
-		for (int i = 0; i < counter; i++)
+		for (int i = 0; i < counter; ++i)
 		{
 			T temp = 0.0;
-			for (int k = 0; k < n; k++)
+			for (int k = 0; k < n; ++k)
 			{
 				temp += Q(k,i) * a[k];
 			}
 
 			std::vector<T> proj;
-			for (int k = 0; k < n; k++)
+			for (int k = 0; k < n; ++k)
 			{
 				proj.push_back(Q(k,i) * temp);
 			}
 
-			for (int k = 0; k < n; k++)
+			for (int k = 0; k < n; ++k)
 			{
 				u[k] = u[k] - proj[k];
 			}
 		}
 
 		T result = 0;
-		for (size_t i = 0; i < u.size(); i++)
+		for (size_t i = 0; i < u.size(); ++i)
 		{
 			result += u[i] * u[i];
 		}
 		result = sqrt(result);
 
-		for (int k = 0; k < n; k++)
+		for (int k = 0; k < n; ++k)
 		{
 			e.push_back(u[k]/result);
 		}
 
-		for (int k = 0; k < n; k++)
+		for (int k = 0; k < n; ++k)
 		{
 			Q.setValue(k,counter,e[k]);
 		}

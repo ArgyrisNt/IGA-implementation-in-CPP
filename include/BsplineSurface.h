@@ -9,7 +9,7 @@
 class BsplineSurface : public MultiBspline
 {
 public:
-    BsplineSurface(std::vector<Bspline> &&newBsplines, std::vector<std::vector<double>> &new_controlPoints, TrimmingCurve &_trimmingCurve)
+    BsplineSurface(const std::vector<Bspline> &newBsplines, const std::vector<std::vector<double>> &new_controlPoints, const TrimmingCurve &_trimmingCurve)
         : MultiBspline(newBsplines), controlPoints(new_controlPoints), trimmingCurve(_trimmingCurve) {}
 
     ~BsplineSurface() {}
@@ -18,18 +18,17 @@ public:
 
     Vertex<double> evaluateAtPoint(const Vertex<double> &&point);
 
-    void plot2D(const int resolution, std::string filename) override;
-    void plot3D(const int resolution, std::vector<double> &zCoordinate, std::string filename);
+    void plot2D(const int resolution, const std::string &filename) override;
+    void plot3D(const int resolution, const std::vector<double> &zCoordinate, const std::string &filename);
 
     void knotInsertion(KnotVector<double> &vector, std::vector<std::vector<double>> &points, const double newKnot);
     void uniformRefine_x();
     void uniformRefine_y();
 
-    void setControlPoints(std::vector<std::vector<double>> &new_controlPoints);
+    void setControlPoints(const std::vector<std::vector<double>> &new_controlPoints);
 
     std::vector<std::vector<double>> &getControlPoints();
-
-    TrimmingCurve trimmingCurve;
+    TrimmingCurve &getTrimmingCurve();
 
 private:
     std::vector<std::vector<double>> XparametricCurvePoints(const int level);
@@ -37,6 +36,7 @@ private:
     void refineParametricCurve(KnotVector<double> &vector, std::vector<std::vector<double>> &points);
 
     std::vector<std::vector<double>> controlPoints;
+    TrimmingCurve trimmingCurve;
 };
 
 #include "..\src\BsplineSurface.cpp"

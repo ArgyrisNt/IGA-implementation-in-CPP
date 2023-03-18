@@ -71,6 +71,8 @@
         "xlocmes": "cpp",
         "xlocmon": "cpp",
         "xloctime": "cpp",
-        "bspline_2d": "cpp"
+        "bspline_2d": "cpp",
+        "list": "cpp",
+        "queue": "cpp"
     }
 }

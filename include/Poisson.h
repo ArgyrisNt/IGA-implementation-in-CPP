@@ -2,6 +2,7 @@
 #define H_POISSON
 
 #include <iostream>
+#include <memory>
 #include "..\include\Solver.h"
 
 template<class T>
@@ -12,21 +13,20 @@ public:
 
     ~Poisson() {}
 
+    void applyInitialCondition(std::vector<double>&);
     void expandSolutionOnBoundary();
-
-    void setSolution(std::vector<double> &&newSolution);
-    void setSolution(std::vector<double> &newSolution);
+    void solve(int numberOfIterations = 50, double omega = 1.03);
 
     std::vector<double>& getSolution();
-    T* getAssembler();
-    Solver* getSolver();
+    std::shared_ptr<T> getAssembler() const;
+    std::shared_ptr<Solver> getSolver() const;
 
-    void updateRhs(std::vector<double>& b);
+    void updateRhs(const std::vector<double>& b);
     
-protected:
+private:
     std::vector<double> solution;
-    T* assembler;
-    Solver* solver;
+    std::shared_ptr<T> assembler;
+    std::shared_ptr<Solver> solver;
 };
 
 #include "..\src\Poisson.cpp"

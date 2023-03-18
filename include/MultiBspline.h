@@ -9,8 +9,7 @@ class MultiBspline
 {
 public:
     MultiBspline() {}
-    MultiBspline(std::vector<Bspline> &newBsplines) : bsplines(newBsplines), dimension(bsplines.size()) {}
-    MultiBspline(std::vector<Bspline> &&newBsplines) : bsplines(newBsplines), dimension(bsplines.size()) {}
+    MultiBspline(const std::vector<Bspline> &newBsplines) : bsplines(newBsplines), dimension(bsplines.size()) {}
 
     virtual ~MultiBspline() {}
 
@@ -19,10 +18,10 @@ public:
     int getDegree(int dim);
     int getDimension();
 
-    void setBspline(Bspline &new_bspline, int dim);
+    void setBspline(const Bspline &new_bspline, int dim);
 
     int findSpanOfValue(double point, int dim);
-    virtual void plot2D(int resolution, std::string filename);
+    virtual void plot2D(int resolution, const std::string &filename);
 
 private:
     std::vector<Bspline> bsplines;

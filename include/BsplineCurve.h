@@ -8,14 +8,14 @@
 class BsplineCurve : public MultiBspline
 {
 public:
-    BsplineCurve(std::vector<Bspline> &&new_bspline, std::vector<std::vector<double>> &new_controlPoints)
+    BsplineCurve(const std::vector<Bspline> &new_bspline, const std::vector<std::vector<double>> &new_controlPoints)
         : MultiBspline(new_bspline), controlPoints(new_controlPoints) {}
 
     ~BsplineCurve() {}
 
     Vertex<double> evaluateAtPoint(const double point);
-    void plot2D(const int resolution, std::string filename) override;
-    void plot3D(const int resolution, std::vector<double> &zCoordinate, std::string filename);
+    void plot2D(const int resolution, const std::string &filename) override;
+    void plot3D(const int resolution, const std::vector<double> &zCoordinate, const std::string &filename);
 
     std::vector<std::vector<double>> &getControlPoints();
 

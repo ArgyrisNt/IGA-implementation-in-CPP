@@ -28,7 +28,7 @@ int main()
     BsplineSurface surface(std::vector<Bspline>{bspline_x, bspline_y}, controlPoints, trimmingCurve);
 
     int numberOfRefinements = 3;
-    for (int i = 0; i < numberOfRefinements; i++)
+    for (int i = 0; i < numberOfRefinements; ++i)
     {
         surface.uniformRefine_x();
         surface.uniformRefine_y();

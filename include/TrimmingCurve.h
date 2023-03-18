@@ -3,14 +3,12 @@
 
 #include <iostream>
 #include <vector>
-#include "..\include\Utilities.h"
 
 class TrimmingCurve
 {
 public:
     TrimmingCurve() {}
-    TrimmingCurve(Vertex<double> &_center, double _radius) : center(_center), radius(_radius) {}
-    TrimmingCurve(Vertex<double> &&_center, double _radius) : center(_center), radius(_radius) {}
+    TrimmingCurve(const Vertex<double> &_center, double _radius) : center(_center), radius(_radius) {}
 
     ~TrimmingCurve() {}
 
@@ -20,12 +18,13 @@ public:
     double find_s_given_t(double t, double minimum, double maximum);
     double find_t_given_s(double s, double minimum, double maximum);
 
-    double projectionOfPoint(Vertex<double>& point);
-    bool isPointOutside(Vertex<double> &point);
+    double projectionOfPoint(const Vertex<double>& point);
+    bool isPointOutside(const Vertex<double> &point);
     bool isCartesianPointInside(double x, double y);
 
     void plot();
 
+private:
     Vertex<double> center;
     double radius;
 };

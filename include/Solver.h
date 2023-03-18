@@ -16,7 +16,7 @@ public:
 
     std::vector<double> solve(int numberOfIterations = 50, double omega = 1.03);
 
-    void setLeftAndRightHandSides(Matrix<double>& left, std::vector<double>& right);
+    void setLeftAndRightHandSides(const Matrix<double>& left, const std::vector<double>& right);
     
 private:
     std::vector<double> LUsolve();

@@ -23,8 +23,8 @@ int main()
     TrimmingCurve trimmingCurve(Vertex<double>(1.0, 0.0), 0.2 /*std::make_pair(1.8,0.5), 1.0*/);
     trimmingCurve.plot();
     BsplineSurface surface(std::vector<Bspline>{bspline_x, bspline_y}, controlPoints, trimmingCurve);
-    for (int i = 0; i < 2; i++) surface.uniformRefine_x();
-    for (int i = 0; i < 2; i++) surface.uniformRefine_y();
+    for (int i = 0; i < 2; ++i) surface.uniformRefine_x();
+    for (int i = 0; i < 2; ++i) surface.uniformRefine_y();
 
     // - - - - - Assempler info - - - - -
     double src = 3.0;
@@ -33,23 +33,23 @@ int main()
     std::pair<std::string, double> north = std::make_pair("Dirichlet", 0.0);
     std::pair<std::string, double> south = std::make_pair("Neumann", 0.0);
     BoundCond boundaryConditions(west, east, north, south);
-    Assembler_2D ass2(src, boundaryConditions, surface);
-    ass2.assemble();
+    Assembler_2D assembler(src, boundaryConditions, surface);
+    assembler.assemble();
 
     // - - - - - Enforce boundary conditions - - - - -
     std::string mode("Ellimination");
-    ass2.enforceBoundaryConditions(mode);
+    assembler.enforceBoundaryConditions(mode);
 
     // - - - - - Poisson info - - - - -
-    Poisson<Assembler_2D> poisson(ass2, Solver::GaussSeidel);
-    poisson.setSolution(poisson.getSolver()->solve());
+    Poisson<Assembler_2D> poisson(assembler, Solver::GaussSeidel);
+    poisson.solve();
     std::cout << poisson.getSolution();
 
     // - - - - - Write solution data - - - - - 
     int resolution = 250;
     surface.plot3D(resolution, poisson.getSolution(), "solution.dat");
-    ass2.writeParameterSpaceToFile("parameterSpace.dat");
-    ass2.writeTrimmedTrianglesToFile("trimmedTriangles.obj");
+    writeParameterSpaceToFile(assembler, "parameterSpace.dat");
+    writeTrimmedTrianglesToFile(assembler, "trimmedTriangles.obj");
 
     return 0;
 }
