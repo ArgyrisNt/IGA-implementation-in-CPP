@@ -8,14 +8,14 @@
 class Assembler_1D : public Assembler<BsplineCurve>
 {
 public:
-    Assembler_1D(const double sourceFunction, BoundCond &boundaryConditions, BsplineCurve &_curve)
+    Assembler_1D(const double sourceFunction, const BoundCond &boundaryConditions, const BsplineCurve &_curve)
         : Assembler<BsplineCurve>(sourceFunction, boundaryConditions, _curve) {}
 
     ~Assembler_1D() {}
 
     void assemble() override;
 
-    Matrix<double> Jacobian(double, std::vector<double> &);
+    Matrix<double> Jacobian(double, const std::vector<double> &);
 
     const int getNumberOfBasisFunctions();
     std::vector<std::vector<double>> &getControlPoints();

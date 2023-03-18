@@ -23,7 +23,12 @@ const int Assembler_2D::getNumberOfBasisFunctions()
 
 TrimmingCurve &Assembler_2D::getTrimmingCurve()
 { 
-	return bsplineEntity.trimmingCurve;
+	return bsplineEntity.getTrimmingCurve();
+}
+
+std::vector<Triangle<double>> &Assembler_2D::getTrimmedTriangles()
+{
+	return trimmed_triangles;
 }
 
 
@@ -33,35 +38,30 @@ std::vector<int> Assembler_2D::computeActiveControlPoints(double g1, double g2)
 	int span_g1 = spanOfValueInKnotVector(g1, 0);
 	int span_g2 = spanOfValueInKnotVector(g2, 1);
 	std::vector<int> index, index_x, index_y;
-	for (int kk = 0; kk < getBspline_x().getDegree() + 1; kk++)
+	for (int i = 0; i < getBspline_x().getDegree() + 1; ++i)
 	{
-		index_x.push_back(span_g1 - getBspline_x().getDegree() + kk);
-	}
-	for (int kk = 0; kk < getBspline_y().getDegree() + 1; kk++)
-	{
-		index_y.push_back(span_g2 - getBspline_y().getDegree() + kk);
-	}
-	for (auto indx : index_x)
-	{
-		for (auto indy : index_y)
+		int index_x = span_g1 - getBspline_x().getDegree() + i;
+		for (int j = 0; j < getBspline_y().getDegree() + 1; ++j)
 		{
-			index.push_back(indx * (getBspline_y().getNumberOfBasisFunctions()) + indy);
+			int index_y = span_g2 - getBspline_y().getDegree() + j;
+			index.push_back(index_x * (getBspline_y().getNumberOfBasisFunctions()) + index_y);
 		}
 	}
+
 	return index;
 }
 
-Matrix<double> Assembler_2D::Jacobian(std::vector<int>& indices, std::vector<double> &dNxNy, std::vector<double> &NxdNy)
+Matrix<double> Assembler_2D::Jacobian(const std::vector<int> &indices, const std::vector<double> &dNxNy, const std::vector<double> &NxdNy)
 {
 	std::vector<double> temp_x(2, 0.0);
-	for (int kk = 0; kk < dNxNy.size(); kk++)
+	for (int kk = 0; kk < dNxNy.size(); ++kk)
 	{
 		temp_x[0] += dNxNy[kk] * getControlPoints()[indices[kk]][0];
 		temp_x[1] += dNxNy[kk] * getControlPoints()[indices[kk]][1];
 	}
 
 	std::vector<double> temp_y(2, 0.0);
-	for (int kk = 0; kk < NxdNy.size(); kk++)
+	for (int kk = 0; kk < NxdNy.size(); ++kk)
 	{
 		temp_y[0] += NxdNy[kk] * getControlPoints()[indices[kk]][0];
 		temp_y[1] += NxdNy[kk] * getControlPoints()[indices[kk]][1];
@@ -90,15 +90,15 @@ void Assembler_2D::computeTrimmedElements()
 {
 	int Nx = getDistinctKnots(0).size() - 1;
 	int Ny = getDistinctKnots(1).size() - 1;
-	for (int ie1 = 0; ie1 < Nx; ie1++)
+	for (int ie1 = 0; ie1 < Nx; ++ie1)
 	{
-		for (int ie2 = 0; ie2 < Ny; ie2++)
+		for (int ie2 = 0; ie2 < Ny; ++ie2)
 		{
 			double left_x = getDistinctKnots(0)[ie1];
 			double right_x = getDistinctKnots(0)[ie1 + 1];
 			double left_y = getDistinctKnots(1)[ie2];
 			double right_y = getDistinctKnots(1)[ie2 + 1];
-			Element element(false, getTrimmingCurve());
+			Element element(getTrimmingCurve());
 			std::vector<Vertex<double>> vertices{Vertex<double>(left_x, left_y), Vertex<double>(left_x, right_y),
 												 Vertex<double>(right_x, left_y), Vertex<double>(right_x, right_y)};
 			element.setVertices(vertices);
@@ -117,12 +117,12 @@ void Assembler_2D::computeStiffnessMatrixAndRighHandSide()
 	std::vector<double> b(getNumberOfBasisFunctions(), 0.0);
 	stiffnessMatrix = A, rightHandSide = b;
 	int elementId = -1;
-	for (int ie1 = 0; ie1 < Nx; ie1++)
+	for (int ie1 = 0; ie1 < Nx; ++ie1)
 	{
-		for (int ie2 = 0; ie2 < Ny; ie2++)
+		for (int ie2 = 0; ie2 < Ny; ++ie2)
 		{
 			elementId++;
-			if (elements[elementId].isTrimmed)
+			if (elements[elementId].isTrimmed())
 			{
 				std::vector<Triangle<double>> triangles = elements[elementId].divideInTriangles();
 				for (auto triangle : triangles)
@@ -145,20 +145,20 @@ void Assembler_2D::computeQuadStiffnessMatrixAndRightHandSide(int elementX, int 
 	int spanY = spanOfValueInKnotVector(getDistinctKnots(1)[elementY], 1);
 	XGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBspline_x().getDegree() + 3, getDistinctKnots(0)[elementX], getDistinctKnots(0)[elementX + 1]);
 	YGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBspline_y().getDegree() + 3, getDistinctKnots(1)[elementY], getDistinctKnots(1)[elementY + 1]);
-	for (int il_1 = 0; il_1 < getBspline_x().getDegree() + 1; il_1++)
+	for (int il_1 = 0; il_1 < getBspline_x().getDegree() + 1; ++il_1)
 	{
 		int i1 = spanX - getBspline_x().getDegree() + il_1;
-		for (int il_2 = 0; il_2 < getBspline_y().getDegree() + 1; il_2++)
+		for (int il_2 = 0; il_2 < getBspline_y().getDegree() + 1; ++il_2)
 		{
 			int i2 = spanY - getBspline_y().getDegree() + il_2;
 
 			int index = i1 * getBspline_y().getNumberOfBasisFunctions() + i2;
 			rightHandSide[index] += computeRightHandSideIntegral(il_1, il_2);
 
-			for (int jl_1 = 0; jl_1 < getBspline_x().getDegree() + 1; jl_1++)
+			for (int jl_1 = 0; jl_1 < getBspline_x().getDegree() + 1; ++jl_1)
 			{
 				int j1 = spanX - getBspline_x().getDegree() + jl_1;
-				for (int jl_2 = 0; jl_2 < getBspline_y().getDegree() + 1; jl_2++)
+				for (int jl_2 = 0; jl_2 < getBspline_y().getDegree() + 1; ++jl_2)
 				{
 					int j2 = spanY - getBspline_y().getDegree() + jl_2;
 
@@ -172,7 +172,7 @@ void Assembler_2D::computeQuadStiffnessMatrixAndRightHandSide(int elementX, int 
 	}
 }
 
-void Assembler_2D::computeTriangleStiffnessMatrixAndRightHandSide(Triangle<double> &triangle, int elementX, int elementY)
+void Assembler_2D::computeTriangleStiffnessMatrixAndRightHandSide(const Triangle<double> &triangle, int elementX, int elementY)
 {
 	int spanX = spanOfValueInKnotVector(getDistinctKnots(0)[elementX], 0);
 	int spanY = spanOfValueInKnotVector(getDistinctKnots(1)[elementY], 1);
@@ -183,20 +183,20 @@ void Assembler_2D::computeTriangleStiffnessMatrixAndRightHandSide(Triangle<doubl
 	double b_y = std::max({triangle.vertex1.y, triangle.vertex2.y, triangle.vertex3.y});
 	XGaussPointsAndWeights = GaussPointsAndWeightsTriangle(a_x, b_x);
 	YGaussPointsAndWeights = GaussPointsAndWeightsTriangle(a_y, b_y);
-	for (int il_1 = 0; il_1 < getBspline_x().getDegree() + 1; il_1++)
+	for (int il_1 = 0; il_1 < getBspline_x().getDegree() + 1; ++il_1)
 	{
 		int i1 = spanX - getBspline_x().getDegree() + il_1;
-		for (int il_2 = 0; il_2 < getBspline_y().getDegree() + 1; il_2++)
+		for (int il_2 = 0; il_2 < getBspline_y().getDegree() + 1; ++il_2)
 		{
 			int i2 = spanY - getBspline_y().getDegree() + il_2;
 
 			int index = i1 * getBspline_y().getNumberOfBasisFunctions() + i2;
 			rightHandSide[index] += computeRightHandSideIntegral(il_1, il_2);
 
-			for (int jl_1 = 0; jl_1 < getBspline_x().getDegree() + 1; jl_1++)
+			for (int jl_1 = 0; jl_1 < getBspline_x().getDegree() + 1; ++jl_1)
 			{
 				int j1 = spanX - getBspline_x().getDegree() + jl_1;
-				for (int jl_2 = 0; jl_2 < getBspline_y().getDegree() + 1; jl_2++)
+				for (int jl_2 = 0; jl_2 < getBspline_y().getDegree() + 1; ++jl_2)
 				{
 					int j2 = spanY - getBspline_y().getDegree() + jl_2;
 
@@ -213,9 +213,9 @@ void Assembler_2D::computeTriangleStiffnessMatrixAndRightHandSide(Triangle<doubl
 double Assembler_2D::computeStiffnessIntegral(int il_1, int jl_1, int il_2, int jl_2)
 {
 	double v = 0.0;
-	for (int g1 = 0; g1 < XGaussPointsAndWeights.size(); g1++)
+	for (int g1 = 0; g1 < XGaussPointsAndWeights.size(); ++g1)
 	{
-		for (int g2 = 0; g2 < YGaussPointsAndWeights.size(); g2++)
+		for (int g2 = 0; g2 < YGaussPointsAndWeights.size(); ++g2)
 		{
 			std::pair<std::vector<double>, std::vector<double>> eval_1 = getBspline_x().evaluateAtPoint(XGaussPointsAndWeights[g1].first);
 			std::pair<std::vector<double>, std::vector<double>> eval_2 = getBspline_y().evaluateAtPoint(YGaussPointsAndWeights[g2].first);
@@ -243,9 +243,9 @@ double Assembler_2D::computeStiffnessIntegral(int il_1, int jl_1, int il_2, int 
 double Assembler_2D::computeRightHandSideIntegral(int il_1, int il_2)
 {
 	double v = 0.0;
-	for (int g1 = 0; g1 < XGaussPointsAndWeights.size(); g1++)
+	for (int g1 = 0; g1 < XGaussPointsAndWeights.size(); ++g1)
 	{
-		for (int g2 = 0; g2 < YGaussPointsAndWeights.size(); g2++)
+		for (int g2 = 0; g2 < YGaussPointsAndWeights.size(); ++g2)
 		{
 			std::pair<std::vector<double>, std::vector<double>> eval_1 = getBspline_x().evaluateAtPoint(XGaussPointsAndWeights[g1].first);
 			std::pair<std::vector<double>, std::vector<double>> eval_2 = getBspline_y().evaluateAtPoint(YGaussPointsAndWeights[g2].first);
@@ -269,64 +269,24 @@ int Assembler_2D::identifyBoundarySideOfBasisFunction(int i)
 {
 	int N = getBspline_y().getNumberOfBasisFunctions();
 
-	bool isDirichletOnWestBoundary = ((i >= 0 && i <= N - 1) && (boundaryConditions->west.first == "Dirichlet"));
-	bool isDirichletOnSouthBoundary = ((i % N == 0) && (boundaryConditions->south.first == "Dirichlet"));
-	bool isDirichletOnNorthBoundary = ((i % N == N - 1) && (boundaryConditions->north.first == "Dirichlet"));
-	bool isDirichletOnEastBoundary = ((i >= getNumberOfBasisFunctions() - N) && (boundaryConditions->east.first == "Dirichlet"));
+	bool isDirichletOnWestBoundary = ((i >= 0 && i <= N - 1) && (boundaryConditions.west.first == "Dirichlet"));
+	bool isDirichletOnSouthBoundary = ((i % N == 0) && (boundaryConditions.south.first == "Dirichlet"));
+	bool isDirichletOnNorthBoundary = ((i % N == N - 1) && (boundaryConditions.north.first == "Dirichlet"));
+	bool isDirichletOnEastBoundary = ((i >= getNumberOfBasisFunctions() - N) && (boundaryConditions.east.first == "Dirichlet"));
 
-	if (isDirichletOnWestBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions, i)) return 1;
-	else if (isDirichletOnSouthBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions, i)) return 4;
-	else if (isDirichletOnNorthBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions, i)) return 3;
-	else if (isDirichletOnEastBoundary && IDHasNotAlreadyBeingMarked(boundaryBasisFunctions, i)) return 2;
+	if (isDirichletOnWestBoundary) return 1;
+	else if (isDirichletOnSouthBoundary) return 4;
+	else if (isDirichletOnNorthBoundary) return 3;
+	else if (isDirichletOnEastBoundary) return 2;
 
 	return 0;
 }
 
 void Assembler_2D::computeBoundary()
 {
-	for (int i = 0; i < getNumberOfBasisFunctions(); i++)
+	for (int i = 0; i < getNumberOfBasisFunctions(); ++i)
 	{
 		int side = identifyBoundarySideOfBasisFunction(i);
 		if (side) boundaryBasisFunctions.push_back(std::make_pair(i, side));
 	}
-}
-
-
-
-void Assembler_2D::writeParameterSpaceToFile(std::string filename)
-{
-	std::ofstream my_file(filename);
-	my_file << "variables= " << "\"x\"" << "," << "\"y\"" << "\n";
-	my_file << "zone t= " << "\"1\"" << ",i=" << getDistinctKnots(0).size() << ",j=" << getDistinctKnots(1).size() << "\n";
-	for (int j = 0; j < getDistinctKnots(1).size(); j++)
-	{
-		for (int i = 0; i < getDistinctKnots(0).size(); i++)
-		{
-			my_file << getDistinctKnots(0)[i] << " " << getDistinctKnots(1)[j] << "\n";
-		}
-	}
-	my_file.close();
-}
-
-void Assembler_2D::writeTrimmedTrianglesToFile(std::string filename)
-{
-	std::ofstream my_file(filename);
-	my_file << "# " << trimmed_triangles.size() << "\n";
-	int cnt = 0;
-	for (auto triangle : trimmed_triangles)
-	{
-		cnt += 2;
-		my_file << "v " << triangle.vertex1.x << " " << triangle.vertex1.y << "\n";
-		my_file << "v " << triangle.vertex2.x << " " << triangle.vertex2.y << "\n";
-		my_file << "l " << cnt - 1 << " " << cnt << "\n";
-		cnt += 2;
-		my_file << "v " << triangle.vertex2.x << " " << triangle.vertex2.y << "\n";
-		my_file << "v " << triangle.vertex3.x << " " << triangle.vertex3.y << "\n";
-		my_file << "l " << cnt - 1 << " " << cnt << "\n";
-		cnt += 2;
-		my_file << "v " << triangle.vertex3.x << " " << triangle.vertex3.y << "\n";
-		my_file << "v " << triangle.vertex1.x << " " << triangle.vertex1.y << "\n";
-		my_file << "l " << cnt - 1 << " " << cnt << "\n";
-	}
-	my_file.close();
 }

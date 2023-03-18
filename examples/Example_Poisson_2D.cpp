@@ -27,7 +27,7 @@ int main()
                                                     {4.0, 0.0}, {4.0, 2.0}, {6.0, 4.0}, {8.0, 4.0} };
     TrimmingCurve trimmingCurve(Vertex<double>(0.0, 0.0), 0.0);
     BsplineSurface surface(std::vector<Bspline>{bspline_x, bspline_y}, controlPoints, trimmingCurve);
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < 1; ++i)
     {
         surface.uniformRefine_x();
         surface.uniformRefine_y();
@@ -40,22 +40,24 @@ int main()
     std::pair<std::string, double> north = std::make_pair("Dirichlet", 0.0);
     std::pair<std::string, double> south = std::make_pair("Dirichlet", 0.0);
     BoundCond boundaryConditions(west, east, north, south);
-    Assembler_2D ass2(src, boundaryConditions, surface);
-    ass2.assemble();
+    Assembler_2D assembler(src, boundaryConditions, surface);
+    assembler.assemble();
 
     // - - - - - Enforce boundary conditions - - - - -
     std::string mode("Ellimination");
-    ass2.enforceBoundaryConditions(mode);
+    assembler.enforceBoundaryConditions(mode);
 
     // - - - - - Poisson info - - - - -
-    Poisson<Assembler_2D> poisson(ass2, Solver::SOR);
-    poisson.setSolution(poisson.getSolver()->solve(50));
+    Poisson<Assembler_2D> poisson(assembler, Solver::SOR);
+    int iterations = 50;
+    poisson.solve(iterations);
     std::cout << poisson.getSolution();
 
     // - - - - - Write solution data - - - - - 
     int resolution = 100;
     //surface.plot2D(resolution, "surface.dat");
     surface.plot3D(resolution, poisson.getSolution(), "solution.dat");
+    writeParameterSpaceToFile(assembler, "parameterSpace.dat");
 
     return 0;
 }

@@ -20,12 +20,6 @@ std::vector<double> &Assembler<T>::getRightHandSide()
 }
 
 template <class T>
-T &Assembler<T>::getBsplineEntity()
-{
-	return bsplineEntity;
-}
-
-template <class T>
 std::vector<double>& Assembler<T>::getDistinctKnots(const int dim)
 {
 	assert(dim >= 0 && dim < bsplineEntity.getDimension());
@@ -43,7 +37,7 @@ int Assembler<T>::spanOfValueInKnotVector(const double value, const int dim)
 
 
 template <class T>
-void Assembler<T>::enforceBoundaryConditions(std::string &mode)
+void Assembler<T>::enforceBoundaryConditions(const std::string &mode)
 {
 	boundaryMode = mode;
 	if (mode == "Ellimination")
@@ -68,13 +62,13 @@ void Assembler<T>::applyBoundaryEllimination()
 	Matrix<double> newSystemMatrix(newDimension, newDimension);
 	std::vector<double> newRightHandSide;
 	int i = 0;
-	for (int ii = 0; ii < systemMatrix.getNumberOfRows(); ii++)
+	for (int ii = 0; ii < systemMatrix.getNumberOfRows(); ++ii)
 	{
 		auto it = std::find_if(boundaryBasisFunctions.begin(), boundaryBasisFunctions.end(), CompareFirst(ii));
 		if (it != boundaryBasisFunctions.end())
 			continue;
 		int j = 0;
-		for (int jj = 0; jj < systemMatrix.getNumberOfRows(); jj++)
+		for (int jj = 0; jj < systemMatrix.getNumberOfRows(); ++jj)
 		{
 			it = std::find_if(boundaryBasisFunctions.begin(), boundaryBasisFunctions.end(), CompareFirst(jj));
 			if (it != boundaryBasisFunctions.end())
@@ -97,7 +91,7 @@ void Assembler<T>::applyBoundaryMultipliers()
 	Matrix<double> newSystemMatrix(new_dim, new_dim);
 	std::vector<double> newRightHandSide;
 	int cnt2 = 0;
-	for (auto it = boundaryBasisFunctions.begin(); it != boundaryBasisFunctions.end(); it++)
+	for (auto it = boundaryBasisFunctions.begin(); it != boundaryBasisFunctions.end(); ++it)
 	{
 		newSystemMatrix.setValue(cnt2, (*it).first + boundaryBasisFunctions.size(), 1.0);
 		newSystemMatrix.setValue((*it).first + boundaryBasisFunctions.size(), cnt2, 1.0);
@@ -106,10 +100,10 @@ void Assembler<T>::applyBoundaryMultipliers()
 	}
 
 	int ii = 0;
-	for (int i = cnt2; i < newSystemMatrix.getNumberOfRows(); i++)
+	for (int i = cnt2; i < newSystemMatrix.getNumberOfRows(); ++i)
 	{
 		int jj = 0;
-		for (int j = cnt2; j < newSystemMatrix.getNumberOfColumns(); j++)
+		for (int j = cnt2; j < newSystemMatrix.getNumberOfColumns(); ++j)
 		{
 			newSystemMatrix.setValue(i, j, systemMatrix(ii, jj));
 			jj++;
@@ -127,18 +121,18 @@ double Assembler<T>::addBoundaryValueToRhs(int position)
 {
 	if (boundaryBasisFunctions[position].second == 1)
 	{
-		return boundaryConditions->west.second;
+		return boundaryConditions.west.second;
 	}
 	else if (boundaryBasisFunctions[position].second == 2)
 	{
-		return boundaryConditions->east.second;
+		return boundaryConditions.east.second;
 	}
 	else if (boundaryBasisFunctions[position].second == 3)
 	{
-		return boundaryConditions->north.second;
+		return boundaryConditions.north.second;
 	}
 	else if (boundaryBasisFunctions[position].second == 4)
 	{
-		return boundaryConditions->south.second;
+		return boundaryConditions.south.second;
 	}
 }

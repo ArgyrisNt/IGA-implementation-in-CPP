@@ -11,8 +11,8 @@ class Assembler
 {
 public:
     Assembler() {}
-    Assembler(const double newSourceFunction, BoundCond &newBoundaryConditions, T &bspline)
-        : sourceFunction(newSourceFunction), bsplineEntity(bspline), boundaryConditions(&newBoundaryConditions) {}
+    Assembler(const double newSourceFunction, const BoundCond &newBoundaryConditions, const T &bspline)
+        : sourceFunction(newSourceFunction), bsplineEntity(bspline), boundaryConditions(newBoundaryConditions) {}
 
     virtual ~Assembler() {}
 
@@ -21,19 +21,18 @@ public:
     Matrix<double> &getStiffnessMatrix();
     Matrix<double> &getSystemMatrix();
     std::vector<double> &getRightHandSide();
-    T &getBsplineEntity();
     std::vector<double> &getDistinctKnots(const int dim);
 
     int spanOfValueInKnotVector(const double value, const int dim);
 
     void applyBoundaryEllimination();
     void applyBoundaryMultipliers();
-    void enforceBoundaryConditions(std::string &);
+    void enforceBoundaryConditions(const std::string &);
     double addBoundaryValueToRhs(const int position);
 
-    BoundCond *boundaryConditions;
-    std::string boundaryMode;
-    std::vector<std::pair<int, int>> boundaryBasisFunctions;
+    std::string &getBoundarymode() { return boundaryMode; }
+    BoundCond &getBoundaryConditions() { return boundaryConditions; }
+    std::vector<std::pair<int, int>> &getBoundaryBasisFunctions() { return boundaryBasisFunctions; }
 
 protected:
     std::vector<std::pair<double, double>> XGaussPointsAndWeights;
@@ -43,6 +42,9 @@ protected:
     std::vector<double> rightHandSide;
     T bsplineEntity;
     const double sourceFunction;
+    std::string boundaryMode;
+    BoundCond boundaryConditions;
+    std::vector<std::pair<int, int>> boundaryBasisFunctions;
 };
 
 #include "..\src\Assembler.cpp"

@@ -8,7 +8,7 @@
 class Element
 {
 public:
-    Element(bool _isTrimmed, TrimmingCurve& _trimmingCurve) : isTrimmed(_isTrimmed), trimmingCurve(_trimmingCurve) {}
+    Element(const TrimmingCurve& _trimmingCurve) : trimmingCurve(_trimmingCurve) {}
 
     ~Element() {}
 
@@ -21,7 +21,7 @@ public:
 
     void setVertices(std::vector<Vertex<double>>& _vertices) { vertices =_vertices; }
 
-    bool isTrimmed;
+    bool isTrimmed();
 
 private:
     Vertex<double> centroid;
@@ -29,6 +29,7 @@ private:
     std::vector<Vertex<double>> vertices;
     std::vector<Vertex<double>> trimmedVertices;
     std::vector<Vertex<double>> untrimmedVertices;
+    bool is_Trimmed = false;
 };
 
 #include "..\src\Element.cpp"

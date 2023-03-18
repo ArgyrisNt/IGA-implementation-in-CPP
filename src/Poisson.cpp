@@ -4,43 +4,51 @@
 template <class T>
 Poisson<T>::Poisson(T &newAssembler, Solver &newSolver)
 {
-    assembler = &newAssembler;
-    solver = &newSolver;
+    assembler = std::make_shared<T>(newAssembler);
+    solver = std::make_shared<Solver>(newSolver);
     solver->setLeftAndRightHandSides(assembler->getSystemMatrix(), assembler->getRightHandSide());
+}
+
+
+
+template <class T>
+void Poisson<T>::applyInitialCondition(std::vector<double>& initialSolution)
+{
+    solution = initialSolution;
 }
 
 template <class T>
 void Poisson<T>::expandSolutionOnBoundary()
 {
     std::vector<double> newSolution;
-    if (assembler->boundaryMode == "Multipliers")
+    if (assembler->getBoundarymode() == "Multipliers")
     {
-        solution.erase(solution.begin(), solution.begin() + assembler->boundaryBasisFunctions.size());
+        solution.erase(solution.begin(), solution.begin() + assembler->getBoundaryBasisFunctions().size());
     }
     else
     {
 	    int j = 0;
-	    for (int i = 0; i < assembler->getNumberOfBasisFunctions(); i++)
+	    for (int i = 0; i < assembler->getNumberOfBasisFunctions(); ++i)
 	    {
-            auto it = std::find_if(assembler->boundaryBasisFunctions.begin(), assembler->boundaryBasisFunctions.end(), CompareFirst(i));
-            if (it != assembler->boundaryBasisFunctions.end())
+            auto it = std::find_if(assembler->getBoundaryBasisFunctions().begin(), assembler->getBoundaryBasisFunctions().end(), CompareFirst(i));
+            if (it != assembler->getBoundaryBasisFunctions().end())
             {
-                int position = it - assembler->boundaryBasisFunctions.begin();
-                if (assembler->boundaryBasisFunctions[position].second == 1)
+                int position = it - assembler->getBoundaryBasisFunctions().begin();
+                if (assembler->getBoundaryBasisFunctions()[position].second == 1)
                 {
-                    newSolution.push_back(assembler->boundaryConditions->west.second);
+                    newSolution.push_back(assembler->getBoundaryConditions().west.second);
                 }
-                else if (assembler->boundaryBasisFunctions[position].second == 2)
+                else if (assembler->getBoundaryBasisFunctions()[position].second == 2)
                 {
-                    newSolution.push_back(assembler->boundaryConditions->east.second);
+                    newSolution.push_back(assembler->getBoundaryConditions().east.second);
                 }
-                else if (assembler->boundaryBasisFunctions[position].second == 3)
+                else if (assembler->getBoundaryBasisFunctions()[position].second == 3)
                 {
-                    newSolution.push_back(assembler->boundaryConditions->south.second);
+                    newSolution.push_back(assembler->getBoundaryConditions().south.second);
                 }
-                else if (assembler->boundaryBasisFunctions[position].second == 4)
+                else if (assembler->getBoundaryBasisFunctions()[position].second == 4)
                 {
-                    newSolution.push_back(assembler->boundaryConditions->north.second);
+                    newSolution.push_back(assembler->getBoundaryConditions().north.second);
                 }							
 		    }
 		    else
@@ -53,10 +61,14 @@ void Poisson<T>::expandSolutionOnBoundary()
     }
 }
 
-
+template <class T>
+void Poisson<T>::updateRhs(const std::vector<double> &b)
+{
+    solver->setLeftAndRightHandSides(assembler->getSystemMatrix(), b);
+}
 
 template <class T>
-Solver* Poisson<T>::getSolver()
+std::shared_ptr<Solver> Poisson<T>::getSolver() const
 {
     return solver;
 }
@@ -68,27 +80,16 @@ std::vector<double> &Poisson<T>::getSolution()
 }
 
 template <class T>
-T* Poisson<T>::getAssembler()
+std::shared_ptr<T> Poisson<T>::getAssembler() const
 {
     return assembler;
 }
 
-template <class T>
-void Poisson<T>::setSolution(std::vector<double> &&newSolution)
-{ 
-    solution = newSolution;
-    expandSolutionOnBoundary();
-}
+
 
 template <class T>
-void Poisson<T>::setSolution(std::vector<double> &newSolution)
+void Poisson<T>::solve(int numberOfIterations, double omega)
 {
-    solution = newSolution;
+    solution = solver->solve(numberOfIterations, omega);
     expandSolutionOnBoundary();
-}
-
-template <class T>
-void Poisson<T>::updateRhs(std::vector<double> &b)
-{
-    solver->setLeftAndRightHandSides(assembler->getSystemMatrix(), b);
 }

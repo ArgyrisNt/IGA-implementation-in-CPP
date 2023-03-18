@@ -4,7 +4,7 @@
 #include <iostream>
 #include <fstream>
 
-Bspline::Bspline(KnotVector<double> &newKnotVector)
+Bspline::Bspline(const KnotVector<double> &newKnotVector)
 {
 	knotVector = newKnotVector;
 	basisFunctions = BasisFunctions(knotVector);
@@ -46,7 +46,7 @@ int Bspline::getNumberOfBasisFunctions()
 	return getKnotvector().getSize() - getKnotvector().getDegree() - 1;
 }
 
-void Bspline::setKnotvector(KnotVector<double> &newKnotVector)
+void Bspline::setKnotvector(const KnotVector<double> &newKnotVector)
 {
 	knotVector = newKnotVector;
 	basisFunctions = BasisFunctions(knotVector);
@@ -66,13 +66,13 @@ std::pair<std::vector<double>, std::vector<double>> Bspline::evaluateAtPoint(con
 
 
 
-void Bspline::plot2D(const int resolution, std::string filename)
+void Bspline::plot2D(const int resolution, const std::string &filename)
 {
 	double firstKnot = knotVector(0);
 	double lastKnot = knotVector(knotVector.getSize()-1);
 	std::vector<std::vector<double>> ValuesOfBasisFunctions;
 	std::vector<double> evaluationPoints;
-	for (int i = 0; i < resolution; i++)
+	for (int i = 0; i < resolution; ++i)
 	{
 		double currentStep = firstKnot + (double)(i) * ((lastKnot - firstKnot) / ((double)(resolution - 1)));
 		evaluationPoints.push_back(currentStep);
@@ -84,9 +84,9 @@ void Bspline::plot2D(const int resolution, std::string filename)
 	plotBspline << "variables= " << "\"x\"" << "," << "\"y\"" << "\n";
 	plotBspline << "zone t= " << "\"1\"" << ",i=" << resolution * ValuesOfBasisFunctions[0].size() << ",j=" << resolution << "\n";
 
-	for (int i = 0; i < ValuesOfBasisFunctions[0].size(); i++)
+	for (int i = 0; i < ValuesOfBasisFunctions[0].size(); ++i)
 	{
-		for (int j = 0; j < resolution; j++)
+		for (int j = 0; j < resolution; ++j)
 		{
 			plotBspline << evaluationPoints[j] << " " << ValuesOfBasisFunctions[j][i] << "\n";
 		}

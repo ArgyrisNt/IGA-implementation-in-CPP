@@ -6,7 +6,7 @@ std::pair<std::vector<double>, std::vector<double>> BasisFunctions::evaluateAtPo
 {
     initializeBasisFunctions(value);
 
-    for (int i = 1; i < knotVector.getDegree() + 1; i++)
+    for (int i = 1; i < knotVector.getDegree() + 1; ++i)
     {
         basisFunctionsOfDegree(i, value);
     }
@@ -22,7 +22,7 @@ std::pair<std::vector<double>, std::vector<double>> BasisFunctions::evaluateAtPo
 void BasisFunctions::basisFunctionsOfDegree(const int level, const double value)
 {
     std::vector<double> oldValues = values;
-    for (int j = 0; j < numberOfBasisFunctions; j++)
+    for (int j = 0; j < numberOfBasisFunctions; ++j)
     {
         double firstCoefficient = 0.0, secondCoefficient = 0.0;
 
@@ -59,7 +59,7 @@ void BasisFunctions::computeActiveBasisFunctions(const double value)
     std::vector<double> activeDerivatives;
     int span = knotVector.findSpanOfValue(value);
     double sumValues = 0.0, sumDerivatives = 0.0;
-    for (int i = span - knotVector.getDegree(); i <= span; i++)
+    for (int i = span - knotVector.getDegree(); i <= span; ++i)
     {
         activeValues.push_back(values[i]);
         activeDerivatives.push_back(derivatives[i]);
@@ -68,7 +68,7 @@ void BasisFunctions::computeActiveBasisFunctions(const double value)
     }
 
     std::vector<double> activeNurbs, activeNurbsDerivatives;
-    for (int i = 0; i < activeValues.size(); i++)
+    for (int i = 0; i < activeValues.size(); ++i)
     {
         double weightedBasis = activeValues[i] * knotVector.getWeights()[i];
         double weightedDerivatives = activeDerivatives[i] * knotVector.getWeights()[i];
@@ -86,7 +86,7 @@ void BasisFunctions::initializeBasisFunctions(const double value)
     derivatives = {};
     numberOfBasisFunctions = knotVector.getSize() - knotVector.getDegree() - 1;
     std::vector<double> valuesOfBasisFunctions(numberOfBasisFunctions, 0.0);
-    for (int j = 0; j < numberOfBasisFunctions; j++)
+    for (int j = 0; j < numberOfBasisFunctions; ++j)
     {
         bool isBetweenTheseTwoKnots = (value >= knotVector(j) && value < knotVector(j + 1));
         if (isBetweenTheseTwoKnots)

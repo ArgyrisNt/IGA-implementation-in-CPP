@@ -8,7 +8,7 @@
 class DiffusionAssembler_1D : public Assembler_1D
 {
 public:
-    DiffusionAssembler_1D(const double newSourceFunction, BoundCond &boundaryConditions, BsplineCurve &curve, 
+    DiffusionAssembler_1D(const double newSourceFunction, const BoundCond &boundaryConditions, const BsplineCurve &curve, 
             const double newCoefficient, const double delta)
         : Assembler_1D(newSourceFunction, boundaryConditions, curve), coefficient(newCoefficient), Timestep(delta) {}
 
@@ -16,7 +16,7 @@ public:
 
     void assemble() override;
 
-    std::vector<double> nextStep(std::vector<double>&);
+    std::vector<double> nextStep(const std::vector<double> &);
     std::vector<double> applyInitialCondition(double (*func)(double));
 
     Matrix<double> &getMassMatrix();
