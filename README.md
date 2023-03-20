@@ -22,3 +22,14 @@ Example Poisson 2D on Trimmed domain (mixed boundary conditions)
 
 <img src="pics/sol_2D_trimmed.png" height="200" width="200" >
 
+
+
+Assemblers Inheritance Diagram
+
+<img src="pics/assemblers_hierarchy.png" height="100" width="300" >
+
+
+
+Bspline Inheritance Diagram
+
+<img src="pics/bsplines_hierarchy.png" height="100" width="300" >
