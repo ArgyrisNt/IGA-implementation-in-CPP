@@ -26,10 +26,10 @@ Example Poisson 2D on Trimmed domain (mixed boundary conditions)
 
 Assemblers Inheritance Diagram
 
-<img src="pics/assemblers_hierarchy.png" height="100" width="300" >
+<img src="pics/assemblers_hierarchy.png" height="150" width="200" >
 
 
 
 Bspline Inheritance Diagram
 
-<img src="pics/bsplines_hierarchy.png" height="100" width="300" >
+<img src="pics/bsplines_hierarchy.png" height="150" width="200" >
