@@ -1,4 +1,4 @@
-// Example of a NURBS curve
+// Example of a NURBS curve (hemicycle)
 
 #include <iostream>
 #include "..\include\BsplineCurve.h"
