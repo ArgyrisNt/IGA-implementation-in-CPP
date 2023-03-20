@@ -1,4 +1,3 @@
 # ignore all obj, dat, exe files
 *.obj
 *.dat
-*.exe
