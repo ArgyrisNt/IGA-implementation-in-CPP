@@ -2,39 +2,12 @@
 #include "..\include\Assembler.h"
 
 template <class T>
-Matrix<double> &Assembler<T>::getStiffnessMatrix()
-{ 
-	return stiffnessMatrix; 
-}
-
-template <class T>
-Matrix<double> &Assembler<T>::getSystemMatrix()
-{ 
-	return systemMatrix;
-}
-
-template <class T>
-std::vector<double> &Assembler<T>::getRightHandSide()
+void Assembler<T>::assemble()
 {
-	return rightHandSide;
+	computeStiffnessMatrixAndRightHandSide();
+	computeBoundary();
+	systemMatrix = stiffnessMatrix;
 }
-
-template <class T>
-std::vector<double>& Assembler<T>::getDistinctKnots(const int dim)
-{
-	assert(dim >= 0 && dim < bsplineEntity.getDimension());
-	return bsplineEntity.getKnotvector(dim).getDistinctKnots();
-}
-
-
-
-template <class T>
-int Assembler<T>::spanOfValueInKnotVector(const double value, const int dim)
-{
-	return bsplineEntity.findSpanOfValue(value, dim);
-}
-
-
 
 template <class T>
 void Assembler<T>::enforceBoundaryConditions(const std::string &mode)

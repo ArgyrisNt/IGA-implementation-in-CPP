@@ -10,13 +10,6 @@ Poisson<T>::Poisson(T &newAssembler, Solver &newSolver)
 }
 
 
-
-template <class T>
-void Poisson<T>::applyInitialCondition(std::vector<double>& initialSolution)
-{
-    solution = initialSolution;
-}
-
 template <class T>
 void Poisson<T>::expandSolutionOnBoundary()
 {
@@ -60,32 +53,6 @@ void Poisson<T>::expandSolutionOnBoundary()
         solution = newSolution;
     }
 }
-
-template <class T>
-void Poisson<T>::updateRhs(const std::vector<double> &b)
-{
-    solver->setLeftAndRightHandSides(assembler->getSystemMatrix(), b);
-}
-
-template <class T>
-std::shared_ptr<Solver> Poisson<T>::getSolver() const
-{
-    return solver;
-}
-
-template <class T>
-std::vector<double> &Poisson<T>::getSolution()
-{
-    return solution;
-}
-
-template <class T>
-std::shared_ptr<T> Poisson<T>::getAssembler() const
-{
-    return assembler;
-}
-
-
 
 template <class T>
 void Poisson<T>::solve(int numberOfIterations, double omega)

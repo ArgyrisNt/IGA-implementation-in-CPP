@@ -4,12 +4,6 @@
 #include <iostream>
 #include <fstream>
 
-Bspline::Bspline(const KnotVector<double> &newKnotVector)
-{
-	knotVector = newKnotVector;
-	basisFunctions = BasisFunctions(knotVector);
-}
-
 Bspline::Bspline(const Bspline &bspline)
 {
 	knotVector = bspline.knotVector;
@@ -26,47 +20,15 @@ Bspline &Bspline::operator=(const Bspline &bspline)
 
 
 
-KnotVector<double> &Bspline::getKnotvector()
-{
-	return knotVector;
-}
-
-int Bspline::getDegree()
-{
-	return knotVector.getDegree();
-}
-
-BasisFunctions& Bspline::getBasisFunctions()
-{
-	return basisFunctions;
-}
-
-int Bspline::getNumberOfBasisFunctions()
-{
-	return getKnotvector().getSize() - getKnotvector().getDegree() - 1;
-}
-
 void Bspline::setKnotvector(const KnotVector<double> &newKnotVector)
 {
 	knotVector = newKnotVector;
-	basisFunctions = BasisFunctions(knotVector);
+	basisFunctions = std::make_shared<BasisFunctions>(BasisFunctions(knotVector));
 }
 
 
 
-int Bspline::findSpanOfValue(const double point)
-{
-	return knotVector.findSpanOfValue(point);
-}
-
-std::pair<std::vector<double>, std::vector<double>> Bspline::evaluateAtPoint(const double point)
-{
-	return basisFunctions.evaluateAtPoint(point);
-}
-
-
-
-void Bspline::plot2D(const int resolution, const std::string &filename)
+void Bspline::plot(const int resolution, const std::string &filename)
 {
 	double firstKnot = knotVector(0);
 	double lastKnot = knotVector(knotVector.getSize()-1);
@@ -76,7 +38,7 @@ void Bspline::plot2D(const int resolution, const std::string &filename)
 	{
 		double currentStep = firstKnot + (double)(i) * ((lastKnot - firstKnot) / ((double)(resolution - 1)));
 		evaluationPoints.push_back(currentStep);
-		std::vector<double> values = basisFunctions.evaluateAtPoint(currentStep, true).first;
+		std::vector<double> values = basisFunctions->evaluateAtPoint(currentStep, true).first;
 		ValuesOfBasisFunctions.push_back(values);
 	}
 

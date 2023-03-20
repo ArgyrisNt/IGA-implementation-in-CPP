@@ -1,37 +1,6 @@
 #include <iostream>
 #include "..\include\Assembler_2D.h"
 
-Bspline &Assembler_2D::getBspline_y()
-{
-	return bsplineEntity.getBspline(1);
-}
-
-Bspline &Assembler_2D::getBspline_x()
-{
-	return bsplineEntity.getBspline(0);
-}
-
-std::vector<std::vector<double>> &Assembler_2D::getControlPoints()
-{
-	return bsplineEntity.getControlPoints();
-}
-
-const int Assembler_2D::getNumberOfBasisFunctions()
-{
-	return getBspline_x().getNumberOfBasisFunctions() * getBspline_y().getNumberOfBasisFunctions();
-}
-
-TrimmingCurve &Assembler_2D::getTrimmingCurve()
-{ 
-	return bsplineEntity.getTrimmingCurve();
-}
-
-std::vector<Triangle<double>> &Assembler_2D::getTrimmedTriangles()
-{
-	return trimmed_triangles;
-}
-
-
 
 std::vector<int> Assembler_2D::computeActiveControlPoints(double g1, double g2)
 {
@@ -56,15 +25,15 @@ Matrix<double> Assembler_2D::Jacobian(const std::vector<int> &indices, const std
 	std::vector<double> temp_x(2, 0.0);
 	for (int kk = 0; kk < dNxNy.size(); ++kk)
 	{
-		temp_x[0] += dNxNy[kk] * getControlPoints()[indices[kk]][0];
-		temp_x[1] += dNxNy[kk] * getControlPoints()[indices[kk]][1];
+		temp_x[0] += dNxNy[kk] * getControlPoints()[indices[kk]].x;
+		temp_x[1] += dNxNy[kk] * getControlPoints()[indices[kk]].y;
 	}
 
 	std::vector<double> temp_y(2, 0.0);
 	for (int kk = 0; kk < NxdNy.size(); ++kk)
 	{
-		temp_y[0] += NxdNy[kk] * getControlPoints()[indices[kk]][0];
-		temp_y[1] += NxdNy[kk] * getControlPoints()[indices[kk]][1];
+		temp_y[0] += NxdNy[kk] * getControlPoints()[indices[kk]].x;
+		temp_y[1] += NxdNy[kk] * getControlPoints()[indices[kk]].y;
 	}
 
 	Matrix<double> Jacobian(2, 2);
@@ -76,15 +45,6 @@ Matrix<double> Assembler_2D::Jacobian(const std::vector<int> &indices, const std
 	return Jacobian;
 }
 
-
-
-void Assembler_2D::assemble()
-{
-	computeTrimmedElements();
-	computeStiffnessMatrixAndRighHandSide();
-	computeBoundary();
-	systemMatrix = stiffnessMatrix;
-}
 
 void Assembler_2D::computeTrimmedElements()
 {
@@ -108,8 +68,9 @@ void Assembler_2D::computeTrimmedElements()
 	}
 }
 
-void Assembler_2D::computeStiffnessMatrixAndRighHandSide()
+void Assembler_2D::computeStiffnessMatrixAndRightHandSide()
 {
+	computeTrimmedElements();
 	// Assemble stiffness matrix
 	int Nx = getDistinctKnots(0).size() - 1;
 	int Ny = getDistinctKnots(1).size() - 1;
@@ -119,8 +80,10 @@ void Assembler_2D::computeStiffnessMatrixAndRighHandSide()
 	int elementId = -1;
 	for (int ie1 = 0; ie1 < Nx; ++ie1)
 	{
+		int spanX = spanOfValueInKnotVector(getDistinctKnots(0)[ie1], 0);
 		for (int ie2 = 0; ie2 < Ny; ++ie2)
 		{
+			int spanY = spanOfValueInKnotVector(getDistinctKnots(1)[ie2], 1);
 			elementId++;
 			if (elements[elementId].isTrimmed())
 			{
@@ -128,61 +91,27 @@ void Assembler_2D::computeStiffnessMatrixAndRighHandSide()
 				for (auto triangle : triangles)
 				{
 					trimmed_triangles.push_back(triangle);
-					computeTriangleStiffnessMatrixAndRightHandSide(triangle, ie1, ie2);
+					double a_x = std::min({triangle.vertex1.x, triangle.vertex2.x, triangle.vertex3.x});
+					double b_x = std::max({triangle.vertex1.x, triangle.vertex2.x, triangle.vertex3.x});
+					double a_y = std::min({triangle.vertex1.y, triangle.vertex2.y, triangle.vertex3.y});
+					double b_y = std::max({triangle.vertex1.y, triangle.vertex2.y, triangle.vertex3.y});
+					XGaussPointsAndWeights = GaussPointsAndWeightsTriangle(a_x, b_x);
+					YGaussPointsAndWeights = GaussPointsAndWeightsTriangle(a_y, b_y);
+					AssistComputeStiffnessMatrixAndRightHandSide(spanX, spanY);
 				}
 			}
 			else
 			{
-				computeQuadStiffnessMatrixAndRightHandSide(ie1, ie2);
+				XGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBspline_x().getDegree() + 3, getDistinctKnots(0)[ie1], getDistinctKnots(0)[ie1 + 1]);
+				YGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBspline_y().getDegree() + 3, getDistinctKnots(1)[ie2], getDistinctKnots(1)[ie2 + 1]);
+				AssistComputeStiffnessMatrixAndRightHandSide(spanX, spanY);
 			}
 		}
 	}
 }
 
-void Assembler_2D::computeQuadStiffnessMatrixAndRightHandSide(int elementX, int elementY)
+void Assembler_2D::AssistComputeStiffnessMatrixAndRightHandSide(int spanX, int spanY)
 {
-	int spanX = spanOfValueInKnotVector(getDistinctKnots(0)[elementX], 0);
-	int spanY = spanOfValueInKnotVector(getDistinctKnots(1)[elementY], 1);
-	XGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBspline_x().getDegree() + 3, getDistinctKnots(0)[elementX], getDistinctKnots(0)[elementX + 1]);
-	YGaussPointsAndWeights = GaussPointsAndWeightsQuad(getBspline_y().getDegree() + 3, getDistinctKnots(1)[elementY], getDistinctKnots(1)[elementY + 1]);
-	for (int il_1 = 0; il_1 < getBspline_x().getDegree() + 1; ++il_1)
-	{
-		int i1 = spanX - getBspline_x().getDegree() + il_1;
-		for (int il_2 = 0; il_2 < getBspline_y().getDegree() + 1; ++il_2)
-		{
-			int i2 = spanY - getBspline_y().getDegree() + il_2;
-
-			int index = i1 * getBspline_y().getNumberOfBasisFunctions() + i2;
-			rightHandSide[index] += computeRightHandSideIntegral(il_1, il_2);
-
-			for (int jl_1 = 0; jl_1 < getBspline_x().getDegree() + 1; ++jl_1)
-			{
-				int j1 = spanX - getBspline_x().getDegree() + jl_1;
-				for (int jl_2 = 0; jl_2 < getBspline_y().getDegree() + 1; ++jl_2)
-				{
-					int j2 = spanY - getBspline_y().getDegree() + jl_2;
-
-					int index1 = i1 * getBspline_y().getNumberOfBasisFunctions() + i2;
-					int index2 = j1 * getBspline_y().getNumberOfBasisFunctions() + j2;
-					double newValue = stiffnessMatrix(index1, index2) + computeStiffnessIntegral(il_1, jl_1, il_2, jl_2);
-					stiffnessMatrix.setValue(index1, index2, newValue);
-				}
-			}
-		}
-	}
-}
-
-void Assembler_2D::computeTriangleStiffnessMatrixAndRightHandSide(const Triangle<double> &triangle, int elementX, int elementY)
-{
-	int spanX = spanOfValueInKnotVector(getDistinctKnots(0)[elementX], 0);
-	int spanY = spanOfValueInKnotVector(getDistinctKnots(1)[elementY], 1);
-	trimmed_triangles.push_back(triangle);
-	double a_x = std::min({triangle.vertex1.x, triangle.vertex2.x, triangle.vertex3.x});
-	double b_x = std::max({triangle.vertex1.x, triangle.vertex2.x, triangle.vertex3.x});
-	double a_y = std::min({triangle.vertex1.y, triangle.vertex2.y, triangle.vertex3.y});
-	double b_y = std::max({triangle.vertex1.y, triangle.vertex2.y, triangle.vertex3.y});
-	XGaussPointsAndWeights = GaussPointsAndWeightsTriangle(a_x, b_x);
-	YGaussPointsAndWeights = GaussPointsAndWeightsTriangle(a_y, b_y);
 	for (int il_1 = 0; il_1 < getBspline_x().getDegree() + 1; ++il_1)
 	{
 		int i1 = spanX - getBspline_x().getDegree() + il_1;

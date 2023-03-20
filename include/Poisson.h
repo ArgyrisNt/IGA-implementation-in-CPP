@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <memory>
-#include "..\include\Solver.h"
+#include "Solver.h"
 
 template<class T>
 class Poisson
@@ -13,17 +13,20 @@ public:
 
     ~Poisson() {}
 
-    void applyInitialCondition(std::vector<double>&);
-    void expandSolutionOnBoundary();
     void solve(int numberOfIterations = 50, double omega = 1.03);
 
-    std::vector<double>& getSolution();
-    std::shared_ptr<T> getAssembler() const;
-    std::shared_ptr<Solver> getSolver() const;
+    void applyInitialCondition(std::vector<double> &initialSolution)
+    { solution = initialSolution; }
 
-    void updateRhs(const std::vector<double>& b);
+    void updateRhs(const std::vector<double> &b) 
+    { solver->setLeftAndRightHandSides(assembler->getSystemMatrix(), b); }
+
+    const std::vector<double>& getSolution() const 
+    { return solution; }
     
 private:
+    void expandSolutionOnBoundary();
+
     std::vector<double> solution;
     std::shared_ptr<T> assembler;
     std::shared_ptr<Solver> solver;

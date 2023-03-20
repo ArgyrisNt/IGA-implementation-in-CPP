@@ -2,9 +2,9 @@
 #define H_ASSEMBLER
 
 #include <iostream>
-#include "..\include\Matrix.h"
-#include "..\include\BoundCond.h"
-#include "..\include\Bspline.h"
+#include "Matrix.h"
+#include "BoundCond.h"
+#include "Bspline.h"
 
 template <class T>
 class Assembler
@@ -12,40 +12,60 @@ class Assembler
 public:
     Assembler() {}
     Assembler(const double newSourceFunction, const BoundCond &newBoundaryConditions, const T &bspline)
-        : sourceFunction(newSourceFunction), bsplineEntity(bspline), boundaryConditions(newBoundaryConditions) {}
+        : sourceFunction(newSourceFunction), boundaryConditions(newBoundaryConditions), bsplineEntity(std::make_shared<T>(bspline)) {}
 
     virtual ~Assembler() {}
 
-    virtual void assemble() = 0;
+    virtual void assemble();
+    void enforceBoundaryConditions(const std::string &);
 
-    Matrix<double> &getStiffnessMatrix();
-    Matrix<double> &getSystemMatrix();
-    std::vector<double> &getRightHandSide();
+    int spanOfValueInKnotVector(const double value, const int dim)
+    { return bsplineEntity->getMultiBspline().findSpanOfValue(value, dim); }
+
+    Matrix<double> &getSystemMatrix() 
+    { return systemMatrix; }
+
+    std::vector<double> &getRightHandSide() 
+    { return rightHandSide; }
+
     std::vector<double> &getDistinctKnots(const int dim);
+    const std::string &getBoundarymode() const 
+    { return boundaryMode; }
 
-    int spanOfValueInKnotVector(const double value, const int dim);
+    const BoundCond &getBoundaryConditions() const 
+    { return boundaryConditions; }
+
+    const std::vector<std::pair<int, int>> &getBoundaryBasisFunctions() const 
+    { return boundaryBasisFunctions; }
+
+protected:
+    virtual void computeBoundary() = 0;
+    virtual void computeStiffnessMatrixAndRightHandSide() = 0;
 
     void applyBoundaryEllimination();
     void applyBoundaryMultipliers();
-    void enforceBoundaryConditions(const std::string &);
     double addBoundaryValueToRhs(const int position);
-
-    std::string &getBoundarymode() { return boundaryMode; }
-    BoundCond &getBoundaryConditions() { return boundaryConditions; }
-    std::vector<std::pair<int, int>> &getBoundaryBasisFunctions() { return boundaryBasisFunctions; }
-
-protected:
-    std::vector<std::pair<double, double>> XGaussPointsAndWeights;
 
     Matrix<double> stiffnessMatrix;
     Matrix<double> systemMatrix;
     std::vector<double> rightHandSide;
-    T bsplineEntity;
+
     const double sourceFunction;
+    std::vector<std::pair<double, double>> XGaussPointsAndWeights;
+
     std::string boundaryMode;
     BoundCond boundaryConditions;
     std::vector<std::pair<int, int>> boundaryBasisFunctions;
+
+    std::shared_ptr<T> bsplineEntity;
 };
+
+template <class T>
+inline std::vector<double> &Assembler<T>::getDistinctKnots(const int dim)
+{
+    assert(dim >= 0 && dim < bsplineEntity->getMultiBspline().getDimension());
+    return bsplineEntity->getMultiBspline().getKnotvector(dim).getDistinctKnots();
+}
 
 #include "..\src\Assembler.cpp"
 

@@ -7,17 +7,15 @@
 
 int main()
 {   
-	// - - - - - B-spline basis on x-direction - - - - - 
+	// - - - - - B-spline basis - - - - - 
 	int degree = 2;
 	std::vector<double> values{ 0.0,0.0,0.0,0.5,1.0,1.0,1.0 };
 	std::vector<double> weights{ 1.0, 1.0, 1.0, 1.0 };
 	KnotVector<double> knotVector(degree, values, weights);
 	Bspline bspline_x(knotVector);
-	//int resolution = 100;
-	//bspline_x.plot2D(resolution, "basis.dat");
 
 	// - - - - - B-spline curve - - - - -
-	std::vector<std::vector<double>> controlPoints{{0.0, 0.0}, {1.0, 1.0}, {2.0, 1.0}, {3.0, 0.0}};
+	std::vector<Vertex<double>> controlPoints{{0.0, 0.0}, {1.0, 1.0}, {2.0, 1.0}, {3.0, 0.0}};
 	BsplineCurve curve(std::vector<Bspline>{bspline_x}, controlPoints);
 
 	// - - - - - Assempler info - - - - -
@@ -27,20 +25,18 @@ int main()
 	BoundCond boundaryConditions(west, east);
 	Assembler_1D assembler(sourceFunction, boundaryConditions, curve);
 	assembler.assemble();
-
-	// - - - - - Enforce boundary conditions - - - - -
 	std::string mode("Ellimination");
 	assembler.enforceBoundaryConditions(mode);
 
 	// - - - - - Poisson info - - - - -
-	Poisson<Assembler_1D> poisson(assembler, Solver::ConjugateGradient);
+	Poisson<Assembler_1D> poisson(assembler, Solver::Jacobi);
 	poisson.solve();
 	std::cout << "Solution is: " << std::endl;
 	std::cout << poisson.getSolution();
 
-	// - - - - - Write solution data - - - - -
+	// - - - - - Plot solution - - - - -
 	int resolution = 100;
-	curve.plot3D(resolution, poisson.getSolution(), "solution.dat");
+	curve.plotVectorOnEntity(resolution, poisson.getSolution(), "solution.dat");
 
 	return 0;
 }

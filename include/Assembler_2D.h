@@ -2,9 +2,9 @@
 #define H_ASSEMBLER_2D
 
 #include <iostream>
-#include "..\include\Assembler.h"
-#include "..\include\Element.h"
-#include "..\include\BsplineSurface.h"
+#include "Assembler.h"
+#include "Element.h"
+#include "BsplineSurface.h"
 
 class Assembler_2D : public Assembler<BsplineSurface>
 {
@@ -14,26 +14,34 @@ public:
 
     ~Assembler_2D() {}
 
-    void assemble() override;
+    Bspline &getBspline_x() 
+    { return bsplineEntity->getMultiBspline().getBspline(0); }
 
-    Bspline &getBspline_x();
-    Bspline &getBspline_y();
-    std::vector<std::vector<double>>& getControlPoints();
-    const int getNumberOfBasisFunctions();
-    TrimmingCurve &getTrimmingCurve();
-    std::vector<Triangle<double>> &getTrimmedTriangles();
+    Bspline &getBspline_y() 
+    { return bsplineEntity->getMultiBspline().getBspline(1); }
+
+    const std::vector<Vertex<double>> &getControlPoints() const 
+    { return bsplineEntity->getControlPoints(); }
+
+    const int getNumberOfBasisFunctions()
+    { return getBspline_x().getNumberOfBasisFunctions() * getBspline_y().getNumberOfBasisFunctions(); }
+
+    const TrimmingCurve &getTrimmingCurve() const 
+    { return bsplineEntity->getTrimmingCurve(); }
+
+    const std::vector<Triangle<double>> &getTrimmedTriangles() const 
+    { return trimmed_triangles; }
 
 private:
     std::vector<int> computeActiveControlPoints(double g1, double g2);
     Matrix<double> Jacobian(const std::vector<int> &indices, const std::vector<double> &dNxNy, const std::vector<double> &NxdNy);
 
-    void computeBoundary();
+    void computeBoundary() override;
     int identifyBoundarySideOfBasisFunction(int i);
     void computeTrimmedElements();
 
-    void computeStiffnessMatrixAndRighHandSide();
-    void computeTriangleStiffnessMatrixAndRightHandSide(const Triangle<double> &triangle, int elementX, int elementY);
-    void computeQuadStiffnessMatrixAndRightHandSide(int elementX, int elementY);
+    void computeStiffnessMatrixAndRightHandSide() override;
+    void AssistComputeStiffnessMatrixAndRightHandSide(int spanX, int spanY);
     double computeStiffnessIntegral(int il_1, int jl_1, int il_2, int jl_2);
     double computeRightHandSideIntegral(int il_1, int il_2);
 

@@ -2,8 +2,7 @@
 #define H_MATRIX
 
 #include <iostream>
-#include <vector>
-#include "..\include\Utilities.h"
+#include "Utilities.h"
 
 using namespace Utils;
 
@@ -21,7 +20,7 @@ public:
 	T operator()(int row, int col) const;
 
 	void setValue(int row, int col, T val);
-	void print();
+	void print() const;
 
 	T determinant() const;
 	Matrix transpose() const;
@@ -31,8 +30,11 @@ public:
 	std::vector<T> forward_Euler(const std::vector<T>& b);
 	std::vector<T> backward_Euler(const std::vector<T>& b);
 
-	int getNumberOfRows() const { return numberOfRows; }
-	int getNumberOfColumns() const { return numberOfColumns; }
+	const int getNumberOfRows() const 
+	{ return numberOfRows; }
+	
+	const int getNumberOfColumns() const 
+	{ return numberOfColumns; }
 
 private:
 	T** values;
@@ -120,6 +122,14 @@ std::vector<T> operator*(const Matrix<T> &A, const std::vector<T> &vec)
 	}
 
 	return result;
+}
+
+template <class T>
+inline T Matrix<T>::operator()(int row, int column) const
+{
+	assert(row < getNumberOfRows());
+	assert(column < getNumberOfColumns());
+	return values[row][column];
 }
 
 #include "..\src\Matrix.cpp"

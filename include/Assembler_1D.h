@@ -2,8 +2,8 @@
 #define H_ASSEMBLER_1D
 
 #include <iostream>
-#include "..\include\Assembler.h"
-#include "..\include\BsplineCurve.h"
+#include "Assembler.h"
+#include "BsplineCurve.h"
 
 class Assembler_1D : public Assembler<BsplineCurve>
 {
@@ -13,19 +13,22 @@ public:
 
     ~Assembler_1D() {}
 
-    void assemble() override;
+    const int getNumberOfBasisFunctions()
+    { return getBspline_x().getNumberOfBasisFunctions(); }
 
-    Matrix<double> Jacobian(double, const std::vector<double> &);
+    const std::vector<Vertex<double>> &getControlPoints() const
+    { return bsplineEntity->getControlPoints();  }
 
-    const int getNumberOfBasisFunctions();
-    std::vector<std::vector<double>> &getControlPoints();
-    Bspline &getBspline_x();
+    Bspline &getBspline_x()
+    { return bsplineEntity->getMultiBspline().getBspline(0); }
 
 protected:
-    void computeBoundary();
-    void computeStiffnessMatrixAndRightHandSide();
-    double computeStiffnessIntegral(int element, int basisFunction, int trialFunction);
-    double computeRightHandSideIntegral(int element, int basisFunction);
+    Matrix<double> Jacobian(double, const std::vector<double> &);
+
+    void computeBoundary() override;
+    void computeStiffnessMatrixAndRightHandSide() override;
+    double computeStiffnessIntegral(int basisFunction, int trialFunction);
+    double computeRightHandSideIntegral(int basisFunction);
 };
 
 #include "..\src\Assembler_1D.cpp"

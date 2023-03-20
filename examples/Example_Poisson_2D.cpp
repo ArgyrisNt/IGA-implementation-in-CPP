@@ -3,7 +3,6 @@
 #include <iostream>
 #include "..\include\Assembler_2D.h"
 #include "..\include\Poisson.h"
-#include "..\include\BsplineSurface.h"
 
 int main()
 {   
@@ -22,7 +21,7 @@ int main()
     Bspline bspline_y(y_knotVector);
 
     // - - - - - B-spline surface - - - - -
-    std::vector<std::vector<double>> controlPoints{ {0.0, 0.0}, {0.0, 4.0}, {4.0, 8.0}, {8.0, 8.0},
+    std::vector<Vertex<double>> controlPoints{ {0.0, 0.0}, {0.0, 4.0}, {4.0, 8.0}, {8.0, 8.0},
                                                     {2.0, 0.0}, {2.0, 3.0}, {5.0, 6.0}, {8.0, 6.0},
                                                     {4.0, 0.0}, {4.0, 2.0}, {6.0, 4.0}, {8.0, 4.0} };
     TrimmingCurve trimmingCurve(Vertex<double>(0.0, 0.0), 0.0);
@@ -42,8 +41,6 @@ int main()
     BoundCond boundaryConditions(west, east, north, south);
     Assembler_2D assembler(src, boundaryConditions, surface);
     assembler.assemble();
-
-    // - - - - - Enforce boundary conditions - - - - -
     std::string mode("Ellimination");
     assembler.enforceBoundaryConditions(mode);
 
@@ -53,10 +50,9 @@ int main()
     poisson.solve(iterations);
     std::cout << poisson.getSolution();
 
-    // - - - - - Write solution data - - - - - 
+    // - - - - - Plot solution - - - - - 
     int resolution = 100;
-    //surface.plot2D(resolution, "surface.dat");
-    surface.plot3D(resolution, poisson.getSolution(), "solution.dat");
+    surface.plotVectorOnEntity(resolution, poisson.getSolution(), "solution.dat");
     writeParameterSpaceToFile(assembler, "parameterSpace.dat");
 
     return 0;

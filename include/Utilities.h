@@ -6,8 +6,7 @@
 #include <vector>
 #include <cassert>
 #include "math.h"
-#include "..\include\Vertex.h"
-#include "..\include\Triangle.h"
+#include "Triangle.h"
 
 
 namespace Utils
@@ -37,7 +36,8 @@ namespace Utils
     template <class T>
     std::vector<std::pair<double, double>> GaussPointsAndWeightsTriangle(double a, double b);
 
-    bool almostEqual(const double a, const double b);
+    bool almostEqual(const double a, const double b)
+    { return fabs(a - b) < 1e-7; }
 
     template <class T>
     T norm(const std::vector<T> &v);

@@ -90,7 +90,7 @@ std::vector<double> Solver::Jacobi_iterator(int numberOfIterations)
         }
     }
 
-    std::cout << iteration << " iterations\n";
+    std::cout << iteration - 1 << " iterations\n";
     return solution;
 }
 
@@ -127,7 +127,7 @@ std::vector<double> Solver::GaussSeidel_iterator(int numberOfIterations)
         }
     }
 
-    std::cout << iteration << " iterations\n";
+    std::cout << iteration - 1 << " iterations\n";
     return solution;
 }
 
@@ -167,7 +167,7 @@ std::vector<double> Solver::SOR_iterator(int numberOfIterations, double omega)
         }
     }
 
-    std::cout << iteration << " iterations\n";
+    std::cout << iteration - 1 << " iterations\n";
     return solution;
 }
 
@@ -201,7 +201,7 @@ std::vector<double> Solver::gradient_iterator(int numberOfIterations)
         }
     }
 
-    std::cout << iteration << " iterations\n";
+    std::cout << iteration - 1 << " iterations\n";
     return solution;
 }
 
@@ -246,6 +246,6 @@ std::vector<double> Solver::conjugate_gradient_iterator(int numberOfIterations)
         }
     }
 
-    std::cout << iteration << " iterations\n";
+    std::cout << iteration - 1 << " iterations\n";
     return solution;
 }

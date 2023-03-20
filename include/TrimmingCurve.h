@@ -24,6 +24,9 @@ public:
 
     void plot();
 
+    const double getRadius() const
+    { return radius; }
+
 private:
     Vertex<double> center;
     double radius;

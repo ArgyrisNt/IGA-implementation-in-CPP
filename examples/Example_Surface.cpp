@@ -20,13 +20,11 @@ int main()
     Bspline bspline_y(y_knotVector);
 
     // - - - - - B-spline surface - - - - -
-    std::vector<std::vector<double>> controlPoints{ {0.0, 0.0}, {0.0, 4.0}, {4.0, 8.0}, {8.0, 8.0},
+    std::vector<Vertex<double>> controlPoints{ {0.0, 0.0}, {0.0, 4.0}, {4.0, 8.0}, {8.0, 8.0},
                                               {2.0, 0.0}, {2.0, 3.0}, {5.0, 6.0}, {8.0, 6.0},
                                               {4.0, 0.0}, {4.0, 2.0}, {6.0, 4.0}, {8.0, 4.0} };
-
     TrimmingCurve trimmingCurve(Vertex<double>(0.0, 0.0), 0.0);
     BsplineSurface surface(std::vector<Bspline>{bspline_x, bspline_y}, controlPoints, trimmingCurve);
-
     int numberOfRefinements = 3;
     for (int i = 0; i < numberOfRefinements; ++i)
     {
@@ -35,7 +33,7 @@ int main()
     }
 
     int resolution = 100;
-    surface.plot2D(resolution, "surface.dat");
+    surface.plot(resolution, "surface.dat");
 
     return 0;
 }

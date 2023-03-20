@@ -2,8 +2,7 @@
 #define H_SOLVER
 
 #include <iostream>
-#include <vector>
-#include "..\include\Matrix.h"
+#include "Matrix.h"
 
 class Solver
 {
@@ -15,7 +14,6 @@ public:
     ~Solver() {}
 
     std::vector<double> solve(int numberOfIterations = 50, double omega = 1.03);
-
     void setLeftAndRightHandSides(const Matrix<double>& left, const std::vector<double>& right);
     
 private:

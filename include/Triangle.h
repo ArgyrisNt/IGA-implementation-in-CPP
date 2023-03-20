@@ -1,3 +1,6 @@
+#include <iostream>
+#include "Vertex.h"
+
 template <class T>
 class Triangle
 {
