@@ -56,14 +56,6 @@ Matrix<T> &Matrix<T>::operator=(const Matrix &matrix)
 	return *this;
 }
 
-template <class T>
-T Matrix<T>::operator()(int row, int column) const
-{
-	assert(row < getNumberOfRows());
-	assert(column < getNumberOfColumns());
-	return values[row][column];
-}
-
 
 
 template <class T>
@@ -96,7 +88,7 @@ T Matrix<T>::determinant() const
 }
 
 template <class T>
-void Matrix<T>::print()
+void Matrix<T>::print() const
 {
 	for (int i = 0; i < getNumberOfRows(); ++i)
 	{

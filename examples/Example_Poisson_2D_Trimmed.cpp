@@ -17,7 +17,7 @@ int main()
     Bspline bspline_y(bspline_x);
 
     // - - - - - B-spline surface - - - - -
-    std::vector<std::vector<double>> controlPoints{ {0.0, 0.0}, {0.0, 3.0}, {0.0, 6.0},
+    std::vector<Vertex<double>> controlPoints{ {0.0, 0.0}, {0.0, 3.0}, {0.0, 6.0},
                                               {3.0, 0.0}, {3.0, 3.0}, {3.0, 6.0},
                                               {6.0, 0.0}, {6.0, 3.0}, {6.0, 6.0} };
     TrimmingCurve trimmingCurve(Vertex<double>(1.0, 0.0), 0.2 /*std::make_pair(1.8,0.5), 1.0*/);
@@ -35,8 +35,6 @@ int main()
     BoundCond boundaryConditions(west, east, north, south);
     Assembler_2D assembler(src, boundaryConditions, surface);
     assembler.assemble();
-
-    // - - - - - Enforce boundary conditions - - - - -
     std::string mode("Ellimination");
     assembler.enforceBoundaryConditions(mode);
 
@@ -45,9 +43,9 @@ int main()
     poisson.solve();
     std::cout << poisson.getSolution();
 
-    // - - - - - Write solution data - - - - - 
-    int resolution = 250;
-    surface.plot3D(resolution, poisson.getSolution(), "solution.dat");
+    // - - - - - Plot solution - - - - - 
+    int resolution = 100;
+    surface.plotVectorOnEntity(resolution, poisson.getSolution(), "solution.dat");
     writeParameterSpaceToFile(assembler, "parameterSpace.dat");
     writeTrimmedTrianglesToFile(assembler, "trimmedTriangles.obj");
 

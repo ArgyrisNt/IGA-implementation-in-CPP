@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include "..\include\TrimmingCurve.h"
+#include "TrimmingCurve.h"
 
 class Element
 {
@@ -13,17 +13,20 @@ public:
     ~Element() {}
 
     void categorise();
-    void computeTrimmedAndUntrimmedVertices();
     std::vector<Triangle<double>> divideInTriangles();
     std::vector<Triangle<double>> construct_3_triangles();
     std::vector<Triangle<double>> construct_2_triangles();
     std::vector<Triangle<double>> construct_1_triangle();
 
-    void setVertices(std::vector<Vertex<double>>& _vertices) { vertices =_vertices; }
+    void setVertices(std::vector<Vertex<double>>& _vertices) 
+    { vertices =_vertices; }
 
-    bool isTrimmed();
+    bool isTrimmed() 
+    { return is_Trimmed; }
 
 private:
+    void computeTrimmedAndUntrimmedVertices();
+
     Vertex<double> centroid;
     TrimmingCurve trimmingCurve;
     std::vector<Vertex<double>> vertices;

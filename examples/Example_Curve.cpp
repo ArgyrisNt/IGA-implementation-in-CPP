@@ -13,10 +13,10 @@ int main()
     Bspline bspline_x(knotVector);
 
     // - - - - - B-spline curve - - - - -
-    std::vector<std::vector<double>> controlPoints{{2.0, 0.0}, {2.0, 1.0}, {1.0, 1.0}, {0.0, 1.0}, {0.0, 0.0}};
+    std::vector<Vertex<double>> controlPoints{{2.0, 0.0}, {2.0, 1.0}, {1.0, 1.0}, {0.0, 1.0}, {0.0, 0.0}};
     BsplineCurve curve(std::vector<Bspline>{bspline_x}, controlPoints);
     int resolution = 100;
-    curve.plot2D(resolution, "curve.dat");
+    curve.plot(resolution, "curve.dat");
 
     return 0;
 }

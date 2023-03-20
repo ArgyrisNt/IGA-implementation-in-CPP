@@ -1,10 +1,6 @@
 #include <iostream>
 #include "..\include\Element.h"
 
-bool Element::isTrimmed()
-{
-    return is_Trimmed;
-}
 
 void Element::categorise()
 {

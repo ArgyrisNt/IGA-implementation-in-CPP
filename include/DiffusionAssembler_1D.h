@@ -2,8 +2,7 @@
 #define H_DIFFUSIONASSEMBLER
 
 #include <iostream>
-#include "..\include\Matrix.h"
-#include "..\include\Assembler_1D.h"
+#include "Assembler_1D.h"
 
 class DiffusionAssembler_1D : public Assembler_1D
 {
@@ -18,8 +17,6 @@ public:
 
     std::vector<double> nextStep(const std::vector<double> &);
     std::vector<double> applyInitialCondition(double (*func)(double));
-
-    Matrix<double> &getMassMatrix();
 
 private:
     void computeMassMatrix();

@@ -1,13 +1,6 @@
 #include <iostream>
 #include "..\include\DiffusionAssembler_1D.h"
 
-Matrix<double> &DiffusionAssembler_1D::getMassMatrix()
-{
-	return massMatrix;
-}
-
-
-
 void DiffusionAssembler_1D::assemble()
 {
 	computeStiffnessMatrixAndRightHandSide();

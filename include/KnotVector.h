@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include "..\include\Utilities.h"
+#include "Utilities.h"
 
 using namespace Utils;
 
@@ -25,18 +25,25 @@ public:
     void insert(const int position, const T value);
     std::vector<T> linspace(const int resolution) const;
 
-    int getSize();
-    int getDegree();
-    const std::vector<T> &getWeights() const;
-    std::vector<T>& getDistinctKnots();
+    const int getSize() const 
+    { return knots.size(); }
+
+    const int getDegree() const 
+    { return degree; }
+
+    const std::vector<T> &getWeights() const 
+    { return weights; }
+
+    std::vector<T> &getDistinctKnots() 
+    { return distinctKnots; }
 
     void setWeights(const std::vector<T>& new_weights);
 
 private:
     std::vector<T> knots;
     std::vector<T> weights;
-    int degree;
     std::vector<T> distinctKnots;
+    int degree;
 };
 
 template <class T>
@@ -49,6 +56,15 @@ inline std::ostream &operator<<(std::ostream &os, KnotVector<T>& knotVector)
     std::cout << std::endl;
 
     return os;
+}
+
+template <class T>
+inline T KnotVector<T>::operator()(int position)
+{
+    assert(position >= 0);
+    assert(position < knots.size());
+
+    return knots[position];
 }
 
 #include "..\src\KnotVector.cpp"

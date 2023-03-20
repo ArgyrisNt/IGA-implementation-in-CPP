@@ -29,15 +29,14 @@ double init_cond(double val)
 
 int main()
 {   
-    // - - - - - B-spline basis on x-direction - - - - - 
+    // - - - - - B-spline basis - - - - - 
     double start = 0.0;
     double end = 1.0;
     int degree = 3;
     int numberOfElements = 200;
     std::vector<double> weights{};
     KnotVector<double> knotVector(start, end, degree, numberOfElements, weights);
-
-    std::vector<std::vector<double>> controlPoints;
+    std::vector<Vertex<double>> controlPoints;
     for (int i = 0; i < numberOfElements + degree; ++i)
     {
         controlPoints.push_back({(1.0 / (numberOfElements + degree - 1)) * (double)(i), 0.0});
@@ -55,13 +54,11 @@ int main()
     std::pair<std::string, double> east = std::make_pair("Dirichlet", 0.0);
     BoundCond boundaryConditions(west, east);
     double coef = 1.0; // coefficient of diffusion problem
-    double t_end = 0.05; // 1
-    double numSteps = 10.0; // 200
+    double t_end = 0.05;
+    double numSteps = 10.0;
     double Dt = t_end / numSteps; // time step
     DiffusionAssembler_1D ass(src, boundaryConditions, curve, coef, Dt);
     ass.assemble();
-
-    // - - - - - Enforce boundary conditions - - - - -
     std::string mode("Ellimination");
     ass.enforceBoundaryConditions(mode);
 
@@ -70,16 +67,16 @@ int main()
     std::vector<double> init_sol = ass.applyInitialCondition(init_cond);
     diffusion.applyInitialCondition(init_sol);
     int resolution = 100;
-    curve.plot3D(resolution, diffusion.getSolution(), "0solution.dat");
+    curve.plotVectorOnEntity(resolution, diffusion.getSolution(), "0solution.dat");
 
-    // - - - - - Solve - - - - - 
+    // - - - - - Solve and plot solution on every step - - - - - 
     for (int t = 0; t < numSteps; ++t)
     {
         std::cout << std::endl << "---------------- " << t + 1 << " step ----------------";
         std::vector<double> b = ass.nextStep(diffusion.getSolution()); // build next rhs
         diffusion.updateRhs(b);
-        diffusion.solve();
-        curve.plot3D(resolution, diffusion.getSolution(), std::to_string(t + 1) + "solution.dat");
+        diffusion.solve(20);
+        curve.plotVectorOnEntity(resolution, diffusion.getSolution(), std::to_string(t + 1) + "solution.dat");
     }
 
     return 0;

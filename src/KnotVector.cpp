@@ -3,31 +3,6 @@
 #include <cassert>
 #include <algorithm>
 
-template <class T>
-int KnotVector<T>::getSize()
-{
-    return knots.size();
-}
-
-template <class T>
-int KnotVector<T>::getDegree()
-{
-    return degree;
-}
-
-template <class T>
-const std::vector<T> &KnotVector<T>::getWeights() const
-{
-    return weights;
-}
-
-template <class T>
-std::vector<T>& KnotVector<T>::getDistinctKnots()
-{
-    return distinctKnots;
-}
-
-
 
 template <class T>
 KnotVector<T>::KnotVector()
@@ -77,15 +52,6 @@ KnotVector<T> &KnotVector<T>::operator=(const KnotVector &oldKnotVector)
     degree = oldKnotVector.degree;
     weights = oldKnotVector.weights;
     distinctKnots = oldKnotVector.distinctKnots;
-}
-
-template <class T>
-T KnotVector<T>::operator()(int position)
-{
-    assert(position >= 0);
-    assert(position < knots.size());
-
-    return knots[position];
 }
 
 

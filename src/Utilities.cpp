@@ -107,11 +107,6 @@ namespace Utils
         return GaussPointsAndWeights;
     }
 
-    bool almostEqual(const double a, const double b)
-    {
-        return fabs(a - b) < 1e-7;
-    }
-
     template <typename T>
     T norm(const std::vector<T> &v)
     {

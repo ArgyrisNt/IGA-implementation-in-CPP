@@ -1,41 +1,37 @@
 #ifndef H_BSPLINESURFACE
 #define H_BSPLINESURFACE
 
-#include "..\include\MultiBspline.h"
-#include "..\include\TrimmingCurve.h"
+#include "BsplineEntity.h"
+#include "TrimmingCurve.h"
 #include <iostream>
 #include <vector>
 
-class BsplineSurface : public MultiBspline
+class BsplineSurface : public BsplineEntity
 {
 public:
-    BsplineSurface(const std::vector<Bspline> &newBsplines, const std::vector<std::vector<double>> &new_controlPoints, const TrimmingCurve &_trimmingCurve)
-        : MultiBspline(newBsplines), controlPoints(new_controlPoints), trimmingCurve(_trimmingCurve) {}
+    BsplineSurface(const std::vector<Bspline> &newBsplines, const std::vector<Vertex<double>> &new_controlPoints, const TrimmingCurve &_trimmingCurve)
+        : BsplineEntity(MultiBspline(newBsplines), new_controlPoints), trimmingCurve(_trimmingCurve) {}
 
     ~BsplineSurface() {}
 
     BsplineSurface &operator=(const BsplineSurface &);
 
     Vertex<double> evaluateAtPoint(const Vertex<double> &&point);
+    void plot(const int resolution, const std::string &filename) override;
+    void plotVectorOnEntity(const int resolution, const std::vector<double> &zCoordinate, const std::string &filename) override;
 
-    void plot2D(const int resolution, const std::string &filename) override;
-    void plot3D(const int resolution, const std::vector<double> &zCoordinate, const std::string &filename);
-
-    void knotInsertion(KnotVector<double> &vector, std::vector<std::vector<double>> &points, const double newKnot);
     void uniformRefine_x();
     void uniformRefine_y();
 
-    void setControlPoints(const std::vector<std::vector<double>> &new_controlPoints);
-
-    std::vector<std::vector<double>> &getControlPoints();
-    TrimmingCurve &getTrimmingCurve();
+    const TrimmingCurve &getTrimmingCurve() const 
+    { return trimmingCurve; }
 
 private:
-    std::vector<std::vector<double>> XparametricCurvePoints(const int level);
-    std::vector<std::vector<double>> YparametricCurvePoints(const int level);
-    void refineParametricCurve(KnotVector<double> &vector, std::vector<std::vector<double>> &points);
+    std::vector<Vertex<double>> XparametricCurvePoints(const int level);
+    std::vector<Vertex<double>> YparametricCurvePoints(const int level);
+    void refineParametricCurve(KnotVector<double> &vector, std::vector<Vertex<double>> &points);
+    void knotInsertion(KnotVector<double> &vector, std::vector<Vertex<double>> &points, const double newKnot);
 
-    std::vector<std::vector<double>> controlPoints;
     TrimmingCurve trimmingCurve;
 };
 
