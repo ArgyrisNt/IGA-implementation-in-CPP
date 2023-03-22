@@ -16,7 +16,7 @@ public:
 
     BsplineSurface &operator=(const BsplineSurface &);
 
-    Vertex<double> evaluateAtPoint(const Vertex<double> &&point);
+    Vertex<double> evaluateAtPoint(const Vertex<double> &point);
     void plot(const int resolution, const std::string &filename) override;
     void plotVectorOnEntity(const int resolution, const std::vector<double> &zCoordinate, const std::string &filename) override;
 

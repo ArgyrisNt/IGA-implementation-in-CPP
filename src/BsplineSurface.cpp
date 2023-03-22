@@ -13,7 +13,7 @@ BsplineSurface &BsplineSurface::operator=(const BsplineSurface &old)
 }
 
 
-Vertex<double> BsplineSurface::evaluateAtPoint(const Vertex<double> &&point)
+Vertex<double> BsplineSurface::evaluateAtPoint(const Vertex<double> &point)
 {
 	int span_i = multiBspline.getBspline(0).findSpanOfValue(point.x);
 	std::vector<double> x_ValuesOfbasisFunctions = multiBspline.getBspline(0).evaluateAtPoint(point.x).first;

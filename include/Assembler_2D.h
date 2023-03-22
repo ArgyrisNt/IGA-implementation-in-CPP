@@ -20,9 +20,6 @@ public:
     Bspline &getBspline_y() 
     { return bsplineEntity->getMultiBspline().getBspline(1); }
 
-    const std::vector<Vertex<double>> &getControlPoints() const 
-    { return bsplineEntity->getControlPoints(); }
-
     const int getNumberOfBasisFunctions()
     { return getBspline_x().getNumberOfBasisFunctions() * getBspline_y().getNumberOfBasisFunctions(); }
 

@@ -22,6 +22,9 @@ public:
     int spanOfValueInKnotVector(const double value, const int dim)
     { return bsplineEntity->getMultiBspline().findSpanOfValue(value, dim); }
 
+    const std::vector<Vertex<double>> &getControlPoints() const
+    { return bsplineEntity->getControlPoints();  }
+
     Matrix<double> &getSystemMatrix() 
     { return systemMatrix; }
 
