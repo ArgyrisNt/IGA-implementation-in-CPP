@@ -15,8 +15,9 @@ int main()
     // - - - - - B-spline curve - - - - -
     std::vector<Vertex<double>> controlPoints{{2.0, 0.0}, {2.0, 1.0}, {1.0, 1.0}, {0.0, 1.0}, {0.0, 0.0}};
     BsplineCurve curve(std::vector<Bspline>{bspline_x}, controlPoints);
+
     int resolution = 100;
-    curve.plot(resolution, "curve.dat");
+    curve.plot(resolution, "curve.csv");
 
     return 0;
 }

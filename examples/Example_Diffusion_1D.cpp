@@ -55,7 +55,7 @@ int main()
     BoundCond boundaryConditions(west, east);
     double coef = 1.0; // coefficient of diffusion problem
     double t_end = 0.05;
-    double numSteps = 10.0;
+    double numSteps = 50.0;
     double Dt = t_end / numSteps; // time step
     DiffusionAssembler_1D ass(src, boundaryConditions, curve, coef, Dt);
     ass.assemble();
@@ -67,7 +67,7 @@ int main()
     std::vector<double> init_sol = ass.applyInitialCondition(init_cond);
     diffusion.applyInitialCondition(init_sol);
     int resolution = 100;
-    curve.plotVectorOnEntity(resolution, diffusion.getSolution(), "0solution.dat");
+    curve.plotVectorOnEntity(resolution, diffusion.getSolution(), "0solution.csv");
 
     // - - - - - Solve and plot solution on every step - - - - - 
     for (int t = 0; t < numSteps; ++t)
@@ -76,7 +76,7 @@ int main()
         std::vector<double> b = ass.nextStep(diffusion.getSolution()); // build next rhs
         diffusion.updateRhs(b);
         diffusion.solve(20);
-        curve.plotVectorOnEntity(resolution, diffusion.getSolution(), std::to_string(t + 1) + "solution.dat");
+        curve.plotVectorOnEntity(resolution, diffusion.getSolution(), std::to_string(t + 1) + "solution.csv");
     }
 
     return 0;

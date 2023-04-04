@@ -20,7 +20,7 @@ public:
     void plot(const int resolution, const std::string &filename) override;
     void plotVectorOnEntity(const int resolution, const std::vector<double> &zCoordinate, const std::string &filename) override;
 
-    void uniformRefine_x();
+    void uniformRefine_x() override;
     void uniformRefine_y();
 
     const TrimmingCurve &getTrimmingCurve() const 
@@ -30,7 +30,6 @@ private:
     std::vector<Vertex<double>> XparametricCurvePoints(const int level);
     std::vector<Vertex<double>> YparametricCurvePoints(const int level);
     void refineParametricCurve(KnotVector<double> &vector, std::vector<Vertex<double>> &points);
-    void knotInsertion(KnotVector<double> &vector, std::vector<Vertex<double>> &points, const double newKnot);
 
     TrimmingCurve trimmingCurve;
 };

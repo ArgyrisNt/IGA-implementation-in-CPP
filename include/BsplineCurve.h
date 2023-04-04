@@ -15,7 +15,10 @@ public:
 
     Vertex<double> evaluateAtPoint(const double point);
     void plot(const int resolution, const std::string &filename) override;
+    void plotControlPoints(const std::string &filename);
     void plotVectorOnEntity(const int resolution, const std::vector<double> &zCoordinate, const std::string &filename) override;
+    
+    void uniformRefine_x() override;
 };
 
 #include "..\src\BsplineCurve.cpp"

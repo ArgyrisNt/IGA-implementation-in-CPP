@@ -13,6 +13,8 @@ int main()
 	std::vector<double> weights{ 1.0, 1.0, 1.0, 1.0 };
 	KnotVector<double> knotVector(degree, values, weights);
 	Bspline bspline_x(knotVector);
+	int resol = 100;
+	bspline_x.plot(resol, "basis.csv");
 
 	// - - - - - B-spline curve - - - - -
 	std::vector<Vertex<double>> controlPoints{{0.0, 0.0}, {1.0, 1.0}, {2.0, 1.0}, {3.0, 0.0}};
@@ -36,7 +38,7 @@ int main()
 
 	// - - - - - Plot solution - - - - -
 	int resolution = 100;
-	curve.plotVectorOnEntity(resolution, poisson.getSolution(), "solution.dat");
+	curve.plotVectorOnEntity(resolution, poisson.getSolution(), "solution.csv");
 
 	return 0;
 }
