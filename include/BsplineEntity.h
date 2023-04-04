@@ -24,10 +24,15 @@ public:
 
     virtual void plot(const int, const std::string &) = 0;
     virtual void plotVectorOnEntity(const int, const std::vector<double> &, const std::string &) = 0;
+    virtual void uniformRefine_x() = 0;
 
 protected:
     MultiBspline multiBspline;
     std::vector<Vertex<double>> controlPoints;
+
+    void knotInsertion(KnotVector<double> &vector, std::vector<Vertex<double>> &points, const double newKnot);
 };
+
+#include "..\src\BsplineEntity.cpp"
 
 #endif

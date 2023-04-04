@@ -1,3 +1,6 @@
+#ifndef VERTEX_H
+#define VERTEX_H
+
 #include <iostream>
 
 template <class T>
@@ -19,3 +22,17 @@ public:
     T x;
     T y;
 };
+
+template <class T>
+Vertex<T> operator+(const Vertex<T>& v1, const Vertex<T>& v2)
+{
+    return Vertex<T>(v1.x + v2.x, v1.y + v2.y);
+}
+
+template <class T>
+Vertex<T> operator*(const double k, const Vertex<T> &v1)
+{
+    return Vertex<T>(v1.x * k, v1.y * k);
+}
+
+#endif
