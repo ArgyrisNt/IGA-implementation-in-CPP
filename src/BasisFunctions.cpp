@@ -10,10 +10,11 @@ std::pair<std::vector<double>, std::vector<double>> BasisFunctions::evaluateAtPo
     {
         basisFunctionsOfDegree(i, value);
     }
+    convertToNurbsFunctions();
 
     if (!allBasisFunctions)
     {
-        computeActiveBasisFunctions(value);
+        computeActiveNurbsFunctions(value);
     }
 
     return std::make_pair(values, derivatives);
@@ -52,32 +53,42 @@ void BasisFunctions::basisFunctionsOfDegree(const int level, const double value)
     }
 }
 
-void BasisFunctions::computeActiveBasisFunctions(const double value)
+void BasisFunctions::convertToNurbsFunctions()
+{
+    double sumValues = 0.0, sumDerivatives = 0.0;
+    for (int i = 0; i < values.size(); ++i)
+    {
+        sumValues += values[i] * knotVector.getWeights()[i];
+        sumDerivatives += derivatives[i] * knotVector.getWeights()[i];
+    }
+
+    std::vector<double> nurbs, nurbsDerivatives;
+    for (int i = 0; i < values.size(); ++i)
+    {
+        double weightedBasis = values[i] * knotVector.getWeights()[i];
+        double weightedDerivatives = derivatives[i] * knotVector.getWeights()[i];
+        nurbs.push_back(weightedBasis / sumValues);
+        nurbsDerivatives.push_back((weightedDerivatives * sumValues - weightedBasis * sumDerivatives) / (sumValues * sumValues));
+    }
+
+    values = nurbs;
+    derivatives = nurbsDerivatives;
+}
+
+void BasisFunctions::computeActiveNurbsFunctions(const double value)
 {
     // if value in [ui,ui+1), then active functions are Ni-p,...,Ni
     std::vector<double> activeValues;
     std::vector<double> activeDerivatives;
     int span = knotVector.findSpanOfValue(value);
-    double sumValues = 0.0, sumDerivatives = 0.0;
     for (int i = span - knotVector.getDegree(); i <= span; ++i)
     {
         activeValues.push_back(values[i]);
         activeDerivatives.push_back(derivatives[i]);
-        sumValues += values[i] * knotVector.getWeights()[i];
-        sumDerivatives += derivatives[i] * knotVector.getWeights()[i];
     }
 
-    std::vector<double> activeNurbs, activeNurbsDerivatives;
-    for (int i = 0; i < activeValues.size(); ++i)
-    {
-        double weightedBasis = activeValues[i] * knotVector.getWeights()[i];
-        double weightedDerivatives = activeDerivatives[i] * knotVector.getWeights()[i];
-        activeNurbs.push_back(weightedBasis / sumValues);
-        activeNurbsDerivatives.push_back((weightedDerivatives * sumValues - weightedBasis * sumDerivatives) / (sumValues * sumValues));
-    }
-
-    values = activeNurbs;
-    derivatives = activeNurbsDerivatives;
+    values = activeValues;
+    derivatives = activeDerivatives;
 }
 
 void BasisFunctions::initializeBasisFunctions(const double value)
@@ -89,13 +100,11 @@ void BasisFunctions::initializeBasisFunctions(const double value)
     for (int j = 0; j < numberOfBasisFunctions; ++j)
     {
         bool isBetweenTheseTwoKnots = (value >= knotVector(j) && value < knotVector(j + 1));
-        if (isBetweenTheseTwoKnots)
-            valuesOfBasisFunctions[j] = 1.0;
+        if (isBetweenTheseTwoKnots) valuesOfBasisFunctions[j] = 1.0;
     }
 
     bool isLastKnot = almostEqual(value, knotVector(knotVector.getSize() - 1));
-    if (isLastKnot)
-        valuesOfBasisFunctions[numberOfBasisFunctions - 1] = 1.0;
+    if (isLastKnot) valuesOfBasisFunctions[numberOfBasisFunctions - 1] = 1.0;
 
     values = valuesOfBasisFunctions;
     derivatives = valuesOfBasisFunctions;

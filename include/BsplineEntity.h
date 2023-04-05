@@ -22,6 +22,7 @@ public:
     void setControlPoints(const std::vector<Vertex<double>> &new_controlPoints) 
     { controlPoints = new_controlPoints; }
 
+    void plotControlPoints(const std::string &filename);
     virtual void plot(const int, const std::string &) = 0;
     virtual void plotVectorOnEntity(const int, const std::vector<double> &, const std::string &) = 0;
     virtual void uniformRefine_x() = 0;

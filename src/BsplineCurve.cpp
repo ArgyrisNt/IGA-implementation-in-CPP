@@ -21,7 +21,6 @@ Vertex<double> BsplineCurve::evaluateAtPoint(const double point)
 }
 
 
-
 void BsplineCurve::plot(const int resolution, const std::string &filename)
 {
 	std::vector<double> steps = multiBspline.getKnotvector(0).linspace(resolution);
@@ -37,17 +36,6 @@ void BsplineCurve::plot(const int resolution, const std::string &filename)
 	}
 	plotCurve.close();
 	plotControlPoints("controlPoints.csv");
-}
-
-void BsplineCurve::plotControlPoints(const std::string &filename)
-{
-	std::ofstream plotCtrlPts(filename);
-	plotCtrlPts << "X,Y\n";
-	for (auto it = controlPoints.begin(); it != controlPoints.end(); ++it)
-	{
-		plotCtrlPts << (*it).x << "," << (*it).y <<"\n";
-	}
-	plotCtrlPts.close();
 }
 
 void BsplineCurve::plotVectorOnEntity(const int resolution, const std::vector<double> &zCoordinate, const std::string &filename)
@@ -74,7 +62,6 @@ void BsplineCurve::plotVectorOnEntity(const int resolution, const std::vector<do
 }
 
 
-
 void BsplineCurve::uniformRefine_x()
 {
 	KnotVector<double> vector = multiBspline.getBspline(0).getKnotvector();
@@ -87,10 +74,7 @@ void BsplineCurve::uniformRefine_x()
 		double new_knot = (a + b) / 2.0;
 		knotInsertion(new_knotvector, controlPoints, new_knot);
 	}
-	vector = new_knotvector;
 
-	std::vector<double> new_weights(new_knotvector.getSize() - multiBspline.getBspline(0).getDegree() - 1, 1.0);
-	new_knotvector.setWeights(new_weights);
 	new_knotvector.computeDistinctKnots();
 	multiBspline.getBspline(0).setKnotvector(new_knotvector);
 	multiBspline.setBspline(multiBspline.getBspline(0), 0);

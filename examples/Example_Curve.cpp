@@ -16,6 +16,12 @@ int main()
     std::vector<Vertex<double>> controlPoints{{2.0, 0.0}, {2.0, 1.0}, {1.0, 1.0}, {0.0, 1.0}, {0.0, 0.0}};
     BsplineCurve curve(std::vector<Bspline>{bspline_x}, controlPoints);
 
+    int numberOfRefinements = 1;
+    for (int i = 0; i < numberOfRefinements; ++i) 
+    {
+        curve.uniformRefine_x();
+    }
+
     int resolution = 100;
     curve.plot(resolution, "curve.csv");
 

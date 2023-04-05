@@ -19,13 +19,11 @@ Bspline &Bspline::operator=(const Bspline &bspline)
 }
 
 
-
 void Bspline::setKnotvector(const KnotVector<double> &newKnotVector)
 {
 	knotVector = newKnotVector;
 	basisFunctions = std::make_shared<BasisFunctions>(BasisFunctions(knotVector));
 }
-
 
 
 void Bspline::plot(const int resolution, const std::string &filename)

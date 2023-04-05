@@ -37,7 +37,6 @@ Vertex<double> BsplineSurface::evaluateAtPoint(const Vertex<double> &point)
 }
 
 
-
 void BsplineSurface::uniformRefine_x()
 {
 	std::vector<std::vector<Vertex<double>>> all_new_controlPoints;
@@ -60,8 +59,6 @@ void BsplineSurface::uniformRefine_x()
 		}
 	}
 
-	std::vector<double> new_weights(new_knotvector.getSize() - multiBspline.getBspline(0).getDegree() - 1, 1.0);
-	new_knotvector.setWeights(new_weights);
 	new_knotvector.computeDistinctKnots();
 	multiBspline.getBspline(0).setKnotvector(new_knotvector);
 	multiBspline.setBspline(multiBspline.getBspline(0), 0);
@@ -87,8 +84,6 @@ void BsplineSurface::uniformRefine_y()
 		for (auto el : group) controlPoints.push_back(el);
 	}
 
-	std::vector<double> new_weights(new_knotvector.getSize() - multiBspline.getBspline(1).getDegree() - 1, 1.0);
-	new_knotvector.setWeights(new_weights);
 	new_knotvector.computeDistinctKnots();
 	multiBspline.getBspline(1).setKnotvector(new_knotvector);
 	multiBspline.setBspline(multiBspline.getBspline(1), 1);
@@ -132,7 +127,6 @@ void BsplineSurface::refineParametricCurve(KnotVector<double> &vector, std::vect
 }
 
 
-
 void BsplineSurface::plot(const int resolution, const std::string &filename)
 {
 	std::vector<double> i_steps = multiBspline.getBspline(0).getKnotvector().linspace(resolution);
@@ -154,6 +148,7 @@ void BsplineSurface::plot(const int resolution, const std::string &filename)
 		}
 	}
 	plotSurface.close();
+	plotControlPoints("controlPoints.csv");
 }
 
 void BsplineSurface::plotVectorOnEntity(const int resolution, const std::vector<double> &zCoordinate, const std::string &filename)

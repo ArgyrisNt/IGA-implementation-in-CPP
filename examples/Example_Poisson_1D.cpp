@@ -9,16 +9,18 @@ int main()
 {   
 	// - - - - - B-spline basis - - - - - 
 	int degree = 2;
-	std::vector<double> values{ 0.0,0.0,0.0,0.5,1.0,1.0,1.0 };
-	std::vector<double> weights{ 1.0, 1.0, 1.0, 1.0 };
+	std::vector<double> values{ 0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0 };
+	std::vector<double> weights{ 1.0, 0.8, 0.8, 1.0 };
 	KnotVector<double> knotVector(degree, values, weights);
 	Bspline bspline_x(knotVector);
-	int resol = 100;
-	bspline_x.plot(resol, "basis.csv");
 
 	// - - - - - B-spline curve - - - - -
 	std::vector<Vertex<double>> controlPoints{{0.0, 0.0}, {1.0, 1.0}, {2.0, 1.0}, {3.0, 0.0}};
 	BsplineCurve curve(std::vector<Bspline>{bspline_x}, controlPoints);
+	for (int i = 0; i < 1; ++i)
+	{
+		curve.uniformRefine_x();
+	}
 
 	// - - - - - Assempler info - - - - -
 	double sourceFunction = 3.0;

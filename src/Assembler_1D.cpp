@@ -83,6 +83,7 @@ double Assembler_1D::computeRightHandSideIntegral(int basisFunction)
 	return v;
 }
 
+
 void Assembler_1D::computeBoundary()
 {
 	for (int i = 0; i < getNumberOfBasisFunctions(); ++i)
