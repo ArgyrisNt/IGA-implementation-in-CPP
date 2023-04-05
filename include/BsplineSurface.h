@@ -12,6 +12,9 @@ public:
     BsplineSurface(const std::vector<Bspline> &newBsplines, const std::vector<Vertex<double>> &new_controlPoints, const TrimmingCurve &_trimmingCurve)
         : BsplineEntity(MultiBspline(newBsplines), new_controlPoints), trimmingCurve(_trimmingCurve) {}
 
+    BsplineSurface(const std::vector<Bspline> &newBsplines, const std::vector<Vertex<double>> &new_controlPoints)
+        : BsplineEntity(MultiBspline(newBsplines), new_controlPoints), trimmingCurve(TrimmingCurve(Vertex<double>(0.0, 0.0), 0.0)) {}
+
     ~BsplineSurface() {}
 
     BsplineSurface &operator=(const BsplineSurface &);

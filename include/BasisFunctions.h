@@ -18,8 +18,9 @@ public:
 private:
     void initializeBasisFunctions(const double value);
     void basisFunctionsOfDegree(const int level, const double value);
-    void computeActiveBasisFunctions(const double value);
-    
+    void computeActiveNurbsFunctions(const double value);
+    void convertToNurbsFunctions();
+
     int numberOfBasisFunctions;
     std::vector<double> values;
     std::vector<double> derivatives;

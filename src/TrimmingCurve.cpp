@@ -20,6 +20,7 @@ void TrimmingCurve::plot()
 	plotTrimmedCurve.close();
 }
 
+
 Vertex<double> TrimmingCurve::evaluate(double t)
 {
     assert(t >= 0.0 && t < 2.0 * 3.14159265);
@@ -31,6 +32,7 @@ Vertex<double> TrimmingCurve::evaluateDerivative(double t)
     assert(t >= 0.0 && t < 2.0 * 3.14159265);
     return Vertex<double>(-radius * sin(t), radius * cos(t));
 }
+
 
 double TrimmingCurve::projectionOfPoint(const Vertex<double> &point)
 {

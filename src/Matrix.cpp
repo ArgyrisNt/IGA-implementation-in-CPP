@@ -45,7 +45,6 @@ template <class T>
 Matrix<T>::~Matrix() {}
 
 
-
 template <class T>
 Matrix<T> &Matrix<T>::operator=(const Matrix &matrix)
 {
@@ -57,7 +56,6 @@ Matrix<T> &Matrix<T>::operator=(const Matrix &matrix)
 }
 
 
-
 template <class T>
 void Matrix<T>::setValue(int row, int column, T value)
 {
@@ -65,7 +63,6 @@ void Matrix<T>::setValue(int row, int column, T value)
 	assert(column < getNumberOfColumns());
 	values[row][column] = value;
 }
-
 
 
 template <class T>

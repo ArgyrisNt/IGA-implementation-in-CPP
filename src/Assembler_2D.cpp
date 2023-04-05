@@ -68,6 +68,7 @@ void Assembler_2D::computeTrimmedElements()
 	}
 }
 
+
 void Assembler_2D::computeStiffnessMatrixAndRightHandSide()
 {
 	computeTrimmedElements();
@@ -193,6 +194,7 @@ double Assembler_2D::computeRightHandSideIntegral(int il_1, int il_2)
 
 	return v;
 }
+
 
 int Assembler_2D::identifyBoundarySideOfBasisFunction(int i)
 {

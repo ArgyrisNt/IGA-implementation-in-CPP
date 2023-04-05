@@ -44,7 +44,6 @@ KnotVector<T>::KnotVector(const T start, const T end, const int newDegree, const
 }
 
 
-
 template <class T>
 KnotVector<T> &KnotVector<T>::operator=(const KnotVector &oldKnotVector)
 {
@@ -53,7 +52,6 @@ KnotVector<T> &KnotVector<T>::operator=(const KnotVector &oldKnotVector)
     weights = oldKnotVector.weights;
     distinctKnots = oldKnotVector.distinctKnots;
 }
-
 
 
 template <class T>
@@ -103,7 +101,6 @@ std::vector<T> KnotVector<T>::linspace(const int resolution) const
     }
     return steps;
 }
-
 
 
 template <class T>
