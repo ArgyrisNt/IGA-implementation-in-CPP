@@ -29,8 +29,7 @@ int main()
 	BoundCond boundaryConditions(west, east);
 	Assembler_1D assembler(sourceFunction, boundaryConditions, curve);
 	assembler.assemble();
-	std::string mode("Ellimination");
-	assembler.enforceBoundaryConditions(mode);
+	assembler.enforceBoundaryConditions("Ellimination");
 
 	// - - - - - Poisson info - - - - -
 	Poisson<Assembler_1D> poisson(assembler, Solver::Jacobi);

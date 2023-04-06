@@ -183,49 +183,6 @@ std::vector<Matrix<T>> Matrix<T>::LU_factorization()
 }
 
 template <class T>
-std::vector<T> Matrix<T>::forward_Euler(const std::vector<T> &rightHandSide)
-{
-	size_t n = getNumberOfRows();
-	std::vector<T> solution(n);
-	for (size_t j = 0; j < n; ++j)
-	{
-		solution[0] = rightHandSide[0] / values[0][0];
-		for (size_t i = 1; i < n; ++i)
-		{
-			T sum = 0;
-			for (size_t k = 0; k <= i - 1; ++k)
-			{
-				sum += values[i][k] * solution[k];
-			}
-			solution[i] = (rightHandSide[i] - sum) / values[i][i];
-		}
-	}
-	return solution;
-}
-
-template <class T>
-std::vector<T> Matrix<T>::backward_Euler(const std::vector<T> &rightHandSide)
-{
-	int n = getNumberOfRows();
-	std::vector<T> solution(n);
-
-	for (int j = 0; j < n; ++j)
-	{
-		solution[n - 1] = rightHandSide[n - 1] / values[n - 1][n - 1]; // OK
-		for (int i = n - 2; i >= 0; i--)
-		{
-			T sum = 0.0;
-			for (int k = i + 1; k < n; ++k)
-			{
-				sum += values[i][k] * solution[k];
-			}
-			solution[i] = (rightHandSide[i] - sum) / values[i][i];
-		}
-	}
-	return solution;
-}
-
-template <class T>
 std::vector<Matrix<T>> Matrix<T>::QR_factorization()
 {
 	assert(getNumberOfRows() == getNumberOfColumns());
