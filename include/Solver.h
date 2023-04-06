@@ -24,6 +24,8 @@ private:
     std::vector<double> SOR_iterator(int iters, double omega);
     std::vector<double> gradient_iterator(int iters);
     std::vector<double> conjugate_gradient_iterator(int iters);
+    std::vector<double> forward_Euler(const Matrix<double>& A, const std::vector<double> &b);
+    std::vector<double> backward_Euler(const Matrix<double> &A, const std::vector<double> &b);
 
     Matrix<double> leftHandSide;
     std::vector<double> rightHandSide;

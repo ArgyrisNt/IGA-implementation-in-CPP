@@ -40,8 +40,7 @@ int main()
     BoundCond boundaryConditions(west, east, north, south);
     Assembler_2D assembler(src, boundaryConditions, surface);
     assembler.assemble();
-    std::string mode("Ellimination");
-    assembler.enforceBoundaryConditions(mode);
+    assembler.enforceBoundaryConditions("Ellimination");
 
     // - - - - - Poisson info - - - - -
     Poisson<Assembler_2D> poisson(assembler, Solver::SOR);

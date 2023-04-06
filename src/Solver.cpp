@@ -17,6 +17,8 @@ void Solver::setLeftAndRightHandSides(const Matrix<double> &left, const std::vec
 
 std::vector<double> Solver::solve(int numberOfIterations, double omega)
 {
+    assert(leftHandSide.getNumberOfRows() == rightHandSide.size());
+
     std::vector<double> solution;
     if (mode == "LU") solution = LUsolve();
     else if (mode == "QR") solution = QRsolve();
@@ -39,9 +41,8 @@ std::vector<double> Solver::LUsolve()
     std::vector<Matrix<double>> LU = leftHandSide.LU_factorization();
     Matrix<double> L = LU[0];
     Matrix<double> U = LU[1];
-    std::vector<double> y;
-    y = L.forward_Euler(rightHandSide);
-    std::vector<double> solution = U.backward_Euler(y);
+    std::vector<double> y = forward_Euler(L, rightHandSide);
+    std::vector<double> solution = backward_Euler(U, y);
 
     return solution;
 }
@@ -50,7 +51,7 @@ std::vector<double> Solver::QRsolve()
 {
     std::vector<Matrix<double>> QR = leftHandSide.QR_factorization();
     std::vector<double> rhs = QR[0].transpose() * rightHandSide;
-    std::vector<double> solution = QR[1].backward_Euler(rhs);
+    std::vector<double> solution = backward_Euler(QR[1], rhs);
 
     return solution;
 }
@@ -59,7 +60,6 @@ std::vector<double> Solver::Jacobi_iterator(int numberOfIterations)
 {
     double threshold = 1e-7;
     size_t n = leftHandSide.getNumberOfRows();
-    assert(n == rightHandSide.size());
     std::cout << "\nSolving with Jacobi iterative method. . ." << "\n";
     std::vector<double> solution(n, 0.0), residual(n), estimation(n);
     int iteration = 0;
@@ -98,7 +98,6 @@ std::vector<double> Solver::GaussSeidel_iterator(int numberOfIterations)
 {
     double threshold = 1e-7;
     size_t n = leftHandSide.getNumberOfRows();
-    assert(n == rightHandSide.size());
     std::cout << "\nSolving with Gauss Seidel iterative method. . ." << "\n";
     std::vector<double> solution(n, 0.0), y(n), residual(n), estimation(n);
     int iteration = 0;
@@ -135,7 +134,6 @@ std::vector<double> Solver::SOR_iterator(int numberOfIterations, double omega)
 {
     double threshold = 1e-7;
     size_t n = leftHandSide.getNumberOfRows();
-    assert(n == rightHandSide.size());
     std::cout << "\nSolving with SOR iterative method. . ." << "\n";
     std::vector<double> solution(n, 0.25), residual(n), estimation(n);
     for (size_t i = 0; i < solution.size(); ++i)
@@ -175,7 +173,6 @@ std::vector<double> Solver::gradient_iterator(int numberOfIterations)
 {
     std::cout << "\nSolving with Gradient iterative method. . ." << "\n";
     size_t n = leftHandSide.getNumberOfRows();
-    assert(n == rightHandSide.size());
     std::vector<double> solution(n, 0.0), residual(n);
     double nominator = 0.0;
     double denominator = 0.0;
@@ -208,7 +205,6 @@ std::vector<double> Solver::gradient_iterator(int numberOfIterations)
 std::vector<double> Solver::conjugate_gradient_iterator(int numberOfIterations)
 {
     size_t n = leftHandSide.getNumberOfRows();
-    assert(n == rightHandSide.size());
     std::cout << "\nSolving with Conjugate Gradient iterative method. . ." << "\n";
     std::vector<double> solution(n, 0.0), residual(n), t(n);
     double nominator = 0, denominator = 0, nom = 0, denom = 0;
@@ -247,5 +243,48 @@ std::vector<double> Solver::conjugate_gradient_iterator(int numberOfIterations)
     }
 
     std::cout << iteration - 1 << " iterations\n";
+    return solution;
+}
+
+std::vector<double> Solver::forward_Euler(const Matrix<double>& A, const std::vector<double> &b)
+{
+    size_t n = A.getNumberOfRows();
+    assert(n == b.size());
+
+    std::vector<double> solution(n);
+    for (size_t j = 0; j < n; ++j)
+    {
+        solution[0] = b[0] / A(0,0);
+        for (size_t i = 1; i < n; ++i)
+        {
+            double sum = 0;
+            for (size_t k = 0; k <= i - 1; ++k)
+            {
+                sum += A(i,k) * solution[k];
+            }
+            solution[i] = (b[i] - sum) / A(i,i);
+        }
+    }
+    return solution;
+}
+
+std::vector<double> Solver::backward_Euler(const Matrix<double> &A, const std::vector<double> &b)
+{
+    int n = A.getNumberOfRows();
+    assert(n == b.size());
+    std::vector<double> solution(n);
+    for (int j = 0; j < n; ++j)
+    {
+        solution[n - 1] = b[n - 1] / A(n - 1,n - 1); // OK
+        for (int i = n - 2; i >= 0; i--)
+        {
+            double sum = 0.0;
+            for (int k = i + 1; k < n; ++k)
+            {
+                sum += A(i,k) * solution[k];
+            }
+            solution[i] = (b[i] - sum) / A(i,i);
+        }
+    }
     return solution;
 }

@@ -59,8 +59,7 @@ int main()
     double Dt = t_end / numSteps; // time step
     DiffusionAssembler_1D ass(src, boundaryConditions, curve, coef, Dt);
     ass.assemble();
-    std::string mode("Ellimination");
-    ass.enforceBoundaryConditions(mode);
+    ass.enforceBoundaryConditions("Ellimination");
 
     // - - - - - Apply and plot initial condition - - - - -
     Poisson<DiffusionAssembler_1D> diffusion(ass, Solver::GaussSeidel);

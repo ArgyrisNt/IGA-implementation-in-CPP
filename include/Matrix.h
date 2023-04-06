@@ -27,8 +27,6 @@ public:
 	Matrix inverse() const;
 	std::vector<Matrix> LU_factorization();
 	std::vector<Matrix> QR_factorization(); // with Grand Schmidt method
-	std::vector<T> forward_Euler(const std::vector<T>& b);
-	std::vector<T> backward_Euler(const std::vector<T>& b);
 
 	const int getNumberOfRows() const 
 	{ return numberOfRows; }
