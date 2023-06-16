@@ -49,8 +49,6 @@ void BsplineEntity::plotControlPoints(const std::string &filename)
     std::ofstream plotCtrlPts(filename);
     plotCtrlPts << "X,Y\n";
     for (auto it = controlPoints.begin(); it != controlPoints.end(); ++it)
-    {
         plotCtrlPts << (*it).x << "," << (*it).y << "\n";
-    }
     plotCtrlPts.close();
 }

@@ -12,9 +12,7 @@ Matrix<T>::Matrix()
 	numberOfColumns = 0;
 	values = new T *[numberOfRows];
 	for (int i = 0; i < numberOfRows; ++i)
-	{
 		values[i] = new T[numberOfColumns];
-	}
 }
 
 template <class T>
@@ -27,9 +25,7 @@ Matrix<T>::Matrix(int rows, int columns, T value)
 	{
 		values[i] = new T[numberOfColumns];
 		for (int j = 0; j < numberOfColumns; ++j)
-		{
 			values[i][j] = value;
-		}
 	}
 }
 
@@ -90,9 +86,7 @@ void Matrix<T>::print() const
 	for (int i = 0; i < getNumberOfRows(); ++i)
 	{
 		for (int j = 0; j < getNumberOfColumns(); ++j)
-		{
 			std::cout << values[i][j] << " ";
-		}
 		std::cout << std::endl;
 	}
 }
@@ -102,12 +96,8 @@ Matrix<T> Matrix<T>::transpose() const
 {
 	Matrix result(getNumberOfRows(), getNumberOfColumns());
 	for (int i = 0; i < getNumberOfRows(); ++i)
-	{
 		for (int j = 0; j < getNumberOfColumns(); ++j)
-		{
 			result.values[i][j] = values[j][i];
-		}
-	}
 
 	return result;
 }
@@ -154,9 +144,7 @@ std::vector<Matrix<T>> Matrix<T>::LU_factorization()
 		{
 			T sum = 0.0;
 			for (size_t j = 0; j < i; ++j)
-			{
 				sum += L(i, j) * U(j, k);
-			}
 			U.setValue(i, k, values[i][k] - sum);
 		}
 
@@ -168,9 +156,7 @@ std::vector<Matrix<T>> Matrix<T>::LU_factorization()
 			{
 				T sum = 0.0;
 				for (size_t j = 0; j < i; ++j)
-				{
 					sum += L(k, j) * U(j, i);
-				}
 				L.setValue(k, i, (values[k][i] - sum) / U(i, i));
 			}
 		}
@@ -199,47 +185,33 @@ std::vector<Matrix<T>> Matrix<T>::QR_factorization()
 		std::vector<T> e;
 		std::vector<T> a;
 		for (int column = 0; column < n; ++column)
-		{
 			a.push_back(ATranspose.values[j][column]);
-		}
 		std::vector<T> u(a);
 
 		for (int i = 0; i < counter; ++i)
 		{
 			T temp = 0.0;
 			for (int k = 0; k < n; ++k)
-			{
 				temp += Q(k,i) * a[k];
-			}
 
 			std::vector<T> proj;
 			for (int k = 0; k < n; ++k)
-			{
 				proj.push_back(Q(k,i) * temp);
-			}
 
 			for (int k = 0; k < n; ++k)
-			{
 				u[k] = u[k] - proj[k];
-			}
 		}
 
 		T result = 0;
 		for (size_t i = 0; i < u.size(); ++i)
-		{
 			result += u[i] * u[i];
-		}
 		result = sqrt(result);
 
 		for (int k = 0; k < n; ++k)
-		{
 			e.push_back(u[k]/result);
-		}
 
 		for (int k = 0; k < n; ++k)
-		{
 			Q.setValue(k,counter,e[k]);
-		}
 
 		counter++;
 	}

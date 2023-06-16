@@ -7,15 +7,12 @@ std::pair<std::vector<double>, std::vector<double>> BasisFunctions::evaluateAtPo
     initializeBasisFunctions(value);
 
     for (int i = 1; i < knotVector.getDegree() + 1; ++i)
-    {
         basisFunctionsOfDegree(i, value);
-    }
+
     convertToNurbsFunctions();
 
     if (!allBasisFunctions)
-    {
         computeActiveNurbsFunctions(value);
-    }
 
     return std::make_pair(values, derivatives);
 }
@@ -23,10 +20,9 @@ std::pair<std::vector<double>, std::vector<double>> BasisFunctions::evaluateAtPo
 void BasisFunctions::basisFunctionsOfDegree(const int level, const double value)
 {
     std::vector<double> oldValues = values;
+    double firstCoefficient = 0.0, secondCoefficient = 0.0;
     for (int j = 0; j < numberOfBasisFunctions; ++j)
     {
-        double firstCoefficient = 0.0, secondCoefficient = 0.0;
-
         double denominator = knotVector(j + level) - knotVector(j);
         if (!almostEqual(denominator, 0.0))
             firstCoefficient = (value - knotVector(j)) / denominator;
@@ -44,10 +40,12 @@ void BasisFunctions::basisFunctionsOfDegree(const int level, const double value)
         {
             denominator = knotVector(j + level) - knotVector(j);
             if (!almostEqual(denominator, 0.0))
-                firstCoefficient = oldValues[j] / (knotVector(j + level) - knotVector(j));
+                firstCoefficient = oldValues[j] / denominator;
+
             denominator = knotVector(j + level + 1) - knotVector(j + 1);
             if (!almostEqual(denominator, 0.0))
-                secondCoefficient = oldValues[j + 1] / (knotVector(j + level + 1) - knotVector(j + 1));
+                secondCoefficient = oldValues[j + 1] / denominator;
+
             derivatives[j] = knotVector.getDegree() * (firstCoefficient - secondCoefficient);
         }
     }
@@ -93,8 +91,8 @@ void BasisFunctions::computeActiveNurbsFunctions(const double value)
 
 void BasisFunctions::initializeBasisFunctions(const double value)
 {
-    values = {};
-    derivatives = {};
+    values.clear();
+    derivatives.clear();
     numberOfBasisFunctions = knotVector.getSize() - knotVector.getDegree() - 1;
     std::vector<double> valuesOfBasisFunctions(numberOfBasisFunctions, 0.0);
     for (int j = 0; j < numberOfBasisFunctions; ++j)

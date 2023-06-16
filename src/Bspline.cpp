@@ -33,10 +33,9 @@ void Bspline::plot(const int resolution, const std::string &filename)
 	std::ofstream plotBspline(filename);
 	plotBspline << "X";
 	for (int i = 0; i < getNumberOfBasisFunctions(); ++i)
-	{
 		plotBspline << "," << i;
-	}
 	plotBspline << "\n";
+	
 	for (int i = 0; i < resolution; ++i)
 	{
 		double currentStep = firstKnot + (double)(i) * ((lastKnot - firstKnot) / ((double)(resolution - 1)));
@@ -44,9 +43,7 @@ void Bspline::plot(const int resolution, const std::string &filename)
 
 		plotBspline << currentStep;
 		for (auto it = values.begin(); it != values.end(); ++it)
-		{
 			plotBspline << "," << *it;
-		}
 		plotBspline << "\n";
 	}
 	plotBspline.close();

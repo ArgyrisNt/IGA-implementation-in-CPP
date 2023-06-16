@@ -71,23 +71,18 @@ std::vector<double> Solver::Jacobi_iterator(int numberOfIterations)
             c[i] = rightHandSide[i];
             for (size_t j = 0; j < n; ++j)
             {
-                if (j != i)
-                    c[i] -= leftHandSide(i,j) * solution[j];
+                if (j == i) continue;
+                c[i] -= leftHandSide(i,j) * solution[j];
             }
         }
         for (size_t i = 0; i < n; ++i)
-        {
             solution[i] = c[i] / leftHandSide(i,i);
-        }
+
         estimation = leftHandSide * solution;
         for (size_t k = 0; k < solution.size(); ++k)
-        {
             residual[k] = rightHandSide[k] - estimation[k];
-        }
-        if (norm(residual) < threshold)
-        {
-            break;
-        }
+
+        if (norm(residual) < threshold) break;
     }
 
     std::cout << iteration - 1 << " iterations\n";
@@ -108,22 +103,17 @@ std::vector<double> Solver::GaussSeidel_iterator(int numberOfIterations)
             y[i] = rightHandSide[i] / leftHandSide(i,i);
             for (size_t j = 0; j < n; ++j)
             {
-                if (j != i)
-                {
-                    y[i] -= (leftHandSide(i,j) / leftHandSide(i,i)) * solution[j];
-                    solution[i] = y[i];
-                }
+                if (j == i) continue;
+                y[i] -= (leftHandSide(i,j) / leftHandSide(i,i)) * solution[j];
+                solution[i] = y[i];
             }
         }
+
         estimation = leftHandSide * solution;
         for (size_t k = 0; k < solution.size(); ++k)
-        {
             residual[k] = rightHandSide[k] - estimation[k];
-        }
-        if (norm(residual) < threshold)
-        {
-            break;
-        }
+
+        if (norm(residual) < threshold) break;
     }
 
     std::cout << iteration - 1 << " iterations\n";
@@ -149,20 +139,17 @@ std::vector<double> Solver::SOR_iterator(int numberOfIterations, double omega)
             double sigma = 0;
             for (size_t j = 0; j < n; ++j)
             {
-                if (j != i)
-                    sigma += leftHandSide(i,j) * solution[j];
+                if (j == i) continue;
+                sigma += leftHandSide(i,j) * solution[j];
             }
             solution[i] = (1 - omega) * solution[i] + (omega / leftHandSide(i,i)) * (rightHandSide[i] - sigma);
         }
+
         estimation = leftHandSide * solution;
         for (size_t k = 0; k < solution.size(); ++k)
-        {
             residual[k] = rightHandSide[k] - estimation[k];
-        }
-        if (norm(residual) < threshold)
-        {
-            break;
-        }
+
+        if (norm(residual) < threshold) break;
     }
 
     std::cout << iteration - 1 << " iterations\n";
@@ -180,22 +167,18 @@ std::vector<double> Solver::gradient_iterator(int numberOfIterations)
     for (iteration = 0; iteration < numberOfIterations; ++iteration)
     {
         for (size_t i = 0; i < solution.size(); ++i)
-        {
             residual[i] = rightHandSide[i] - (leftHandSide * solution)[i];
-        }
+
         for (size_t i = 0; i < solution.size(); ++i)
         {
             nominator += residual[i] * residual[i];
             denominator += residual[i] * (leftHandSide * residual)[i];
         }
+
         for (size_t i = 0; i < solution.size(); ++i)
-        {
             solution[i] = solution[i] + (nominator / denominator) * residual[i];
-        }
-        if (norm(residual) < 1e-7)
-        {
-            break;
-        }
+
+        if (norm(residual) < 1e-7) break;
     }
 
     std::cout << iteration - 1 << " iterations\n";
@@ -212,11 +195,9 @@ std::vector<double> Solver::conjugate_gradient_iterator(int numberOfIterations)
     for (iteration = 0; iteration < numberOfIterations; ++iteration)
     {
         for (size_t i = 0; i < solution.size(); ++i)
-        {
             residual[i] = rightHandSide[i] - (leftHandSide * solution)[i];
-        }
-        if (iteration == 0)
-            t = residual;
+
+        if (iteration == 0) t = residual;
         for (size_t i = 0; i < solution.size(); ++i)
         {
             nominator += residual[i] * residual[i];
@@ -232,14 +213,11 @@ std::vector<double> Solver::conjugate_gradient_iterator(int numberOfIterations)
             nom += residual[i] * (leftHandSide * t)[i];
             denom += t[i] * (leftHandSide * t)[i];
         }
+
         for (size_t i = 0; i < solution.size(); ++i)
-        {
             t[i] = residual[i] - (nom / denom) * t[i];
-        }
-        if (norm(residual) < 1e-7)
-        {
-            break;
-        }
+
+        if (norm(residual) < 1e-7) break;
     }
 
     std::cout << iteration - 1 << " iterations\n";
@@ -259,9 +237,7 @@ std::vector<double> Solver::forward_Euler(const Matrix<double>& A, const std::ve
         {
             double sum = 0;
             for (size_t k = 0; k <= i - 1; ++k)
-            {
                 sum += A(i,k) * solution[k];
-            }
             solution[i] = (b[i] - sum) / A(i,i);
         }
     }
@@ -280,9 +256,7 @@ std::vector<double> Solver::backward_Euler(const Matrix<double> &A, const std::v
         {
             double sum = 0.0;
             for (int k = i + 1; k < n; ++k)
-            {
                 sum += A(i,k) * solution[k];
-            }
             solution[i] = (b[i] - sum) / A(i,i);
         }
     }

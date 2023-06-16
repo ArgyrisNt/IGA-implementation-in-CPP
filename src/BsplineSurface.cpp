@@ -50,14 +50,10 @@ void BsplineSurface::uniformRefine_x()
 		all_new_controlPoints.push_back(controlPoints_x);
 	}
 
-	controlPoints = {};
+	controlPoints.clear();
 	for (int i = 0; i < all_new_controlPoints[0].size(); ++i)
-	{
 		for (auto group : all_new_controlPoints)
-		{
 			controlPoints.push_back(group[i]);
-		}
-	}
 
 	new_knotvector.computeDistinctKnots();
 	multiBspline.getBspline(0).setKnotvector(new_knotvector);
@@ -78,11 +74,10 @@ void BsplineSurface::uniformRefine_y()
 		all_new_controlPoints.push_back(controlPoints_y);
 	}
 
-	controlPoints = {};
+	controlPoints.clear();
 	for (auto group : all_new_controlPoints)
-	{
-		for (auto el : group) controlPoints.push_back(el);
-	}
+		for (auto el : group) 
+			controlPoints.push_back(el);
 
 	new_knotvector.computeDistinctKnots();
 	multiBspline.getBspline(1).setKnotvector(new_knotvector);
@@ -94,10 +89,8 @@ std::vector<Vertex<double>> BsplineSurface::XparametricCurvePoints(const int lev
 {
 	std::vector<Vertex<double>> XcontrolPointsOnDirection; 
 	for (int i = 0; i < controlPoints.size(); ++i)
-	{
 		if (i == 0 || (i % multiBspline.getBspline(1).getNumberOfBasisFunctions()) == 0)
 			XcontrolPointsOnDirection.push_back(controlPoints[i + level]);
-	}
 	return XcontrolPointsOnDirection;
 }
 
@@ -105,10 +98,8 @@ std::vector<Vertex<double>> BsplineSurface::YparametricCurvePoints(const int lev
 {
 	std::vector<Vertex<double>> YcontrolPointsOnDirection;
 	for (int i = 0; i < controlPoints.size(); ++i)
-	{
 		if (i >= 0 && (i < multiBspline.getBspline(1).getNumberOfBasisFunctions()))
 			YcontrolPointsOnDirection.push_back(controlPoints[i + level * multiBspline.getBspline(1).getNumberOfBasisFunctions()]);
-	}
 	return YcontrolPointsOnDirection;
 }
 
