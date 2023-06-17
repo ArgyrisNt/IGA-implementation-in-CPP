@@ -18,9 +18,7 @@ int main()
 
     int numberOfRefinements = 1;
     for (int i = 0; i < numberOfRefinements; ++i) 
-    {
         curve.uniformRefine_x();
-    }
 
     int resolution = 100;
     curve.plot(resolution, "curve.csv");

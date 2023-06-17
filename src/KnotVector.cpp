@@ -5,15 +5,6 @@
 
 
 template <class T>
-KnotVector<T>::KnotVector()
-{
-    degree = 0;
-    knots = {};
-    weights = {};
-    computeDistinctKnots();
-}
-
-template <class T>
 KnotVector<T>::KnotVector(const int newDegree, const std::vector<T> &newKnots, const std::vector<T> &newWeights)
 {
     degree = newDegree;
@@ -26,19 +17,10 @@ template <class T>
 KnotVector<T>::KnotVector(const T start, const T end, const int newDegree, const int numberOfElements, const std::vector<T> &newWeights)
 {
     degree = newDegree;
-    for (int i = 0; i < degree; ++i)
-    {
-        knots.push_back(start);
-    }
+    for (int i = 0; i < degree; ++i) knots.push_back(start);
     double delta = end / numberOfElements;
-    for (int i = 0; i <= numberOfElements; ++i)
-    {
-        knots.push_back(i * delta);
-    }
-    for (int i = 0; i < degree; ++i)
-    {
-        knots.push_back(end);
-    }
+    for (int i = 0; i <= numberOfElements; ++i) knots.push_back(i * delta);
+    for (int i = 0; i < degree; ++i) knots.push_back(end);
     weights = newWeights;
     computeDistinctKnots();
 }
@@ -73,9 +55,7 @@ int KnotVector<T>::findSpanOfValue(const T value) const
     bool isLastKnot = almostEqual(value, knots[knots.size() - 1]);
     if (isLastKnot) return (knots.size() - degree - 2);
     for (int index = 0; index < knots.size() - 1; ++index)
-    {
         if (value >= knots[index] && value < knots[index + 1]) return index;
-    }
     std::cout << "Error: Value " << value << " is not in vector." << std::endl;
     throw std::invalid_argument("Value does not appear in vector");
 }
@@ -106,10 +86,7 @@ std::vector<T> KnotVector<T>::linspace(const int resolution) const
 template <class T>
 void KnotVector<T>::setWeights(const std::vector<T> &new_weights)
 {
-    for (auto weight : new_weights)
-    {
-        assert(weight >= 0.0 && weight <= 1.0);
-    }
+    for (auto weight : new_weights) assert(weight >= 0.0 && weight <= 1.0);
 
     weights = new_weights;
 }

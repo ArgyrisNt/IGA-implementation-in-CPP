@@ -11,7 +11,7 @@ template<class T>
 class KnotVector
 {
 public:
-    KnotVector();
+    KnotVector() : degree(0) { computeDistinctKnots(); }
     KnotVector(const int newDegree, const std::vector<T> &newKnots, const std::vector<T> &newWeights);
     KnotVector(const T start, const T end, const int new_degree, const int numberOfElements, const std::vector<T> &newWeights);
 

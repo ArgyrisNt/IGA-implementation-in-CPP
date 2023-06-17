@@ -18,9 +18,7 @@ int main()
 	std::vector<Vertex<double>> controlPoints{{0.0, 0.0}, {1.0, 1.0}, {2.0, 1.0}, {3.0, 0.0}};
 	BsplineCurve curve(std::vector<Bspline>{bspline_x}, controlPoints);
 	for (int i = 0; i < 1; ++i)
-	{
 		curve.uniformRefine_x();
-	}
 
 	// - - - - - Assempler info - - - - -
 	double sourceFunction = 3.0;
